@@ -4401,6 +4401,7 @@ amass track -d target.com (track changes over time)`
   },
   {
     name: 'theHarvester',
+    coverImg: '/static/images/theharvester.png',
     desc: 'E-mails, subdomains and names OSINT tool.',
     cmd: 'theHarvester -d target.com -l 500 -b all',
     tags: ['Recon & Discovery', 'OSINT'],
@@ -4458,6 +4459,7 @@ amass track -d target.com (track changes over time)`
   // === DNS & SUBDOMAIN TAKEOVER ===
   {
     name: 'dnsx',
+    coverImg: '/static/images/dnsx.png',
     desc: 'Fast and multi-purpose DNS toolkit.',
     cmd: 'dnsx -l subs.txt -resp -a -cname -o resolved.txt',
     tags: ['DNS & Takeover', 'DNS'],
@@ -4511,6 +4513,7 @@ amass track -d target.com (track changes over time)`
   },
   {
     name: 'Katana',
+    coverImg: '/static/images/katana.png',
     desc: 'Next-generation crawling and spidering framework.',
     cmd: 'katana -u https://target.com -jc -d 3',
     tags: ['HTTP & Crawling', 'Spidering'],
@@ -4651,6 +4654,7 @@ trufflehog github --org=targetorg --only-verified
   // === VULNERABILITY SCANNING & WEB TESTING ===
   {
     name: 'Nuclei',
+    coverImg: '/static/images/nuclei.png',
     desc: 'Template-based fast vulnerability scanner.',
     cmd: 'nuclei -u https://target.com -t nuclei-templates/',
     tags: ['Scanning', 'Vulnerability Scanner'],
@@ -4730,6 +4734,7 @@ Can dump databases and execute code if vulnerable.`
   },
   {
     name: 'Metasploit Framework',
+    coverImg: '/static/images/metasploit.png',
     author: 'Rapid7 / metasploit-framework',
     desc: 'The world\'s most used penetration testing framework. Provides a vast library of exploits, payloads, and post-exploitation modules.',
     cmd: 'msfconsole',
@@ -4861,6 +4866,7 @@ cat ../js_files.txt | xargs -n 1 curl -O`
   // === WEB PROXY & INTERCEPTION ===
   {
     name: 'Burp Suite',
+    coverImg: '/static/images/burpsuite.png',
     author: 'PortSwigger',
     desc: 'The leading web application security testing platform. Intercept, inspect, and modify all HTTP/S traffic between browser and server.',
     cmd: 'burpsuite &   # Or launch via GUI',
