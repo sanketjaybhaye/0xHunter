@@ -8,19 +8,23 @@
 
 Add your application screenshots here to showcase the sleek UI! 
 
-> [!TIP]
-> Place your images in a new folder like `docs/images/` (e.g., `docs/images/dashboard.png`) and update the image sources below.
-
 <!-- Screenshot Carousel / Showcase -->
 <p align="center">
   <img src="docs/images/dashboard.png" alt="0xHunter Dashboard Preview" width="85%" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); margin-bottom: 20px;" />
 </p>
 
 <p align="center">
-  <img src="docs/images/osint_hub.png" alt="OSINT passive scanner" width="45%" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);" />
+  <img src="docs/images/osinthub.png" alt="OSINT Passive Scanner Hub" width="45%" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);" />
   &nbsp;&nbsp;
-  <img src="docs/images/exif_analyzer.png" alt="EXIF Forensic Suite" width="45%" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);" />
+  <img src="docs/images/toolsref.png" alt="OSINT CLI Cheat Sheet Reference" width="45%" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);" />
 </p>
+
+<p align="center">
+  <img src="docs/images/loginpage.png" alt="Login Interface" width="45%" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);" />
+  &nbsp;&nbsp;
+  <img src="docs/images/bookmarks.png" alt="Bookmarks Tool" width="45%" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);" />
+</p>
+
 
 ---
 
