@@ -4404,6 +4404,7 @@ amass track -d target.com (track changes over time)`
     desc: 'E-mails, subdomains and names OSINT tool.',
     cmd: 'theHarvester -d target.com -l 500 -b all',
     tags: ['Recon & Discovery', 'OSINT'],
+    cheatSheetHtml: `<iframe src="/static/cheat_sheets/theHarvester_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
     cheatSheet: `-b all : Use all data sources
 -l 500 : Limit number of results
 -f results.html : Save output to HTML`
@@ -4458,6 +4459,7 @@ amass track -d target.com (track changes over time)`
     desc: 'Fast and multi-purpose DNS toolkit.',
     cmd: 'dnsx -l subs.txt -resp -a -cname -o resolved.txt',
     tags: ['DNS & Takeover', 'DNS'],
+    cheatSheetHtml: `<iframe src="/static/cheat_sheets/dnsx_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
     cheatSheet: `-a : Query A records
 -cname : Query CNAME records
 -resp : Show DNS response
@@ -4468,6 +4470,7 @@ amass track -d target.com (track changes over time)`
     desc: 'Fast domain resolver and subdomain bruteforcer.',
     cmd: 'puredns bruteforce wordlist.txt target.com',
     tags: ['DNS & Takeover', 'DNS'],
+    cheatSheetHtml: `<iframe src="/static/cheat_sheets/puredns_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
     cheatSheet: `puredns resolve domains.txt -r resolvers.txt
 -w output.txt : Save valid results
 --wildcard-tests 50 : Number of tests for wildcard detection`
@@ -4509,6 +4512,7 @@ amass track -d target.com (track changes over time)`
     desc: 'Next-generation crawling and spidering framework.',
     cmd: 'katana -u https://target.com -jc -d 3',
     tags: ['HTTP & Crawling', 'Spidering'],
+    cheatSheetHtml: `<iframe src="/static/cheat_sheets/katana_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
     cheatSheet: `-jc : Parse JavaScript files for endpoints
 -d 3 : Crawl depth of 3
 -fs rdn : Filter out out-of-scope domains (regex)
@@ -4519,6 +4523,7 @@ amass track -d target.com (track changes over time)`
     desc: 'Fetch known URLs from the Wayback Machine and AlienVault.',
     cmd: 'echo "target.com" | waybackurls > urls.txt',
     tags: ['HTTP & Crawling', 'Archive'],
+    cheatSheetHtml: `<iframe src="/static/cheat_sheets/waybackurls-cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
     cheatSheet: `gau target.com --subs | httpx -silent
 # Filter out useless extensions:
 cat urls.txt | grep -vE '\\.(jpg|jpeg|gif|css|tif|tiff|png|ttf|woff|woff2|ico)$'`
@@ -4528,6 +4533,7 @@ cat urls.txt | grep -vE '\\.(jpg|jpeg|gif|css|tif|tiff|png|ttf|woff|woff2|ico)$'
     desc: 'Fast web spider written in Go.',
     cmd: 'gospider -s "https://target.com/" -c 10 -d 1',
     tags: ['HTTP & Crawling', 'Spidering'],
+    cheatSheetHtml: `<iframe src="/static/cheat_sheets/gospider_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
     cheatSheet: `-s : Site to spider
 -S : File containing sites
 -c : Concurrent connections
@@ -4572,6 +4578,7 @@ cat urls.txt | grep -vE '\\.(jpg|jpeg|gif|css|tif|tiff|png|ttf|woff|woff2|ico)$'
     desc: 'Directory/file, DNS and VHost busting tool written in Go.',
     cmd: 'gobuster dir -u https://target.com -w wordlist.txt',
     tags: ['Fuzzing', 'Web Directories'],
+    cheatSheetHtml: `<iframe src="/static/cheat_sheets/gobuster_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
     cheatSheet: `gobuster dns -d target.com -w subdomains.txt
 gobuster vhost -u target.com -w vhosts.txt
 -t 50 : Number of concurrent threads
@@ -4582,6 +4589,7 @@ gobuster vhost -u target.com -w vhosts.txt
     desc: 'Fast, simple, recursive content discovery tool written in Rust.',
     cmd: 'feroxbuster -u https://target.com -w wordlist.txt',
     tags: ['Fuzzing', 'Web Directories'],
+    cheatSheetHtml: `<iframe src="/static/cheat_sheets/feroxbuster_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
     cheatSheet: `-d 2 : Maximum recursion depth
 -t 50 : Number of concurrent threads
 -x php,html : File extensions to search
@@ -4594,6 +4602,7 @@ gobuster vhost -u target.com -w vhosts.txt
     desc: 'HTTP parameter discovery suite.',
     cmd: 'arjun -u https://target.com/endpoint',
     tags: ['Discovery', 'Parameters'],
+    cheatSheetHtml: `<iframe src="/static/cheat_sheets/arjun_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
     cheatSheet: `-m POST : Test POST parameters
 -w wordlist.txt : Custom wordlist
 -t 10 : Number of threads
@@ -4642,6 +4651,7 @@ trufflehog github --org=targetorg --only-verified
     desc: 'Template-based fast vulnerability scanner.',
     cmd: 'nuclei -u https://target.com -t nuclei-templates/',
     tags: ['Scanning', 'Vulnerability Scanner'],
+    cheatSheetHtml: `<iframe src="/static/cheat_sheets/nuclei_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
     cheatSheet: `-t cves/ : Run only CVE templates
 -t exposures/ -t misconfiguration/ : Run specific directories
 -severity critical,high : Filter by severity
@@ -4682,6 +4692,7 @@ trufflehog github --org=targetorg --only-verified
     desc: 'Automated OS command injection exploitation tool.',
     cmd: 'commix --url="http://target.com/ping?ip=INJECT_HERE"',
     tags: ['Exploitation', 'Command Injection'],
+    cheatSheetHtml: `<iframe src="/static/cheat_sheets/commix_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
     cheatSheet: `--os-cmd="id" : Execute a specific command
 --os-shell : Open an interactive OS shell
 --level=3 : Thoroughness level (1-3)`
@@ -4719,6 +4730,7 @@ Can dump databases and execute code if vulnerable.`
     desc: 'The world\'s most used penetration testing framework. Provides a vast library of exploits, payloads, and post-exploitation modules.',
     cmd: 'msfconsole',
     tags: ['Exploitation', 'Framework'],
+    cheatSheetHtml: `<iframe src="/static/cheat_sheets/metasploit_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
     cheatSheet: `# Start and basic navigation
 msfconsole                         # Launch Metasploit console
 db_nmap -sV -p- target.com         # Nmap scan and save to DB
@@ -4833,6 +4845,7 @@ cat ../js_files.txt | xargs -n 1 curl -O`
     desc: 'A very fast network logon cracker which supports many different services.',
     cmd: 'hydra -l user -P passlist.txt server service',
     tags: ['Brute Force', 'Password Cracking'],
+    cheatSheetHtml: `<iframe src="/static/cheat_sheets/hydra_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
     cheatSheet: `-l user : Login name
 -L users.txt : File with login names
 -p pass : Password
@@ -4877,6 +4890,7 @@ J2EEScan      : Java EE specific vulnerability checks`
     desc: 'Classic and versatile password cracker supporting many hash types and attack modes.',
     cmd: 'john --wordlist=rockyou.txt hash.txt',
     tags: ['Brute Force', 'Hash Cracking'],
+    cheatSheetHtml: `<iframe src="/static/cheat_sheets/john_the_ripper_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
     cheatSheet: `john hash.txt --format=raw-md5        # Specify hash type
 john --wordlist=rockyou.txt hash.txt   # Dictionary attack
 john --rules hash.txt                  # Apply mangling rules
