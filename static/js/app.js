@@ -5504,7 +5504,12 @@ window.injectIframeTheme = function(iframe) {
       }
       if (btn) {
         var orig = btn.innerHTML;
-        btn.innerHTML = '<i class="ti ti-check"></i> copied';
+        var hasText = btn.textContent.trim().length > 0;
+        if (hasText) {
+          btn.innerHTML = '<i class="ti ti-check"></i> copied';
+        } else {
+          btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;display:inline-block;vertical-align:middle;"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        }
         btn.classList.add('copied');
         setTimeout(function(){
           btn.innerHTML = orig;
@@ -5546,7 +5551,12 @@ window.injectIframeTheme = function(iframe) {
                 if (win.clipCopy) {
                     win.clipCopy(text, function() {
                         const origHTML = clone.innerHTML;
-                        clone.innerHTML = '<i class="ti ti-check"></i> copied';
+                        const hasText = clone.textContent.trim().length > 0;
+                        if (hasText) {
+                            clone.innerHTML = '<i class="ti ti-check"></i> copied';
+                        } else {
+                            clone.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;display:inline-block;vertical-align:middle;"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                        }
                         clone.classList.add('copied');
                         setTimeout(() => {
                             clone.innerHTML = origHTML;
