@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+.env
+database.sqlite
+.venv/
+venv/
+*.bak
+
+# Local certificates and binaries
+*.pem
+mkcert.exe
+
+# Local database files and application secret keys
+data/*.sqlite
+data/.secret_key
+
+# Uploaded test files and generated images
+data/files/
+data/images/
+static/test_metadata.*
+

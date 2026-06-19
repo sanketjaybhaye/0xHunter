@@ -1,0 +1,2284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>0xHunter — Elite Bug Bounty Workspace</title>
+<meta name="description" content="Professional bug bounty and ethical hacking workspace. Track targets, findings, sessions, and payloads in one offline-first tool.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/theme.css?v=2.0">
+</head>
+<body>
+<div id="toast-container"></div><!-- CMD PALETTE -->
+<div id="cmd-palette">
+  <div class="cmd-box">
+    <div class="cmd-input-wrap">
+      <span style="font-size:18px">⌘</span>
+      <input class="cmd-input" id="cmd-input" placeholder="Search pages, actions..." autocomplete="off">
+    </div>
+    <div class="cmd-results" id="cmd-results"></div>
+    <div class="cmd-footer">
+      <span class="cmd-kbd">↑↓</span><span style="font-size:10.5px;color:var(--text3)">Navigate</span>
+      <span class="cmd-kbd">↵</span><span style="font-size:10.5px;color:var(--text3)">Select</span>
+      <span class="cmd-kbd">Esc</span><span style="font-size:10.5px;color:var(--text3)">Close</span>
+      <span style="margin-left:auto;font-size:10.5px;color:var(--text3)">Press <kbd class="cmd-kbd">Ctrl+K</kbd></span>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Add Target -->
+<div class="modal-overlay" id="modal-target">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-title" id="modal-target-title">🎯 Add New Target</div>
+    <div class="form-group"><label class="form-label">Program Name</label><input type="text" class="form-control" id="t-name" placeholder="Acme Corp — HackerOne"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">In-Scope Domains</label><input type="text" class="form-control" id="t-scope" placeholder="*.acme.com, api.acme.com"></div>
+      <div class="form-group"><label class="form-label">Out-of-Scope</label><input type="text" class="form-control" id="t-outscope" placeholder="blog.acme.com"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Platform</label>
+        <select class="form-control" id="t-platform"><option>HackerOne</option><option>Bugcrowd</option><option>Intigriti</option><option>YesWeHack</option><option>Synack</option><option>Private</option><option>VDP</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Status</label>
+        <select class="form-control" id="t-status"><option value="active">Active</option><option value="pending">Pending</option><option value="paused">Paused</option><option value="done">Completed</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Max Bounty</label><input type="text" class="form-control" id="t-bounty" placeholder="$10,000"></div>
+      <div class="form-group"><label class="form-label">Program URL</label><input type="text" class="form-control" id="t-url" placeholder="https://hackerone.com/acme"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">🗓 Disclosure Deadline</label><input type="date" class="form-control" id="t-deadline"></div>
+      <div class="form-group"><label class="form-label">Tags (comma-separated)</label><input type="text" class="form-control" id="t-tags" placeholder="web, api, oauth"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" id="t-notes" placeholder="Key info, tips..." style="height:60px;"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="editingTargetId=null; closeModal('modal-target')">Cancel</button>
+      <button class="btn btn-primary" id="target-save-btn" onclick="saveTarget()">＋ Add Target</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Add Finding -->
+<div class="modal-overlay" id="modal-finding">
+  <div class="modal" style="max-width:760px">
+    <div class="modal-title" id="modal-finding-title">🐛 Document Finding</div>
+    <div class="form-group"><label class="form-label">✨ Auto-fill Template (VRT)</label>
+      <select class="form-control" id="vrt-select" onchange="if(this.value) applyVulnTemplate(this.value); this.value=''">
+        <option value="">— Select a vulnerability template —</option>
+        <option value="XSS">Cross-Site Scripting (XSS)</option>
+        <option value="SQLi">SQL Injection (SQLi)</option>
+        <option value="IDOR">Insecure Direct Object Reference (IDOR)</option>
+        <option value="SSRF">Server-Side Request Forgery (SSRF)</option>
+        <option value="RCE">Remote Code Execution (RCE)</option>
+        <option value="AuthBypass">Authentication Bypass</option>
+        <option value="CSRF">Cross-Site Request Forgery (CSRF)</option>
+        <option value="OpenRedirect">Open Redirect</option>
+        <option value="LFI">Local File Inclusion (LFI / RFI)</option>
+        <option value="XXE">XML External Entity (XXE)</option>
+        <option value="BAC">Broken Access Control</option>
+        <option value="InfoDisclosure">Information Disclosure / Leakage</option>
+        <option value="BusinessLogic">Business Logic Flaw</option>
+        <option value="RateLimiting">Missing Rate Limiting (Bruteforce)</option>
+        <option value="CORS">Insecure CORS Configuration</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Vulnerability Title</label><input type="text" class="form-control" id="f-title" placeholder="Stored XSS in /profile?bio= leading to ATO"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Severity</label>
+        <select class="form-control" id="f-sev"><option value="critical">🔴 Critical</option><option value="high">🟠 High</option><option value="medium" selected>🟡 Medium</option><option value="low">🔵 Low</option><option value="info">🟣 Info</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Type</label>
+        <select class="form-control" id="f-type"><option>XSS</option><option>SQLi</option><option>SSRF</option><option>IDOR</option><option>RCE</option><option>LFI/RFI</option><option>CSRF</option><option>XXE</option><option>SSTI</option><option>Open Redirect</option><option>Auth Bypass</option><option>Broken Access Control</option><option>Subdomain Takeover</option><option>Info Disclosure</option><option>Business Logic</option><option>Other</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Linked Program</label>
+      <select class="form-control" id="f-target-id"><option value="">— No program link —</option></select>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Target Host</label><input type="text" class="form-control" id="f-host" placeholder="https://api.acme.com"></div>
+      <div class="form-group"><label class="form-label">Status</label>
+        <select class="form-control" id="f-status"><option>Found</option><option>Reported</option><option>Triaged</option><option>Accepted</option><option>Bounty Paid</option><option>Duplicate</option><option>N/A</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Endpoint</label><input type="text" class="form-control" id="f-endpoint" placeholder="/api/v1/users?id=INJECT"></div>
+      <div class="form-group"><label class="form-label">CVSS Score</label><input type="text" class="form-control" id="f-cvss" placeholder="7.5"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Steps to Reproduce</label><textarea class="form-control" id="f-desc" placeholder="1. Go to...&#10;2. Intercept...&#10;3. Modify param..."></textarea></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>Payload Used</span>
+          <select id="quick-payload-select" style="font-size:10px;padding:2px 4px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:var(--r);width:120px" onchange="quickInsertPayload(this.value); this.value=''">
+            <option value="">⚡ Quick Insert...</option>
+          </select>
+        </label>
+        <textarea class="form-control" id="f-payload" placeholder="&lt;script&gt;alert(1)&lt;/script&gt;" style="height:60px;"></textarea>
+      </div>
+      <div class="form-group"><label class="form-label">Bounty Earned</label><input type="text" class="form-control" id="f-bounty-earned" placeholder="$500"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Remediation Suggestion</label><textarea class="form-control" id="f-remediation" placeholder="Recommended fix..." style="height:50px;"></textarea></div>
+    <div class="form-group"><label class="form-label">Tags (comma-separated)</label><input type="text" class="form-control" id="f-tags" placeholder="oauth, api, mobile"></div>
+    <div class="form-group">
+      <label class="form-label">📸 Screenshots / Evidence <span style="font-size:10.5px;color:var(--text3)">(Ctrl+V to paste)</span></label>
+      <div id="screenshot-previews" style="display:flex;gap:8px;flex-wrap:wrap;min-height:50px;padding:8px;background:var(--bg3);border:1px dashed var(--border);border-radius:var(--r);margin-bottom:6px">
+        <div style="color:var(--text3);font-size:11.5px;padding:8px 0">Paste screenshots with Ctrl+V</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="editingFindingId=null; _findingUnsaved=false; _clearFindingUnsavedDot(); closeModal('modal-finding')">Cancel</button>
+      <button class="btn btn-primary" id="finding-save-btn" onclick="saveFinding()">💾 Save Finding</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Finding Detail -->
+<div class="modal-overlay" id="modal-finding-detail">
+  <div class="modal modal-xl">
+    <div class="modal-title" id="fd-title">Finding Details</div>
+    <div id="fd-body"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-finding-detail')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Add Note -->
+<div class="modal-overlay" id="modal-note">
+  <div class="modal">
+    <div class="modal-title">📝 New Note</div>
+    <div class="form-group"><label class="form-label">Title</label><input type="text" class="form-control" id="n-title" placeholder="Note title..."></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Category</label>
+        <select class="form-control" id="n-cat"><option>General</option><option>Recon</option><option>Exploitation</option><option>Tool Output</option><option>Loot</option><option>Report Draft</option><option>Ideas</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Target</label><input type="text" class="form-control" id="n-target" placeholder="acme.com"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Content</label><textarea class="form-control" id="n-content" placeholder="Your note..." style="height:100px;"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-note')">Cancel</button>
+      <button class="btn btn-primary" onclick="addNote()">Create Note</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Add Custom Payload -->
+<div class="modal-overlay" id="modal-add-payload">
+  <div class="modal">
+    <div class="modal-title">💣 Add Custom Payload</div>
+    <div class="form-group"><label class="form-label">Payload Name</label><input type="text" class="form-control" id="p-name" placeholder="e.g. My Bypass XSS"></div>
+    <div class="form-group"><label class="form-label">Category</label>
+      <input type="text" class="form-control" id="p-cat" list="payload-category-list" placeholder="e.g. XSS, GraphQL, or Custom">
+      <datalist id="payload-category-list">
+        <option value="XSS">
+        <option value="SQLi">
+        <option value="SSRF">
+        <option value="LFI">
+        <option value="RCE">
+        <option value="XXE">
+        <option value="SSTI">
+      </datalist>
+    </div>
+    <div class="form-group"><label class="form-label">Payload String</label><textarea class="form-control" id="p-payload" placeholder="<script>alert(1)</script>" style="height:100px;"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-add-payload')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCustomPayload()">💾 Save Payload</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Edit Bookmark -->
+<div class="modal-overlay" id="modal-edit-bookmark">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-title" id="modal-edit-bookmark-title">✏️ Edit Bookmark</div>
+    <input type="hidden" id="edit-bm-id">
+    <div class="form-group">
+      <label class="form-label">URL</label>
+      <input type="text" class="form-control" id="edit-bm-url" placeholder="https://example.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Label</label>
+      <input type="text" class="form-control" id="edit-bm-label" placeholder="My Label">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Category</label>
+      <input type="text" class="form-control" id="edit-bm-cat" list="bm-categories-list" placeholder="e.g. My Bookmarks">
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-edit-bookmark')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditBookmark()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Generic File Upload Input (Hidden) -->
+<input type="file" id="generic-file-upload" style="display: none;" onchange="handleFileUpload(event)">
+
+<!-- MODAL: Add/Edit Tool -->
+<div class="modal-overlay" id="modal-add-tool">
+  <div class="modal" style="max-width: 600px;">
+    <div class="modal-title" id="modal-tool-form-title">🔧 Add Custom Tool</div>
+    <input type="hidden" id="tool-id">
+    <input type="hidden" id="tool-is-override" value="false">
+    <div class="form-group"><label class="form-label">Tool Name</label><input type="text" class="form-control" id="tool-name" placeholder="e.g. CustomFuzzer"></div>
+    <div class="form-group"><label class="form-label">Author / Creator</label><input type="text" class="form-control" id="tool-author" placeholder="e.g. John Doe / ProjectDiscovery"></div>
+    <div class="form-group"><label class="form-label">Description</label><textarea class="form-control" id="tool-desc" placeholder="What does it do?" style="height: 60px;"></textarea></div>
+    
+    <div class="form-group"><label class="form-label">Cover Image</label>
+      <div class="file-upload-wrapper">
+        <input type="text" class="form-control" id="tool-cover" placeholder="URL or upload a file">
+        <button class="btn-upload" onclick="triggerFileUpload('tool-cover')">📁 Upload Image</button>
+      </div>
+    </div>
+    
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Example Command</label><input type="text" class="form-control" id="tool-cmd" placeholder="fuzz -u https://target -w wordlist.txt"></div>
+      <div class="form-group"><label class="form-label">Tags (comma separated)</label><input type="text" class="form-control" id="tool-tags" placeholder="Fuzzing, Web"></div>
+    </div>
+    
+    <div class="form-group"><label class="form-label">Cheat Sheet Text (Optional)</label><textarea class="form-control" id="tool-cheatsheet" placeholder="Notes, flags, or a full cheat sheet..." style="height: 60px;"></textarea></div>
+    
+    <div class="form-group"><label class="form-label">Cheat Sheet File (PDF/Image)</label>
+      <div class="file-upload-wrapper">
+        <input type="text" class="form-control" id="tool-cs-file" placeholder="URL or upload a file">
+        <button class="btn-upload" onclick="triggerFileUpload('tool-cs-file')">📁 Upload File</button>
+      </div>
+    </div>
+
+    <div class="form-group"><label class="form-label">Books (Comma separated titles/links)</label>
+      <div class="file-upload-wrapper">
+        <input type="text" class="form-control" id="tool-books" placeholder="e.g. Bug Bounty Bootcamp">
+        <button class="btn-upload" onclick="triggerFileUpload('tool-books', true)">📁 Upload PDF</button>
+      </div>
+    </div>
+    
+    <div class="form-group"><label class="form-label">YouTube Videos (Comma separated URLs)</label><input type="text" class="form-control" id="tool-videos" placeholder="e.g. https://youtube.com/watch?v=..."></div>
+    
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-add-tool')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCustomTool()">💾 Save Tool</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Tool Detail -->
+<div class="modal-overlay" id="modal-tool-detail">
+  <div class="modal" style="width: 1200px; max-width: 95vw; padding: 24px;">
+    <div class="modal-tool-split">
+      <div class="modal-tool-left" id="td-left">
+        <!-- Cover goes here -->
+      </div>
+      <div class="modal-tool-right">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <div class="tool-detail-title" id="td-title">Tool Name</div>
+            <div class="tool-detail-author" id="td-author">By Author</div>
+          </div>
+          <button class="btn btn-sm" id="btn-edit-tool" style="background:var(--bg3); border:1px solid var(--border); color:var(--text);">✏️ Edit Tool</button>
+        </div>
+        <div class="tool-movie-tags" id="td-tags" style="margin-bottom: 12px;"></div>
+        
+        <div style="font-size: 14px; color: var(--text2); line-height: 1.5;" id="td-desc">Description</div>
+        
+        <div class="tool-detail-section-title" style="margin-top: 8px;">Command / Cheat Sheet</div>
+        <div id="td-cmd-box" class="tool-cmd" style="margin:0;" onclick="navigator.clipboard.writeText(this.getAttribute('data-cmd')).then(()=>toast('Command copied!'))" title="Click to copy"></div>
+        <div id="td-cheatsheet" style="margin-top:8px;font-size:13px;color:#e2e8f0;padding:16px;background:var(--bg3);border-radius:var(--r);white-space:pre-wrap;font-family:var(--mono);line-height:1.6; border: 1px solid var(--border);"></div>
+        <div id="td-cs-file-container" style="margin-top:12px; display:none;">
+           <a href="#" id="td-cs-file" target="_blank" class="btn btn-primary" style="display:inline-flex; align-items:center; gap:8px;"><span style="font-size:16px;">📄</span> View Cheat Sheet File</a>
+        </div>
+        
+        <div class="tool-detail-section-title" style="margin-top: 12px;" id="td-books-header">Books & Learning</div>
+        <div class="tool-detail-books" id="td-books"></div>
+        
+        <div class="tool-detail-section-title" style="margin-top: 12px;" id="td-videos-header">YouTube Videos</div>
+        <div class="yt-grid" id="td-videos"></div>
+      </div>
+    </div>
+    
+    <div id="td-html-embed" style="display:none; margin-top: 24px; width: 100%;"></div>
+
+    <div class="modal-footer" style="margin-top: 24px;">
+      <button class="btn" onclick="closeModal('modal-tool-detail')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Add GitHub Resource -->
+<div class="modal-overlay" id="modal-add-gh">
+  <div class="modal">
+    <div class="modal-title">➕ Add Custom Resource</div>
+    <div class="form-group"><label class="form-label">Repository / Tool Name</label><input type="text" class="form-control" id="gh-name" placeholder="e.g. My Custom Fuzzer"></div>
+    <div class="form-group"><label class="form-label">Repository URL</label>
+      <div style="display:flex; gap:8px;">
+        <input type="text" class="form-control" id="gh-url" placeholder="https://github.com/user/repo" style="margin-bottom:0; flex:1;">
+        <button class="btn btn-primary" style="margin-bottom:0; padding:0 12px;" onclick="autoFillGhResource()">🪄 Auto-Fill</button>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Category</label>
+      <select class="form-control" id="gh-cat-select" onchange="if(this.value==='__custom__'){document.getElementById('gh-cat-custom-wrap').style.display='block';document.getElementById('gh-cat-custom').focus();}else{document.getElementById('gh-cat-custom-wrap').style.display='none';}">
+        <option value="recon">🔍 Reconnaissance & OSINT</option>
+        <option value="scanning">🌐 Web Scanning & Fuzzing</option>
+        <option value="exploitation">💀 Exploitation & Injection</option>
+        <option value="burp">🔧 Burp Suite Extensions</option>
+        <option value="wordlists">📚 Wordlists & Payloads</option>
+        <option value="jwt_oauth">🔑 Auth, JWT & OAuth Testing</option>
+        <option value="cloud">☁️ Cloud & AWS Security</option>
+        <option value="mobile">📱 Mobile Security</option>
+        <option value="api">🔌 API Security Testing</option>
+        <option value="privilege">⬆️ Privilege Escalation & Post-Exploitation</option>
+        <option value="network">🌐 Network & Infrastructure</option>
+        <option value="writeups">📖 Write-ups, Methodology & Learning</option>
+        <option value="subdomain_takeover">🏳️ Subdomain Takeover</option>
+        <option value="secretsTools">🕵️ Secret & Credential Discovery</option>
+        <option value="cheatsheets">📋 Cheatsheets & References</option>
+        <option value="__custom__">➕ Custom Category...</option>
+      </select>
+      <div id="gh-cat-custom-wrap" style="display:none; margin-top:8px;">
+        <input type="text" class="form-control" id="gh-cat-custom" placeholder="Enter custom category name">
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Description</label><input type="text" class="form-control" id="gh-desc" placeholder="What does it do?"></div>
+    <div class="form-group"><label class="form-label">Tags (comma separated)</label><input type="text" class="form-control" id="gh-tags" placeholder="fuzzer, web, fast"></div>
+    <div class="form-group"><label class="form-label">Run / Install Command</label><input type="text" class="form-control" id="gh-cmd" placeholder="git clone https://... or go install ..."></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-add-gh')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCustomGhResource()">💾 Save Resource</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Checklist Note -->
+<div class="modal-overlay" id="modal-checklist-note">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-title">📝 Checklist Evidence</div>
+    <div class="form-group">
+      <label class="form-label" id="cl-note-item-name">Item Name</label>
+      <input type="hidden" id="cl-note-cid">
+      <textarea class="form-control" id="cl-note-text" placeholder="Attach payload, notes, or evidence of why this passed/failed..." style="height:150px;"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-checklist-note')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveChecklistNote()">Save Note</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Custom Checklist Builder -->
+<div class="modal-overlay" id="modal-custom-checklist">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-title">➕ Build Custom Checklist</div>
+    <div class="form-group">
+      <label class="form-label">Category Name</label>
+      <input type="text" class="form-control" id="cl-custom-title" placeholder="e.g. Mobile App Testing">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Checklist Items</label>
+      <div id="cl-custom-items-container" style="display:flex;flex-direction:column;gap:8px;">
+        <div class="cl-custom-row" style="display:flex;gap:8px;">
+          <input type="text" class="form-control cc-text" placeholder="Test deep links..." style="flex:1;">
+          <select class="form-control cc-sev" style="width:120px;">
+            <option value="critical">Critical</option>
+            <option value="high">High</option>
+            <option value="medium" selected>Medium</option>
+            <option value="low">Low</option>
+            <option value="info">Info</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-sm" onclick="addCustomChecklistRow()" style="margin-top:10px;">+ Add Item</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-custom-checklist')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCustomChecklist()">Save Category</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Settings -->
+<div class="modal-overlay" id="modal-settings">
+  <div class="modal">
+    <div class="modal-title">⚙️ Workspace Settings</div>
+    <div class="form-group">
+      <label class="form-label">Workspace Theme</label>
+      <select id="settings-theme" class="form-control" onchange="changeTheme(this.value)">
+        <option value="cyber">Cyber Blue (Default)</option>
+        <option value="matrix">Matrix Green</option>
+        <option value="neon-purple">Neon Purple</option>
+        <option value="sunset">Sunset Orange</option>
+        <option value="blood">Blood Red</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Your Local API Key</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="password" class="form-control" id="settings-api-key" readonly style="flex:1;font-family:var(--mono);font-size:12px">
+        <button class="btn btn-sm" id="api-key-toggle-btn" onclick="toggleApiKeyVisibility()">👁 Show</button>
+        <button class="btn btn-sm" onclick="copyApiKey()">📋 Copy</button>
+        <button class="btn btn-sm btn-danger" onclick="regenerateApiKey()">🔄 Regen</button>
+      </div>
+      <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">Use this token to authenticate CLI tools with the local ingestion API. Click Regen to rotate if compromised.</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">API Ingestion Example (Recon)</label>
+      <textarea class="form-control" readonly style="height: 60px; font-family: var(--mono); font-size: 11px; color: var(--green);">cat subdomains.txt | curl -X POST -H "Authorization: Bearer &lt;API_KEY&gt;" -d @- http://localhost:5000/api/ingest</textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">API Ingestion Example (Nuclei JSON)</label>
+      <textarea class="form-control" readonly style="height: 60px; font-family: var(--mono); font-size: 11px; color: var(--green);">nuclei -u https://target.com -jsonl | curl -X POST -H "Authorization: Bearer &lt;API_KEY&gt;" -d @- http://localhost:5000/api/ingest</textarea>
+    </div>
+    <div class="divider"></div>
+    <div class="form-group">
+      <label class="form-label">Import Findings from Burp Suite XML</label>
+      <button class="btn btn-sm" onclick="importBurpXml()">📥 Import Burp / ZAP XML Export</button>
+      <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">Parses Burp Suite and ZAP XML report exports and imports them as findings.</div>
+    </div>
+    <div class="divider"></div>
+    <div class="form-group">
+      <label class="form-label">Discord / Slack Webhook URL</label>
+      <input type="text" class="form-control" id="settings-webhook-url" placeholder="https://discord.com/api/webhooks/..." onchange="saveWebhookUrl()">
+      <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">Get pinged when High/Critical findings are logged or Automated Recon finishes!</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-settings')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Manage Workspaces -->
+<div class="modal-overlay" id="modal-workspaces">
+  <div class="modal">
+    <div class="modal-title">📂 Manage Workspaces</div>
+    <div id="ws-list" style="max-height:300px;overflow-y:auto;margin-bottom:14px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);">
+       <!-- Populated by JS -->
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:14px;">
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Create New Workspace</label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" class="form-control" id="new-ws-name" placeholder="e.g. Acme Corp Hunt">
+          <button class="btn btn-primary" onclick="createWorkspace()" style="white-space:nowrap;">➕ Create</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="margin-top:20px;">
+      <button class="btn" onclick="closeModal('modal-workspaces')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app">
+  <nav class="sidebar" id="sidebar">
+    <div class="logo" style="margin-bottom:12px;">
+      <div class="logo-mark">0x</div>
+      <div>
+        <div class="logo-title"><em>0x</em>Hunter</div>
+        <div class="logo-sub">Bug Bounty Workspace</div>
+      </div>
+    </div>
+    <div class="workspace-switcher" style="padding:0 16px 14px 16px;border-bottom:1px solid var(--border);margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;cursor:pointer;user-select:none;transition:var(--trans);" onclick="openModal('modal-workspaces')" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'" title="Manage Workspaces">
+        <div style="display:flex;align-items:center;gap:8px;overflow:hidden;">
+          <span style="color:var(--accent);font-size:14px;">📂</span>
+          <span id="active-ws-name" style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);max-width:130px;">{{ active_workspace_name }}</span>
+        </div>
+        <span style="font-size:12px;color:var(--text3);">⚙️</span>
+      </div>
+    </div>
+
+    <div class="sidebar-variables" style="padding:0 16px 14px 16px;border-bottom:1px solid var(--border);margin-bottom:14px;">
+      <div style="font-size:9.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+        <span>⚙️ Playbook Variables</span>
+        <span id="vars-active-badge" style="color:var(--green);font-size:8px;display:none;font-weight:bold;text-shadow:0 0 4px var(--green)">● active</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="position:relative;">
+          <input type="text" class="form-control form-control-sm" id="global-target" placeholder="target.com" oninput="updateGlobalVariables()" style="font-family:var(--mono);font-size:11.5px;background:rgba(0,0,0,0.25);border-color:var(--border);padding-left:24px;color:#fff;">
+          <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--accent);font-family:var(--mono);font-weight:700;">T:</span>
+        </div>
+        <div style="position:relative;">
+          <input type="text" class="form-control form-control-sm" id="global-param" placeholder="id, vuln, etc." oninput="updateGlobalVariables()" style="font-family:var(--mono);font-size:11.5px;background:rgba(0,0,0,0.25);border-color:var(--border);padding-left:24px;color:#fff;">
+          <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--green);font-family:var(--mono);font-weight:700;">P:</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-scroll">
+      <div class="nav-group">
+        <div class="nav-group-label">Workspace</div>
+        <div class="nav-item active" id="nav-dashboard" onclick="goPage('dashboard')"><span class="ni">📊</span><span class="nl">Dashboard</span></div>
+        <div class="nav-item" id="nav-analytics" onclick="goPage('analytics')"><span class="ni">📈</span><span class="nl">Analytics</span></div>
+        <div class="nav-item" id="nav-targets" onclick="goPage('targets')"><span class="ni">🎯</span><span class="nl">Targets</span><span class="nav-badge" id="badge-targets">0</span></div>
+        <div class="nav-item" id="nav-findings" onclick="goPage('findings')"><span class="ni">🐛</span><span class="nl">Findings</span><span class="nav-badge" id="badge-findings">0</span></div>
+        <div class="nav-item" id="nav-notes" onclick="goPage('notes')"><span class="ni">📝</span><span class="nl">Notes</span><span class="nav-badge" id="badge-notes">0</span></div>
+        <div class="nav-item" id="nav-checklist" onclick="goPage('checklist')"><span class="ni">✅</span><span class="nl">Checklist</span><span class="nav-badge" id="badge-checklist">0%</span></div>
+        <div class="nav-item" id="nav-recon" onclick="goPage('recon')"><span class="ni">🔍</span><span class="nl">Recon</span></div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Reference</div>
+        <div class="nav-item" id="nav-attacks" onclick="goPage('attacks')"><span class="ni">⚔️</span><span class="nl">Attack Guides</span></div>
+        <div class="nav-item" id="nav-payloads" onclick="goPage('payloads')"><span class="ni">💣</span><span class="nl">Payload Library</span></div>
+        <div class="nav-item" id="nav-tools" onclick="goPage('tools')"><span class="ni">🔧</span><span class="nl">Tools Ref</span></div>
+        <div class="nav-item" id="nav-nuclei" onclick="goPage('nuclei')"><span class="ni">☢️</span><span class="nl">Nuclei Templates</span></div>
+        <div class="nav-item" id="nav-github" onclick="goPage('github')"><span class="ni">📚</span><span class="nl">GitHub Resources</span></div>
+        <div class="nav-item" id="nav-bookmarks" onclick="goPage('bookmarks')"><span class="ni">🔖</span><span class="nl">Bookmarks</span></div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Hunt Kit</div>
+        <div class="nav-item" id="nav-huntkit" onclick="goPage('huntkit')"><span class="ni">🧰</span><span class="nl">Hunt Kit</span></div>
+        <div class="nav-item" id="nav-secrets" onclick="goPage('secrets')"><span class="ni">🔐</span><span class="nl">Secrets Scanner</span></div>
+        <div class="nav-item" id="nav-dns" onclick="goPage('dns')"><span class="ni">📡</span><span class="nl">DNS Lookup</span></div>
+        <div class="nav-item" id="nav-osint" onclick="goPage('osint')"><span class="ni">🔎</span><span class="nl">OSINT Hub</span></div>
+        <div class="nav-item" id="nav-utils" onclick="goPage('utils')"><span class="ni">🛠️</span><span class="nl">Encoder / Decoder</span></div>
+        <div class="nav-item" id="nav-scope" onclick="goPage('scope')"><span class="ni">🔭</span><span class="nl">Scope Checker</span></div>
+        <div class="nav-item" id="nav-report" onclick="goPage('report')"><span class="ni">📄</span><span class="nl">Report Generator</span></div>
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <div id="active-session-bar"></div>
+      <div class="session-info">
+        <div class="pulse-dot"></div>
+        <span class="session-label">Session Active</span>
+        <span class="session-timer" id="session-timer">00:00:00</span>
+      </div>
+      <div class="sidebar-actions">
+        <button class="sidebar-btn" onclick="exportData()">⬇ Export</button>
+        <button class="sidebar-btn" onclick="importData()">⬆ Import</button>
+        <button class="sidebar-btn" onclick="openCmdPalette()">⌘ CMD</button>
+        <button class="sidebar-btn" onclick="openSettingsModal()">⚙ Settings</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-breadcrumb">
+        <span class="bc-root">0xHunter</span>
+        <span class="bc-sep">›</span>
+        <span class="bc-cur" id="bc-cur">Dashboard</span>
+      </div>
+      <div class="topbar-search">
+        <span style="color:var(--text3);font-size:13px">🔍</span>
+        <input type="search" id="global-search" placeholder="Search targets, findings, notes…" onkeydown="if(event.key==='Enter')globalSearch(this.value)">
+        <span style="font-size:11px;color:var(--text3);font-family:var(--mono);white-space:nowrap">Ctrl+K</span>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-sm" onclick="toggleSidebar()" title="Toggle sidebar" style="font-size:14px">☰</button>
+        <button class="btn btn-sm" onclick="cycleTheme()" title="Switch Theme">🎨</button>
+        <button class="btn btn-sm" onclick="openCmdPalette()" title="Command palette">⌘ K</button>
+        <a href="/logout" class="btn btn-sm" style="text-decoration:none;color:var(--red);border-color:rgba(248,113,113,0.2)">🚪 Logout</a>
+        <button class="btn btn-primary btn-sm" id="topbar-action" onclick="topbarAction()">+ Add Target</button>
+      </div>
+    </div>
+
+    <div class="content-area">
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header">
+          <div class="page-title"><span>📊</span> Dashboard</div>
+          <div class="page-subtitle">Your bug bounty workspace overview — stats, recent activity, and quick actions.</div>
+        </div>
+        <!-- Active Scan Monitor Banner -->
+        <div id="active-scan-banner" class="active-scan-banner" style="display:none;">
+          <div class="active-scan-info">
+            <div class="scan-pulse-dot"></div>
+            <div>
+              <div style="font-weight:700;color:#fff;font-size:13px;" id="active-scan-title">Scanner Engine Inactive</div>
+              <div style="font-size:11px;color:var(--text3);" id="active-scan-desc">No active vulnerability scans or live runners.</div>
+            </div>
+          </div>
+          <div>
+            <button class="btn btn-sm btn-primary" id="active-scan-action-btn" onclick="" style="margin-bottom:0;padding:4px 10px;font-size:11px;">View Progress</button>
+          </div>
+        </div>
+        <div class="stat-strip">
+          <div class="stat-card c-green"><div class="stat-glow"></div><div class="stat-label">Active Targets</div><div class="stat-val" id="stat-targets">0</div><div class="stat-meta">Programs in scope</div></div>
+          <div class="stat-card c-orange"><div class="stat-glow"></div><div class="stat-label">Total Findings</div><div class="stat-val" id="stat-findings">0</div><div class="stat-meta">Vulnerabilities found</div></div>
+          <div class="stat-card c-red"><div class="stat-glow"></div><div class="stat-label">Critical / High</div><div class="stat-val" id="stat-critical">0</div><div class="stat-meta">High severity bugs</div></div>
+          <div class="stat-card c-accent"><div class="stat-glow"></div><div class="stat-label">Notes</div><div class="stat-val" id="stat-notes">0</div><div class="stat-meta">Hunt notebook entries</div></div>
+          <div class="stat-card c-purple"><div class="stat-glow"></div><div class="stat-label">Bounties Earned</div><div class="stat-val" id="stat-bounties">$0</div><div class="stat-meta">Total earnings</div></div>
+        </div>
+        <!-- Deadline Alerts -->
+        <div id="deadline-alerts" class="card mb20" style="display:none;padding:0"></div>
+        <div class="quick-grid mb20">
+          <div class="quick-btn" onclick="openTargetModal()"><div class="qb-icon">🎯</div><div class="qb-label">Add Target</div></div>
+          <div class="quick-btn" onclick="openFindingModal()"><div class="qb-icon">🐛</div><div class="qb-label">Log Finding</div></div>
+          <div class="quick-btn" onclick="openModal('modal-note')"><div class="qb-icon">📝</div><div class="qb-label">New Note</div></div>
+          <div class="quick-btn" onclick="goPage('utils')"><div class="qb-icon">🛠️</div><div class="qb-label">Encoder/Decoder</div></div>
+          <div class="quick-btn" onclick="goPage('scope')"><div class="qb-icon">🔭</div><div class="qb-label">Scope Checker</div></div>
+          <div class="quick-btn" onclick="goPage('payloads')"><div class="qb-icon">💣</div><div class="qb-label">Payload Library</div></div>
+          <div class="quick-btn" onclick="goPage('report')"><div class="qb-icon">📄</div><div class="qb-label">Generate Report</div></div>
+          <div class="quick-btn" onclick="goPage('checklist')"><div class="qb-icon">✅</div><div class="qb-label">Methodology</div></div>
+          <div class="quick-btn" onclick="goPage('huntkit')"><div class="qb-icon">⚡</div><div class="qb-label">Hunt Kit</div></div>
+          <div class="quick-btn" onclick="goPage('recon')"><div class="qb-icon">🔍</div><div class="qb-label">Recon</div></div>
+          <div class="quick-btn" onclick="goPage('bookmarks')"><div class="qb-icon">🔖</div><div class="qb-label">Bookmarks</div></div>
+        </div>
+        <div class="dash-grid">
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div class="card">
+              <div class="card-head"><div class="card-head-title">🎯 Recent Targets</div><button class="btn btn-sm" onclick="goPage('targets')">View All</button></div>
+              <div id="dash-targets"><div class="empty-state" style="padding:16px 0;"><div class="es-icon" style="font-size:24px;">🎯</div><div class="es-sub">Add your first target</div></div></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><div class="card-head-title">🐛 Recent Findings</div><button class="btn btn-sm" onclick="goPage('findings')">View All</button></div>
+              <div id="dash-findings"><div class="empty-state" style="padding:16px 0;"><div class="es-icon" style="font-size:24px;">🐛</div><div class="es-sub">No findings yet</div></div></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div class="card">
+              <div class="card-head"><div class="card-head-title">📊 Severity Breakdown</div></div>
+              <div class="sev-donut-wrapper">
+                <div class="donut-svg-container">
+                  <svg width="140" height="140" viewBox="0 0 140 140" id="dash-donut-svg">
+                    <!-- SVG donut segments will be injected via JS -->
+                  </svg>
+                  <div class="donut-center-text">
+                    <div class="donut-center-val" id="donut-total-val">0</div>
+                    <div class="donut-center-lbl">Findings</div>
+                  </div>
+                </div>
+                <div class="sev-bar-list-donut" id="dash-donut-list">
+                  <!-- Dynamic status items injected via JS -->
+                </div>
+              </div>
+            </div>
+            <div class="card" style="flex:1;">
+              <div class="card-head"><div class="card-head-title">⚡ Activity Feed</div></div>
+              <div class="activity-trend-box">
+                <div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Weekly Findings & Log Activity</div>
+                <svg width="100%" height="80" id="activity-trend-svg" style="display:block;">
+                  <defs>
+                    <linearGradient id="trend-gradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.35"></stop>
+                      <stop offset="100%" stop-color="var(--accent)" stop-opacity="0.0"></stop>
+                    </linearGradient>
+                  </defs>
+                  <!-- Trend line elements will be injected via JS -->
+                </svg>
+              </div>
+              <div class="activity-list" id="activity-feed">
+                <div class="activity-item">
+                  <div class="act-icon" style="background:var(--green-dim);color:var(--green);">🚀</div>
+                  <div class="act-body"><div class="act-text">Welcome to <strong>0xHunter</strong> — start by adding a target.</div><div class="act-time">Just now</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TARGETS -->
+      <div class="page" id="page-targets">
+        <div class="page-header"><div class="page-title"><span>🎯</span> Targets</div><div class="page-subtitle">Manage all your bug bounty programs, scope definitions, and status.</div></div>
+        <div class="targets-toolbar">
+          <div class="search-box" style="max-width:320px;flex:1;"><span style="color:var(--text3)">🔍</span><input placeholder="Search targets..." oninput="filterTargets(this.value)" id="target-search"></div>
+          <select class="form-control" style="width:150px;" onchange="filterTargetStatus(this.value)"><option value="">All Status</option><option value="active">Active</option><option value="pending">Pending</option><option value="paused">Paused</option><option value="done">Done</option></select>
+          <select class="form-control" style="width:150px;" onchange="filterTargetPlatform(this.value)"><option value="">All Platforms</option><option>HackerOne</option><option>Bugcrowd</option><option>Intigriti</option><option>Private</option><option>VDP</option></select>
+        </div>
+        <div id="targets-list"><div class="empty-state"><div class="es-icon">🎯</div><div class="es-title">No targets yet</div><div class="es-sub">Click <strong style="color:var(--accent)">+ Add Target</strong> to begin.</div></div></div>
+      </div>
+
+      <!-- FINDINGS -->
+      <div class="page" id="page-findings">
+        <div class="page-header"><div class="page-title"><span>🐛</span> Findings</div><div class="page-subtitle">Document all discovered vulnerabilities with full PoC, severity, and status tracking.</div></div>
+        <div class="targets-toolbar">
+          <div class="search-box" style="max-width:320px;flex:1;"><span style="color:var(--text3)">🔍</span><input placeholder="Search findings..." oninput="filterFindings(this.value)"></div>
+          <select class="form-control" style="width:140px;" onchange="filterFindingsSev(this.value)"><option value="">All Severity</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option><option value="info">Info</option></select>
+          <select class="form-control" style="width:140px;" onchange="filterFindingsStatus(this.value)"><option value="">All Status</option><option>Found</option><option>Reported</option><option>Triaged</option><option>Accepted</option><option>Bounty Paid</option><option>Duplicate</option><option>N/A</option></select>
+          <select class="form-control" style="width:140px;" onchange="filterFindingsType(this.value)"><option value="">All Types</option><option>XSS</option><option>SQLi</option><option>SSRF</option><option>IDOR</option><option>RCE</option><option>CSRF</option><option>Auth Bypass</option></select>
+          <div class="view-toggle">
+            <button type="button" id="fv-list" class="active" onclick="setFindingsView('list')">List</button>
+            <button type="button" id="fv-kanban" onclick="setFindingsView('kanban')">Board</button>
+          </div>
+          <button class="btn btn-sm" onclick="exportFindingsCsv()">⬇ CSV</button>
+        </div>
+        <div id="findings-list-wrap"><div id="findings-list"><div class="empty-state"><div class="es-icon">🐛</div><div class="es-title">No findings yet</div><div class="es-sub">Click <strong style="color:var(--accent)">+ Add Finding</strong> to document a vulnerability.</div></div></div></div>
+        <div id="findings-kanban" style="display:none"></div>
+      </div>
+
+      <!-- NOTES -->
+      <div class="page" id="page-notes">
+        <div class="flex-between mb14">
+          <div class="page-title" style="margin:0;"><span>📝</span> Notes</div>
+          <div style="display:flex;gap:6px;">
+            <div class="search-box" style="width:200px;"><span style="color:var(--text3)">🔍</span><input placeholder="Search notes..." oninput="filterNotes(this.value)"></div>
+            <select class="form-control" style="width:140px;" onchange="filterNotesCat(this.value)"><option value="">All Categories</option><option>General</option><option>Recon</option><option>Exploitation</option><option>Tool Output</option><option>Loot</option><option>Report Draft</option><option>Ideas</option></select>
+          </div>
+        </div>
+        <div class="notes-layout">
+          <div class="notes-panel" id="notes-list"><div class="empty-state" style="padding:20px 0;"><div class="es-sub">No notes yet</div></div></div>
+          <div class="note-editor">
+            <div class="note-editor-top">
+              <input class="note-title-input" id="edit-note-title" placeholder="Note title..." onchange="saveCurrentNote()">
+              <div style="display:flex;gap:8px;align-items:center;">
+                <input type="file" id="note-image-upload" accept="image/*" style="display:none" onchange="uploadNoteImage(this)">
+                <button class="btn btn-sm" onclick="document.getElementById('note-image-upload').click()" title="Upload Image">🖼 Image</button>
+                
+                <!-- Notes View Mode Toggle Group -->
+                <div class="view-toggle" id="note-view-toggle">
+                  <button type="button" id="nv-edit" class="active" onclick="setNoteViewMode('edit')" title="Editor Only">✏️ Edit</button>
+                  <button type="button" id="nv-split" onclick="setNoteViewMode('split')" title="Side-by-side Split View">Split</button>
+                  <button type="button" id="nv-preview" onclick="setNoteViewMode('preview')" title="Preview Only">👁 Preview</button>
+                </div>
+                
+                <button class="btn btn-sm btn-danger" onclick="deleteCurrentNote()">🗑 Delete</button>
+              </div>
+            </div>
+            
+            <!-- Markdown Formatting Toolbar -->
+            <div class="note-toolbar" id="note-toolbar">
+              <button onclick="insertMarkdown('**', '**')" title="Bold (Ctrl+B)"><strong>B</strong></button>
+              <button onclick="insertMarkdown('*', '*')" title="Italic (Ctrl+I)"><span style="font-style: italic; font-family: serif; font-weight: bold; font-size: 13px;">I</span></button>
+              <button onclick="insertMarkdown('### ')" title="Heading 3"><strong>H</strong></button>
+              <div class="toolbar-divider"></div>
+              <button onclick="insertMarkdown('- ')" title="Bullet List" style="font-size: 13px;">•☰</button>
+              <button onclick="insertMarkdown('1. ')" title="Numbered List" style="font-size: 11px; font-weight: bold;">1.</button>
+              <button onclick="insertMarkdown('- [ ] ')" title="Task List" style="font-size: 13px;">☑</button>
+              <div class="toolbar-divider"></div>
+              <button onclick="insertMarkdown('> ')" title="Blockquote" style="font-size: 14px; font-family: serif; font-weight: bold; line-height: 1;">“</button>
+              <button onclick="insertMarkdown('`', '`')" title="Inline Code" style="font-family: var(--mono); font-size: 11px; font-weight: bold;">&lt;&gt;</button>
+              <button onclick="insertMarkdown(' ```\n', '\n``` ')" title="Code Block" style="font-family: var(--mono); font-size: 11px; font-weight: bold;">[ ]</button>
+              <div class="toolbar-divider"></div>
+              <button onclick="insertMarkdown('[', '](url)')" title="Hyperlink" style="font-size: 12px;">🔗</button>
+            </div>
+            
+            <div class="note-editor-body-wrapper" id="note-editor-body-wrapper">
+              <textarea class="note-textarea" id="edit-note-body" placeholder="# Start typing your note...&#10;&#10;Supports **bold**, `code`, # headers, - lists, [links](url)." onkeyup="autoSaveNote()"></textarea>
+              <div class="note-preview md-rendered" id="note-preview-area" style="display:none"></div>
+            </div>
+            
+            <div class="note-status-bar">
+              <span class="note-status-item" id="note-wc"><span class="stat-icon">◈</span>0 words</span>
+              <span class="note-status-item" id="note-lc"><span class="stat-icon">≡</span>0 lines</span>
+              <span class="note-status-item created-stamp" id="note-created"></span>
+              <span class="note-status-item save-status" id="note-save-status">● Saved</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHECKLIST -->
+      <div class="page" id="page-checklist">
+        <div class="page-header">
+          <div class="page-title"><span>🗺️</span> Methodology Flow</div>
+          <div class="page-subtitle">Visual attack path tracking. Select a target to track its progress independently.</div>
+        </div>
+        
+        <div class="card" style="margin-bottom: 24px; border-color: rgba(56,189,248,0.5); box-shadow: 0 0 20px rgba(56,189,248,0.05);">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap: 16px;">
+             <div style="display:flex; gap:12px; align-items:center; flex: 1;">
+               <div style="font-weight:600; color:var(--text2); text-transform: uppercase; font-size: 11px; letter-spacing: 1px;">Target</div>
+               <select id="flow-target-sel" class="form-control" style="width: 300px; font-weight: 600;" onchange="changeFlowTarget()"></select>
+             </div>
+             <div style="display:flex; gap: 12px; align-items:center;">
+               <button class="btn btn-sm" onclick="exportChecklist()">📄 Export Report</button>
+               <button class="btn btn-sm btn-danger" onclick="resetChecklist()">↺ Reset Progress</button>
+               <div class="cl-prog-pct" id="cl-prog-pct" style="font-size: 24px; margin-left: 16px;">0%</div>
+             </div>
+          </div>
+          <div class="cl-prog-track" style="margin-top: 16px;"><div class="cl-prog-fill" id="cl-prog-fill" style="width:0%"></div></div>
+        </div>
+
+        <div class="attack-flow-board" id="attack-flow-board"></div>
+      </div>
+
+      <!-- ATTACK GUIDES -->
+      <div class="page" id="page-attacks">
+        <div class="page-header"><div class="page-title"><span>⚔️</span> Attack Guides</div><div class="page-subtitle">Step-by-step exploitation methodology for common vulnerability classes.</div></div>
+        <div class="filter-bar" style="display: flex; gap: 10px; margin-bottom: 16px; align-items: center; flex-wrap: wrap;">
+          <input type="text" class="form-control" id="attack-search" style="flex: 1; min-width: 200px;" placeholder="Search attacks (e.g. XSS, Injection, Remediation)..." onkeyup="renderAttacks()">
+          <select class="form-control" id="attack-severity-filter" style="width: auto; min-width: 150px; cursor: pointer;" onchange="renderAttacks()">
+            <option value="all">All Severities</option>
+            <option value="critical">Critical</option>
+            <option value="high">High & Critical</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+          <button class="btn" onclick="toggleAllAttacks(true)">Expand All</button>
+          <button class="btn" onclick="toggleAllAttacks(false)">Collapse All</button>
+        </div>
+        <div id="attack-list"></div>
+      </div>
+
+      <!-- PAYLOADS -->
+      <div class="page" id="page-payloads">
+        <div class="page-header"><div class="page-title"><span>💣</span> Payload Library</div><div class="page-subtitle">Curated payloads by attack type. Click any payload to copy instantly.</div></div>
+        
+        <!-- Dynamic Payload Generator -->
+        <div class="card" style="margin-bottom: 24px; border-color: rgba(56,189,248,0.5); box-shadow: 0 0 20px rgba(56,189,248,0.05);">
+          <div class="card-head">
+            <div class="card-head-title" style="color: var(--accent); display: flex; align-items: center; gap: 8px;">💥 Dynamic Payload Generator</div>
+          </div>
+          <div class="g3" style="align-items: flex-end;">
+            <div class="form-group" style="margin: 0;">
+              <label class="form-label">Target URL / Injection Point</label>
+              <input type="text" id="pl-gen-url" class="form-control" placeholder="e.g. https://target.com/api?user=" oninput="generateDynamicPayloads()">
+            </div>
+            <div class="form-group" style="margin: 0;">
+              <label class="form-label">Vulnerability Class</label>
+              <select id="pl-gen-type" class="form-control" onchange="generateDynamicPayloads()">
+                <option value="xss">Cross-Site Scripting (XSS)</option>
+                <option value="sqli">SQL Injection (SQLi)</option>
+                <option value="ssrf">Server-Side Request Forgery (SSRF)</option>
+                <option value="lfi">Local File Inclusion (LFI)</option>
+                <option value="cmdi">Command Injection</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin: 0;">
+              <label class="form-label">Output Format</label>
+              <select id="pl-gen-format" class="form-control" onchange="generateDynamicPayloads()">
+                <option value="url">Ready-to-Copy URL</option>
+                <option value="curl">cURL Command</option>
+                <option value="raw">Raw Payload</option>
+              </select>
+            </div>
+          </div>
+          <div id="pl-gen-output-container" style="display: none; margin-top: 16px;">
+             <div style="font-size: 11px; color: var(--text3); margin-bottom: 8px; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">Generated Payloads <span id="pl-gen-count" style="color:var(--accent)"></span></div>
+             <div id="pl-gen-output" style="max-height: 250px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); padding: 8px;"></div>
+          </div>
+        </div>
+        <div class="payload-nav" id="payload-nav"></div>
+        <div id="payload-content"></div>
+      </div>
+
+      <!-- TOOLS -->
+      <div class="page" id="page-tools">
+        <div class="page-header"><div class="page-title"><span>🔧</span> Tools Reference</div><div class="page-subtitle">Essential tools for every phase — recon, scanning, exploitation, and reporting.</div></div>
+
+        <!-- ═══ TOOLS SEARCH BAR ═══ -->
+        <div class="tools-search-wrap">
+          <div class="tools-search-bar-row">
+            <div class="tools-search-input-wrap">
+              <span class="tools-search-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              </span>
+              <input
+                class="tools-search-input"
+                id="tools-search-input"
+                type="text"
+                placeholder="Search tools by name, tag, or description…"
+                oninput="toolsSearchQuery = this.value; renderTools()"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <button class="tools-search-clear" id="tools-search-clear" onclick="clearToolsSearch()" title="Clear search" style="display:none;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
+            </div>
+            <div class="tools-search-meta" id="tools-search-count"></div>
+          </div>
+
+          <!-- Category filter pills -->
+          <div class="tools-cat-pills" id="tools-cat-pills">
+            <button class="tools-cat-pill active" id="tools-pill-all" onclick="setToolsCat('all', this)">
+              <span>⬡</span> All Tools
+            </button>
+            <!-- Dynamically injected category pills -->
+          </div>
+        </div>
+
+        <div id="tools-list"></div>
+      </div>
+
+      <!-- WORDLIST -->
+      <div class="page" id="page-wordlist">
+        <div class="page-header"><div class="page-title"><span>📋</span> Wordlist Generator</div><div class="page-subtitle">Generate custom wordlists for directory busting, subdomain enum, and parameter fuzzing.</div></div>
+        <div class="g2" style="margin-bottom:14px;">
+          <div class="card">
+            <div class="card-head"><div class="card-head-title">⚙️ Configure</div></div>
+            <div class="form-group"><label class="form-label">Type</label>
+              <select class="form-control" id="wl-type"><option value="dirs">Directory / File Busting</option><option value="subdomain">Subdomain Prefixes</option><option value="params">Parameter Names</option><option value="users">Common Usernames</option><option value="passwords">Common Passwords</option><option value="custom">Custom — From Keywords</option></select>
+            </div>
+            <div class="form-group"><label class="form-label">Custom Keywords (one per line)</label><textarea class="form-control" id="wl-keywords" placeholder="admin&#10;login&#10;api" style="height:80px;"></textarea></div>
+            <div class="form-group"><label class="form-label">Extensions (comma separated)</label><input type="text" class="form-control" id="wl-exts" placeholder=".php,.html,.bak,.json"></div>
+            <div class="form-group" style="margin-bottom:12px;">
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;margin-bottom:6px;"><input type="checkbox" id="wl-nums"> Add numbers (1-5)</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;margin-bottom:6px;"><input type="checkbox" id="wl-years"> Add years (2020-2026)</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="wl-upper"> Uppercase variants</label>
+            </div>
+            <button class="btn btn-primary" onclick="generateWordlist()" style="width:100%;justify-content:center;">▶ Generate</button>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-head-title">📤 Output</div><button class="copy-btn" onclick="copyWordlist()">📋 Copy</button><button class="copy-btn" onclick="downloadWordlist()" style="margin-left:4px;">⬇ Download</button></div>
+            <div class="wl-output" id="wl-output">Click Generate to build your wordlist...</div>
+            <div style="margin-top:8px;font-size:11.5px;color:var(--text3);font-family:var(--mono);" id="wl-count"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-head-title">📂 Common Wordlist Sources</div></div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
+            <span class="scope-tag">/usr/share/seclists/</span><span class="scope-tag">/usr/share/dirb/wordlists/</span><span class="scope-tag">rockyou.txt</span><span class="scope-tag">assetnote wordlists</span><span class="scope-tag">raft-large-directories.txt</span>
+          </div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--accent);line-height:2.2;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;">
+gobuster dir -u https://target.com -w /usr/share/seclists/Discovery/Web-Content/common.txt -x php,html<br>
+ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt -u https://FUZZ.target.com -mc 200<br>
+feroxbuster -u https://target.com -w raft-large-directories.txt --depth 3 -x php,txt,html
+          </div>
+        </div>
+      </div>
+
+      <!-- UTILITIES -->
+      <div class="page" id="page-utils">
+        <div class="page-header"><div class="page-title"><span>🛠️</span> Encoder / Decoder</div><div class="page-subtitle">Encode, decode, and transform data — URL, Base64, HTML, Hex, JWT, Hashes.</div></div>
+        <div class="util-tabs">
+          <div class="utab active" onclick="switchUtil(this,'url')">URL Encode</div>
+          <div class="utab" onclick="switchUtil(this,'base64')">Base64 / 32</div>
+          <div class="utab" onclick="switchUtil(this,'html')">HTML Encode</div>
+          <div class="utab" onclick="switchUtil(this,'hex')">Hex</div>
+          <div class="utab" onclick="switchUtil(this,'bin')">Binary</div>
+          <div class="utab" onclick="switchUtil(this,'rot')">Rot13 / Rev</div>
+          <div class="utab" onclick="switchUtil(this,'unicode')">Unicode</div>
+          <div class="utab" onclick="switchUtil(this,'jwt')">JWT Decoder</div>
+          <div class="utab" onclick="switchUtil(this,'hash')">Hash Tools</div>
+          <div class="utab" onclick="switchUtil(this,'regex')">Regex Tester</div><div class="utab" onclick="switchUtil(this,'poc')">PoC Generator</div><div class="utab" onclick="switchUtil(this,'cvss')">CVSS Calc</div>
+          <div class="utab" onclick="switchUtil(this,'httpcode')">HTTP to Code</div>
+        </div>
+        <div class="util-panel active" id="util-url">
+          <div class="g2">
+            <div class="card"><div class="card-head"><div class="card-head-title">Input</div></div>
+              <textarea class="form-control" id="url-input" placeholder="Enter text to encode/decode..." style="height:120px;"></textarea>
+              <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+                <button class="btn btn-sm btn-primary" onclick="encodeURL()">🔒 Encode</button>
+                <button class="btn btn-sm" onclick="decodeURL()">🔓 Decode</button>
+                <button class="btn btn-sm btn-primary" onclick="doubleEncodeURL()">🔒🔒 Double Enc</button>
+                <button class="btn btn-sm" onclick="doubleDecodeURL()">🔓🔓 Double Dec</button>
+                <button class="btn btn-sm" onclick="document.getElementById('url-input').value='';document.getElementById('url-output').textContent=''">✕ Clear</button>
+              </div>
+            </div>
+            <div class="card"><div class="card-head"><div class="card-head-title">Output</div><button class="copy-btn" onclick="copyEl('url-output')">📋 Copy</button></div>
+              <div class="hash-result" id="url-output" style="height:120px;overflow-y:auto;white-space:pre-wrap;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="util-panel" id="util-base64">
+          <div class="g2">
+            <div class="card"><div class="card-head"><div class="card-head-title">Input</div></div>
+              <textarea class="form-control" id="b64-input" placeholder="Text or Base64/Base32..." style="height:120px;"></textarea>
+              <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+                <button class="btn btn-sm btn-primary" onclick="encodeB64()">🔒 B64 Enc</button>
+                <button class="btn btn-sm" onclick="decodeB64()">🔓 B64 Dec</button>
+                <button class="btn btn-sm btn-primary" onclick="encodeB32()">🔒 B32 Enc</button>
+                <button class="btn btn-sm" onclick="decodeB32()">🔓 B32 Dec</button>
+              </div>
+            </div>
+            <div class="card"><div class="card-head"><div class="card-head-title">Output</div><button class="copy-btn" onclick="copyEl('b64-output')">📋 Copy</button></div>
+              <div class="hash-result" id="b64-output" style="height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="util-panel" id="util-html">
+          <div class="g2">
+            <div class="card"><div class="card-head"><div class="card-head-title">Input</div></div>
+              <textarea class="form-control" id="html-input" placeholder="&lt;script&gt;alert(1)&lt;/script&gt;" style="height:120px;"></textarea>
+              <div style="display:flex;gap:6px;margin-top:10px;">
+                <button class="btn btn-sm btn-primary" onclick="encodeHTML()">🔒 Encode</button>
+                <button class="btn btn-sm" onclick="decodeHTML_()">🔓 Decode</button>
+              </div>
+            </div>
+            <div class="card"><div class="card-head"><div class="card-head-title">Output</div><button class="copy-btn" onclick="copyEl('html-output')">📋 Copy</button></div>
+              <div class="hash-result" id="html-output" style="height:120px;overflow-y:auto;white-space:pre-wrap;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="util-panel" id="util-hex">
+          <div class="g2">
+            <div class="card"><div class="card-head"><div class="card-head-title">Input</div></div>
+              <textarea class="form-control" id="hex-input" placeholder="Text or hex string..." style="height:120px;"></textarea>
+              <div style="display:flex;gap:6px;margin-top:10px;">
+                <button class="btn btn-sm btn-primary" onclick="textToHex()">Text → Hex</button>
+                <button class="btn btn-sm" onclick="hexToText()">Hex → Text</button>
+              </div>
+            </div>
+            <div class="card"><div class="card-head"><div class="card-head-title">Output</div><button class="copy-btn" onclick="copyEl('hex-output')">📋 Copy</button></div>
+              <div class="hash-result" id="hex-output" style="height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="util-panel" id="util-unicode">
+          <div class="g2">
+            <div class="card"><div class="card-head"><div class="card-head-title">Input</div></div>
+              <textarea class="form-control" id="uni-input" placeholder="Text to encode..." style="height:120px;"></textarea>
+              <div style="display:flex;gap:6px;margin-top:10px;">
+                <button class="btn btn-sm btn-primary" onclick="toUnicode()">Text → Unicode</button>
+                <button class="btn btn-sm" onclick="fromUnicode()">Unicode → Text</button>
+              </div>
+            </div>
+            <div class="card"><div class="card-head"><div class="card-head-title">Output</div><button class="copy-btn" onclick="copyEl('uni-output')">📋 Copy</button></div>
+              <div class="hash-result" id="uni-output" style="height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="util-panel" id="util-bin">
+          <div class="g2">
+            <div class="card"><div class="card-head"><div class="card-head-title">Input</div></div>
+              <textarea class="form-control" id="bin-input" placeholder="Text or binary string (e.g. 01000001)..." style="height:120px;"></textarea>
+              <div style="display:flex;gap:6px;margin-top:10px;">
+                <button class="btn btn-sm btn-primary" onclick="binaryEncode()">🔒 Binary Enc</button>
+                <button class="btn btn-sm" onclick="binaryDecode()">🔓 Binary Dec</button>
+              </div>
+            </div>
+            <div class="card"><div class="card-head"><div class="card-head-title">Output</div><button class="copy-btn" onclick="copyEl('bin-output')">📋 Copy</button></div>
+              <div class="hash-result" id="bin-output" style="height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="util-panel" id="util-rot">
+          <div class="g2">
+            <div class="card"><div class="card-head"><div class="card-head-title">Input</div></div>
+              <textarea class="form-control" id="rot-input" placeholder="Enter text to rotate or reverse..." style="height:120px;"></textarea>
+              <div style="display:flex;gap:6px;margin-top:10px;">
+                <button class="btn btn-sm btn-primary" onclick="rot13Util()">🔄 Rot13</button>
+                <button class="btn btn-sm btn-primary" onclick="reverseUtil()">◀ Reverse</button>
+              </div>
+            </div>
+            <div class="card"><div class="card-head"><div class="card-head-title">Output</div><button class="copy-btn" onclick="copyEl('rot-output')">📋 Copy</button></div>
+              <div class="hash-result" id="rot-output" style="height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="util-panel" id="util-jwt">
+          <div class="card mb14">
+            <div class="card-head"><div class="card-head-title">JWT Token Decoder</div></div>
+            <div class="form-group"><label class="form-label">JWT Token</label><textarea class="form-control" id="jwt-input" placeholder="Paste JWT token here..." style="height:80px;"></textarea></div>
+            <button class="btn btn-primary" onclick="decodeJWT()">🔓 Decode JWT</button>
+          </div>
+          <div class="g2" id="jwt-output" style="display:none;">
+            <div class="card"><div class="card-head"><div class="card-head-title">Header</div><button class="copy-btn" onclick="copyEl('jwt-header')">📋</button></div><div class="hash-result" id="jwt-header" style="height:140px;overflow-y:auto;white-space:pre-wrap;"></div></div>
+            <div class="card"><div class="card-head"><div class="card-head-title">Payload</div><button class="copy-btn" onclick="copyEl('jwt-payload-out')">📋</button></div><div class="hash-result" id="jwt-payload-out" style="height:140px;overflow-y:auto;white-space:pre-wrap;"></div></div>
+          </div>
+          <div id="jwt-warning" style="display:none;" class="scope-result warn" style="margin-top:12px;"></div>
+        </div>
+        <div class="util-panel" id="util-hash">
+          <div class="g2">
+            <div class="card"><div class="card-head"><div class="card-head-title">Input</div></div>
+              <textarea class="form-control" id="hash-input" placeholder="Text to hash..." style="height:120px;"></textarea>
+              <button class="btn btn-primary" style="margin-top:10px;width:100%;justify-content:center;" onclick="computeHashes()">🔐 Compute All Hashes</button>
+            </div>
+            <div class="card"><div class="card-head"><div class="card-head-title">Hash Results</div></div>
+              <div id="hash-results"><div style="color:var(--text3);font-size:12.5px;">Enter text and click Compute.</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="util-panel" id="util-regex">
+          <div class="card mb14">
+            <div class="card-head"><div class="card-head-title">Regex Pattern Tester</div></div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Pattern</label><input type="text" class="form-control" id="regex-pattern" placeholder="e.g. /api/v\d+" oninput="testRegex()"></div>
+              <div class="form-group"><label class="form-label">Flags</label><input type="text" class="form-control" id="regex-flags" placeholder="gi" oninput="testRegex()"></div>
+            </div>
+            <div class="form-group"><label class="form-label">Test Text</label><textarea class="form-control" id="regex-text" placeholder="Text to test against..." style="height:100px;" oninput="testRegex()"></textarea></div>
+          </div>
+          <div class="card"><div class="card-head"><div class="card-head-title">Matches</div><span id="regex-count" style="font-size:11.5px;color:var(--text3);"></span></div>
+            <div class="hash-result" id="regex-output" style="height:120px;overflow-y:auto;white-space:pre-wrap;"></div>
+          </div>
+        </div>
+
+        <div class="util-panel" id="util-poc">
+          <div class="g2">
+            <div class="card mb14">
+              <div class="card-head"><div class="card-head-title">CSRF / CORS PoC Generator</div></div>
+              <div class="form-group"><label class="form-label">Target URL</label><input type="text" class="form-control" id="poc-url" placeholder="https://target.com/api/admin/add_user"></div>
+              <div class="form-group"><label class="form-label">Method</label>
+                <select class="form-control" id="poc-method"><option value="POST">POST</option><option value="GET">GET</option><option value="PUT">PUT</option></select>
+              </div>
+              <div class="form-group"><label class="form-label">Parameters (JSON format: {"name":"admin", "role":"superuser"})</label><textarea class="form-control" id="poc-params" placeholder="{`"email`":`"attacker@evil.com`"}" style="height:80px;"></textarea></div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-primary" onclick="generatePoC('csrf')">Generate CSRF HTML</button>
+                <button class="btn btn-primary" onclick="generatePoC('cors')">Generate CORS HTML</button>
+              </div>
+            </div>
+            <div class="card"><div class="card-head"><div class="card-head-title">Generated PoC</div><button class="copy-btn" onclick="copyEl('poc-output')">📋 Copy</button></div>
+              <div class="hash-result" id="poc-output" style="height:250px;overflow-y:auto;white-space:pre-wrap;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="util-panel" id="util-cvss">
+          <div class="g2">
+            <div class="card">
+              <div class="card-head"><div class="card-head-title">⚙️ CVSS 3.1 Interactive Calculator</div></div>
+              <div id="cvss-interactive" style="display:flex;flex-direction:column;gap:10px;margin-top:8px"></div>
+              <div style="margin-top:14px">
+                <button class="btn btn-primary" onclick="renderCVSSCalc()">Calculate</button>
+              </div>
+            </div>
+            <div class="card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px">
+              <div id="cvss-score-display" style="text-align:center;position:relative;width:160px;height:160px;display:flex;align-items:center;justify-content:center;flex-direction:column">
+                <div class="cvss-score-num" style="font-size:56px;font-weight:800;line-height:1">0.0</div>
+                <div class="cvss-score-sev" style="font-size:18px;font-weight:600">None</div>
+              </div>
+              <div style="width:100%">
+                <label class="form-label">CVSS Vector String</label>
+                <div class="payload-snippet" id="cvss-vector-output" style="font-size:11px;word-break:break-all;user-select:all;cursor:pointer" onclick="navigator.clipboard.writeText(this.textContent).then(()=>toast('Vector copied!'))">CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="util-panel" id="util-httpcode">
+          <div class="card mb14">
+            <div class="card-head"><div class="card-head-title">Raw HTTP Request Converter</div></div>
+            <div class="form-group">
+              <label class="form-label">Raw HTTP Request</label>
+              <textarea class="form-control" id="httpcode-in" style="height:150px;font-family:var(--mono);font-size:12px;" placeholder="POST /api/v1/users HTTP/1.1&#10;Host: target.com&#10;User-Agent: Mozilla/5.0&#10;Content-Type: application/json&#10;Cookie: session=123&#10;&#10;{&quot;username&quot;:&quot;admin&quot;}"></textarea>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+              <button class="btn btn-primary" onclick="convertRawRequest('python')">🐍 Generate Python</button>
+              <button class="btn btn-primary" onclick="convertRawRequest('curl')">💻 Generate curl</button>
+              <button class="btn" onclick="parseRawRequestOnly()">🔍 Parse Request</button>
+              <button class="btn btn-danger" onclick="clearRequestConverter()">✕ Clear</button>
+            </div>
+          </div>
+          <div class="g2" id="httpcode-output-container" style="display:none;margin-top:14px;">
+            <div class="card">
+              <div class="card-head"><div class="card-head-title">Parsed Details</div></div>
+              <div class="hash-result" id="httpcode-parsed" style="height:250px;overflow-y:auto;font-size:12px;font-family:var(--mono);line-height:1.5;"></div>
+            </div>
+            <div class="card">
+              <div class="card-head">
+                <div class="card-head-title">Generated Code</div>
+                <button class="copy-btn" onclick="copyEl('httpcode-code')">📋 Copy</button>
+              </div>
+              <textarea class="form-control" id="httpcode-code" style="height:250px;font-family:var(--mono);font-size:12px;color:var(--accent);background:var(--bg3);resize:none;" readonly></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- RECON SCRATCHPAD -->
+      <div class="page" id="page-recon">
+        <div class="page-header"><div class="page-title"><span>🔍</span> Recon Scratchpad</div><div class="page-subtitle">Track subdomains and URLs per program. Paste bulk lists and mark testing status.</div></div>
+        <div class="g2">
+          <div class="card">
+            <div class="card-head"><div class="card-head-title">Program</div></div>
+            <div class="form-group"><label class="form-label">Target</label>
+              <select class="form-control" id="recon-target-select" onchange="selectReconTarget(this.value)"><option value="">— Select target —</option></select>
+            </div>
+            <div class="form-group"><label class="form-label">Bulk paste (one per line)</label>
+              <textarea class="form-control" id="recon-bulk" placeholder="sub1.target.com&#10;https://api.target.com" style="height:120px;"></textarea>
+            </div>
+            <div style="margin-top:12px">
+              <button class="btn btn-primary" onclick="bulkAddAssets()">Add Assets</button>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-head"><div class="card-head-title">⚡ Live Recon Runner</div></div>
+            <div class="form-group"><label class="form-label">Tool / Command</label>
+              <div style="display:flex;gap:8px;">
+                <select class="form-control" id="recon-runner-tool" style="width:120px;">
+                  <option value="subfinder">Subfinder</option>
+                  <option value="nmap">Nmap (Fast)</option>
+                  <option value="httpx">HTTPX</option>
+                  <option value="ping">Ping (Test)</option>
+                </select>
+                <input type="text" class="form-control" id="recon-runner-target" placeholder="target.com" style="flex:1; margin-bottom:0">
+                <button class="btn btn-sm btn-primary" onclick="syncReconRunnerTarget()" style="flex-shrink:0; margin-bottom:0" title="Sync target from dropdown">Sync Target</button>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+              <button id="recon-run-btn" class="btn btn-primary" onclick="runLiveRecon()" style="flex:1">▶ Run Tool</button>
+              <button class="btn btn-sm" onclick="deduplicateAssets()" title="Remove duplicate assets for selected target">🧹 Dedup Assets</button>
+            </div>
+            <div class="form-group mb-0">
+              <label class="form-label">Live Terminal Output <span style="font-size:10px;color:var(--text3)">— streams in real-time via SSE</span></label>
+              <div id="recon-runner-output">Ready...</div>
+            </div>
+          </div>
+
+          <div class="card" style="grid-column: 1 / -1;">
+            <div class="card-head" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+              <div class="card-head-title" style="margin-bottom:0">🔍 Assets Command Center</div>
+              <div id="recon-assets-count" style="font-family:var(--mono); font-size:12px; color:var(--accent); font-weight:700;">Showing 0 assets</div>
+            </div>
+            
+            <!-- Search & Filters Row -->
+            <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:14px; border-bottom:1px solid var(--border); padding-bottom:14px;">
+              <div class="form-group" style="flex:1; min-width:200px; margin-bottom:0;">
+                <input type="text" class="form-control form-control-sm" id="recon-asset-search" placeholder="Search subdomains/URLs..." oninput="renderReconAssets()" style="margin-bottom:0">
+              </div>
+              <div class="recon-filter-group" style="margin-bottom:0" id="recon-filter-status-group">
+                <span style="font-size:11px; color:var(--text3); font-weight:700; text-transform:uppercase; margin-right:4px;">Status:</span>
+                <span class="recon-pill active" onclick="setReconStatusFilter('all', this)">All</span>
+                <span class="recon-pill" onclick="setReconStatusFilter('new', this)">New</span>
+                <span class="recon-pill" onclick="setReconStatusFilter('tested', this)">Tested</span>
+                <span class="recon-pill" onclick="setReconStatusFilter('interesting', this)">Interesting</span>
+              </div>
+              <div class="recon-filter-group" style="margin-bottom:0" id="recon-filter-scope-group">
+                <span style="font-size:11px; color:var(--text3); font-weight:700; text-transform:uppercase; margin-right:4px;">Scope:</span>
+                <span class="recon-pill active" onclick="setReconScopeFilter('all', this)">All</span>
+                <span class="recon-pill" onclick="setReconScopeFilter('in', this)">In Scope</span>
+                <span class="recon-pill" onclick="setReconScopeFilter('out', this)">Out of Scope</span>
+              </div>
+            </div>
+
+            <!-- Bulk Operations Row -->
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:14px;">
+              <button class="btn btn-sm btn-green" onclick="bulkMarkAssetsTested()" style="margin-bottom:0">✓ Mark All Tested</button>
+              <button class="btn btn-sm btn-danger" onclick="bulkRemoveOutOfScope()" style="margin-bottom:0">🧹 Clean Out-of-Scope</button>
+              <button class="btn btn-sm btn-danger" onclick="bulkDeleteAssets()" style="margin-bottom:0">🗑️ Delete All</button>
+              <button class="btn btn-sm btn-primary" onclick="exportReconAssets()" style="margin-bottom:0">📥 Export TXT</button>
+            </div>
+            
+            <div id="recon-asset-list">
+              <div class="empty-state"><div class="es-sub">Select a target program</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCOPE CHECKER -->
+      <div class="page" id="page-scope">
+        <div class="page-header"><div class="page-title"><span>🔭</span> Scope Checker</div><div class="page-subtitle">Check if a URL or domain is in-scope for your active targets.</div></div>
+        <div class="g2" style="margin-bottom:14px;">
+          <div class="card">
+            <div class="card-head"><div class="card-head-title">Check URL / Domain</div></div>
+            <div class="form-group"><label class="form-label">URL or Domain to Check</label><input type="text" class="form-control" id="scope-url" placeholder="https://admin.acme.com/secret" oninput="checkScope()"></div>
+            <div id="scope-result-area"></div>
+            <div class="divider"></div>
+            <div class="section-head">Bulk Check</div>
+            <textarea class="form-control" id="scope-bulk" placeholder="One URL/domain per line..." style="height:100px;"></textarea>
+            <button class="btn btn-primary" onclick="bulkScopeCheck()" style="margin-top:8px;">Check All</button>
+            <div id="scope-bulk-results" style="margin-top:10px;display:flex;flex-direction:column;gap:6px;"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-head-title">📋 Target Scope Summary</div></div>
+            <div id="scope-summary"><div class="empty-state" style="padding:20px 0;"><div class="es-sub">Add targets with scope to see summary</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HUNT KIT -->
+      <div class="page" id="page-huntkit">
+        <div class="page-header">
+          <div class="page-title"><span>⚡</span> Hunt Kit</div>
+          <div class="page-subtitle">HTTP client, header analysis, dorks, redirects, cookies, and recon helpers — built for active hunting.</div>
+        </div>
+        <div class="tool-grid mb20">
+          <div class="tool-tile active" data-hunt="http" onclick="showHuntPanel('http')"><h4>🌐 HTTP Client</h4><p>Send requests &amp; copy curl</p></div>
+          <div class="tool-tile" data-hunt="encode" onclick="showHuntPanel('encode')"><h4>🔤 Encoder/Decoder</h4><p>Base64, URL, Hex, HTML</p></div>
+          <div class="tool-tile" data-hunt="jwt" onclick="showHuntPanel('jwt')"><h4>🎫 JWT Analyzer</h4><p>Decode &amp; format tokens</p></div>
+          <div class="tool-tile" data-hunt="hash" onclick="showHuntPanel('hash')"><h4>#️⃣ Hash Gen</h4><p>SHA1, SHA256, SHA512</p></div>
+          <div class="tool-tile" data-hunt="json" onclick="showHuntPanel('json')"><h4>{ } JSON Format</h4><p>Prettify &amp; minify</p></div>
+          <div class="tool-tile" data-hunt="epoch" onclick="showHuntPanel('epoch')"><h4>⏱️ Epoch Calc</h4><p>Unix timestamps</p></div>
+          <div class="tool-tile" data-hunt="headers" onclick="showHuntPanel('headers')"><h4>🛡️ Security Headers</h4><p>Analyze response headers</p></div>
+          <div class="tool-tile" data-hunt="dork" onclick="showHuntPanel('dork')"><h4>🔎 Google Dorks</h4><p>Build search queries</p></div>
+          <div class="tool-tile" data-hunt="shodan" onclick="showHuntPanel('shodan')"><h4>📡 Shodan Queries</h4><p>OSINT query templates</p></div>
+          <div class="tool-tile" data-hunt="redirect" onclick="showHuntPanel('redirect')"><h4>↪️ Open Redirect</h4><p>Test URL payloads</p></div>
+          <div class="tool-tile" data-hunt="cookie" onclick="showHuntPanel('cookie')"><h4>🍪 Cookie Parser</h4><p>Decode cookie strings</p></div>
+          <div class="tool-tile" data-hunt="jsextract" onclick="showHuntPanel('jsextract')"><h4>📜 JS Extractor</h4><p>Find endpoints & secrets</p></div>
+          <div class="tool-tile" data-hunt="urls" onclick="showHuntPanel('urls')"><h4>📋 URL Cleaner</h4><p>Dedupe URL lists</p></div>
+          <div class="tool-tile" data-hunt="sub" onclick="showHuntPanel('sub')"><h4>🌍 Subdomain Gen</h4><p>Permutation wordlist</p></div>
+          <div class="tool-tile" data-hunt="diff" onclick="showHuntPanel('diff')"><h4>≠ Diff Tool</h4><p>Compare two outputs</p></div>
+          <div class="tool-tile" data-hunt="cve" onclick="showHuntPanel('cve')"><h4>🔥 CVE Quick Ref</h4><p>Notable CVEs</p></div>
+          <div class="tool-tile" data-hunt="oob" onclick="showHuntPanel('oob')"><h4>📡 OOB Catcher</h4><p>Catch out-of-band hits</p></div>
+        </div>
+        <div class="card card-glow hunt-panel active" id="hunt-http">
+          <div class="g2">
+            <div>
+              <div class="form-group"><label class="form-label">URL</label><input class="form-control" id="http-url" placeholder="https://target.com/api"></div>
+              <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:12px">
+                <div class="form-group" style="flex:1;margin-bottom:0"><label class="form-label">Method</label>
+                  <select class="form-control" id="http-method"><option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option><option>OPTIONS</option><option>HEAD</option></select>
+                </div>
+                <button class="btn btn-primary" style="flex-shrink:0" onclick="sendHttpRequest()">Send</button>
+                <button class="btn" style="flex-shrink:0" onclick="generateCurl()">Copy curl</button>
+              </div>
+              <div class="form-group"><label class="form-label">Headers (one per line)</label><textarea class="form-control" id="http-headers" style="height:70px" placeholder="Authorization: Bearer TOKEN&#10;Content-Type: application/json"></textarea></div>
+              <div class="form-group"><label class="form-label">Body</label><textarea class="form-control" id="http-body" style="height:60px"></textarea></div>
+            </div>
+            <div><label class="form-label">Response</label><div class="mono-out" id="http-response" style="min-height:200px">Response appears here…</div></div>
+          </div>
+          <div class="form-group" style="margin-top:12px"><label class="form-label">curl command</label><div class="mono-out" id="curl-output"></div></div>
+        </div>
+        <div class="card hunt-panel" id="hunt-encode">
+          <div class="form-group">
+            <label class="form-label">Input Text</label>
+            <textarea class="form-control" id="encode-in" style="height:100px;font-family:var(--mono);font-size:13px;" placeholder="Paste text here..."></textarea>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+            <button class="btn btn-primary" onclick="doEncode('b64e')">Base64 Enc</button>
+            <button class="btn" onclick="doEncode('b64d')">Base64 Dec</button>
+            <button class="btn btn-primary" onclick="doEncode('urle')">URL Enc</button>
+            <button class="btn" onclick="doEncode('urld')">URL Dec</button>
+            <button class="btn btn-primary" onclick="doEncode('durle')">Double URL Enc</button>
+            <button class="btn" onclick="doEncode('durld')">Double URL Dec</button>
+            <button class="btn btn-primary" onclick="doEncode('hexe')">Hex Enc</button>
+            <button class="btn" onclick="doEncode('hexd')">Hex Dec</button>
+            <button class="btn btn-primary" onclick="doEncode('htmle')">HTML Enc</button>
+            <button class="btn" onclick="doEncode('htmld')">HTML Dec</button>
+            <button class="btn btn-primary" onclick="doEncode('bine')">Binary Enc</button>
+            <button class="btn" onclick="doEncode('bind')">Binary Dec</button>
+            <button class="btn btn-primary" onclick="doEncode('b32e')">Base32 Enc</button>
+            <button class="btn" onclick="doEncode('b32d')">Base32 Dec</button>
+            <button class="btn btn-primary" onclick="doEncode('rot13')">Rot13</button>
+            <button class="btn" onclick="doEncode('rev')">Reverse</button>
+          </div>
+          <div class="form-group mb0">
+            <label class="form-label">Result</label>
+            <textarea class="form-control" id="encode-out" style="height:120px;font-family:var(--mono);font-size:13px;color:var(--accent);" readonly></textarea>
+          </div>
+        </div>
+        <div class="card hunt-panel" id="hunt-jwt">
+          <div class="form-group">
+            <label class="form-label">Paste JWT Token</label>
+            <textarea class="form-control" id="jwt-in" style="height:80px;font-family:var(--mono);font-size:13px;word-break:break-all;" placeholder="eyJhbGciOiJIUzI1NiIsInR..."></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="decodeJwt()">Decode JWT</button>
+          <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px;">
+            <div>
+              <label class="form-label">Header (Algorithm &amp; Token Type)</label>
+              <div class="mono-out" id="jwt-header" style="color:var(--red)"></div>
+            </div>
+            <div>
+              <label class="form-label">Payload (Data)</label>
+              <div class="mono-out" id="jwt-payload" style="color:var(--purple);min-height:100px;"></div>
+            </div>
+            <div>
+              <label class="form-label">Signature</label>
+              <div class="mono-out" id="jwt-sig" style="color:var(--accent);word-break:break-all;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card hunt-panel" id="hunt-hash">
+          <div class="form-group">
+            <label class="form-label">Input Text</label>
+            <textarea class="form-control" id="hash-in" style="height:80px;font-family:var(--mono);font-size:13px;" placeholder="String to hash..."></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="generateHashes()">Generate Hashes</button>
+          <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px;">
+            <div><label class="form-label">SHA-1</label><input class="form-control" style="font-family:var(--mono);font-size:13px;color:var(--accent);" id="hash-sha1" readonly></div>
+            <div><label class="form-label">SHA-256</label><input class="form-control" style="font-family:var(--mono);font-size:13px;color:var(--accent);" id="hash-sha256" readonly></div>
+            <div><label class="form-label">SHA-512</label><input class="form-control" style="font-family:var(--mono);font-size:13px;color:var(--accent);" id="hash-sha512" readonly></div>
+          </div>
+        </div>
+        <div class="card hunt-panel" id="hunt-json">
+          <div class="form-group">
+            <label class="form-label">Input JSON</label>
+            <textarea class="form-control" id="json-in" style="height:120px;font-family:var(--mono);font-size:13px;" placeholder='{"a":1}'></textarea>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <button class="btn btn-primary" onclick="formatJson(true)">Prettify</button>
+            <button class="btn" onclick="formatJson(false)">Minify</button>
+          </div>
+          <div class="form-group mb0">
+            <label class="form-label">Result</label>
+            <textarea class="form-control" id="json-out" style="height:150px;font-family:var(--mono);font-size:13px;color:var(--accent);"></textarea>
+          </div>
+        </div>
+        <div class="card hunt-panel" id="hunt-epoch">
+          <div class="form-row">
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Unix Epoch (Seconds or Milliseconds)</label>
+              <div style="display:flex;gap:8px;">
+                <input class="form-control" id="epoch-in" placeholder="1672531199">
+                <button class="btn btn-primary" onclick="calcEpoch()">Convert</button>
+                <button class="btn" onclick="document.getElementById('epoch-in').value=Math.floor(Date.now()/1000);calcEpoch()">Now</button>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px;">
+            <div><label class="form-label">Local Time</label><input class="form-control" id="epoch-local" style="font-family:var(--mono);font-size:13px;color:var(--accent);" readonly></div>
+            <div><label class="form-label">UTC Time (ISO)</label><input class="form-control" id="epoch-utc" style="font-family:var(--mono);font-size:13px;color:var(--accent);" readonly></div>
+          </div>
+        </div>
+        <!-- ═══ HTTP HEADER ANALYZER ═══ -->
+        <div class="card hunt-panel" id="hunt-headers">
+          <div class="form-group">
+            <label class="form-label" style="display:flex;justify-content:space-between;">
+              <span>Raw HTTP Response Headers</span>
+              <span style="font-size:10px;color:var(--text3);font-weight:400;">Paste from Burp or browser</span>
+            </label>
+            <textarea class="form-control" id="sec-headers-input" style="height:140px;font-family:var(--mono);font-size:12px;color:var(--text2);" placeholder="HTTP/1.1 200 OK&#10;Date: Mon, 01 Jan 2024 12:00:00 GMT&#10;Server: nginx/1.18.0&#10;Set-Cookie: session=123; path=/&#10;..."></textarea>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary" onclick="analyzeSecurityHeaders()">🔍 Analyze Security Headers</button>
+            <button class="btn" style="margin-left:auto;color:var(--text3);font-size:12px;" onclick="document.getElementById('sec-headers-input').value='';document.getElementById('sec-headers-result').innerHTML='';">✕ Clear</button>
+          </div>
+          <div id="sec-headers-result" style="margin-top:16px;"></div>
+        </div>
+        <!-- ═══ GOOGLE DORK BUILDER ═══ -->
+        <div class="card hunt-panel" id="hunt-dork">
+          <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:14px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:180px;">
+              <label class="form-label">Target Domain</label>
+              <input class="form-control" id="dork-domain" placeholder="target.com" oninput="dorkLivePreview()" style="font-family:var(--mono);">
+            </div>
+            <div style="flex:1;min-width:160px;">
+              <label class="form-label">Search Engine</label>
+              <select class="form-control" id="dork-engine">
+                <option value="google">🔍 Google</option>
+                <option value="bing">🔎 Bing</option>
+                <option value="duckduckgo">🦆 DuckDuckGo</option>
+                <option value="github">🐙 GitHub Code</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Category filter pills -->
+          <div style="margin-bottom:10px;">
+            <label class="form-label">Filter Category</label>
+            <div id="dork-cat-pills" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;"></div>
+          </div>
+
+          <!-- Template search -->
+          <div class="form-group" style="margin-bottom:10px;">
+            <input class="form-control" id="dork-search" placeholder="🔎  Search templates… (e.g. admin, S3, SQL)" oninput="renderDorkTemplates()" style="font-size:13px;">
+          </div>
+
+          <!-- Template buttons -->
+          <div id="dork-templates" style="max-height:190px;overflow-y:auto;padding:4px 0;margin-bottom:14px;border-bottom:1px solid var(--border);"></div>
+
+          <!-- Dork output -->
+          <div class="form-group" style="margin-bottom:10px;">
+            <label class="form-label" style="display:flex;justify-content:space-between;">
+              <span>Generated Dork</span>
+              <span id="dork-live-label" style="color:var(--accent);font-size:10px;font-weight:500;font-family:var(--mono);"></span>
+            </label>
+            <textarea class="form-control" id="dork-output" style="height:68px;font-family:var(--mono);font-size:13px;color:var(--accent);" placeholder="Click a template above or type a custom dork…" oninput="dorkLiveLabel()"></textarea>
+          </div>
+
+          <!-- Action buttons -->
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="openDorkEngine()" id="dork-open-btn">🔍 Search Google</button>
+            <button class="btn" onclick="copyDork()">📋 Copy Dork</button>
+            <button class="btn" onclick="copyAllDorks()" title="Copy all dorks for this domain as a list">📋 Copy All Dorks</button>
+            <button class="btn" style="margin-left:auto;color:var(--text3);font-size:12px;" onclick="document.getElementById('dork-output').value='';dorkLiveLabel()">✕ Clear</button>
+          </div>
+        </div>
+
+        <!-- ═══ SHODAN QUERY BUILDER ═══ -->
+        <div class="card hunt-panel" id="hunt-shodan">
+          <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:14px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:200px;">
+              <label class="form-label">Target Domain / Org / IP</label>
+              <input class="form-control" id="shodan-domain" placeholder="target.com" oninput="shodanLivePreview()" style="font-family:var(--mono);">
+            </div>
+          </div>
+
+          <!-- Shodan category pills -->
+          <div style="margin-bottom:10px;">
+            <label class="form-label">Filter Category</label>
+            <div id="shodan-cat-pills" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;"></div>
+          </div>
+
+          <!-- Shodan search -->
+          <div class="form-group" style="margin-bottom:10px;">
+            <input class="form-control" id="shodan-search" placeholder="🔎  Search Shodan templates…" oninput="renderShodanTemplates()" style="font-size:13px;">
+          </div>
+
+          <!-- Shodan template buttons -->
+          <div id="shodan-templates" style="max-height:190px;overflow-y:auto;padding:4px 0;margin-bottom:14px;border-bottom:1px solid var(--border);"></div>
+
+          <!-- Shodan output -->
+          <div class="form-group" style="margin-bottom:10px;">
+            <label class="form-label">Generated Query</label>
+            <textarea class="form-control" id="shodan-output" style="height:68px;font-family:var(--mono);font-size:13px;color:var(--accent);" placeholder="Click a template above…"></textarea>
+          </div>
+
+          <!-- Shodan action buttons -->
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="openShodan()">📡 Open in Shodan</button>
+            <button class="btn" onclick="navigator.clipboard.writeText(document.getElementById('shodan-output').value).then(()=>toast('Copied!','success'))">📋 Copy Query</button>
+            <button class="btn" onclick="openCensys()">🌐 Try in Censys</button>
+          </div>
+        </div>
+        <div class="card hunt-panel" id="hunt-redirect">
+          <div class="form-group"><label class="form-label">Base URL (use FUZZ for param value)</label><input class="form-control" id="redirect-base" placeholder="https://target.com/redirect?url=FUZZ"></div>
+          <div class="form-group"><label class="form-label">Parameter name</label><input class="form-control" id="redirect-param" value="url"></div>
+          <button class="btn btn-primary" onclick="testOpenRedirect()">Generate test URLs</button>
+          <div id="redirect-results" style="margin-top:12px"></div>
+        </div>
+        <div class="card hunt-panel" id="hunt-cookie">
+          <textarea class="form-control" id="cookie-input" placeholder="session=abc; path=/; HttpOnly" style="height:100px"></textarea>
+          <button class="btn btn-primary" style="margin-top:8px" onclick="parseCookies()">Parse</button>
+          <div class="mono-out" id="cookie-parsed" style="margin-top:10px"></div>
+        </div>
+        <div class="card hunt-panel" id="hunt-urls">
+          <textarea class="form-control" id="url-list-input" placeholder="Paste URLs, one per line" style="height:120px"></textarea>
+          <button class="btn btn-primary" style="margin-top:8px" onclick="cleanUrlList()">Dedupe &amp; normalize</button>
+          <textarea class="form-control" id="url-list-output" style="height:120px;margin-top:10px" readonly></textarea>
+        </div>
+        <div class="card hunt-panel" id="hunt-sub">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Keyword</label><input class="form-control" id="sub-word" value="api"></div>
+            <div class="form-group"><label class="form-label">Domain</label><input class="form-control" id="sub-domain" placeholder="target.com"></div>
+          </div>
+          <button class="btn btn-primary" onclick="generateSubdomainPermutations()">Generate</button>
+          <textarea class="form-control" id="sub-output" style="height:140px;margin-top:10px"></textarea>
+        </div>
+        <div class="card hunt-panel" id="hunt-diff">
+          <div class="g2">
+            <textarea class="form-control" id="diff-a" placeholder="Response A" style="height:120px"></textarea>
+            <textarea class="form-control" id="diff-b" placeholder="Response B" style="height:120px"></textarea>
+          </div>
+          <button class="btn btn-primary" style="margin-top:8px" onclick="diffTextBlocks()">Compare</button>
+          <div class="mono-out" id="diff-out" style="margin-top:10px"></div>
+        </div>
+        <div class="card hunt-panel" id="hunt-cve">
+          <div id="cve-list"></div>
+        </div>
+
+        <!-- ═══ JS EXTRACTOR ═══ -->
+        <div class="card hunt-panel" id="hunt-jsextract">
+          <div class="form-group">
+            <label class="form-label" style="display:flex;justify-content:space-between;">
+              <span>JavaScript Source Code</span>
+              <span style="font-size:10px;color:var(--text3);font-weight:400;">Extracts relative endpoints, absolute URLs, and potential secrets</span>
+            </label>
+            <textarea class="form-control" id="js-extract-input" style="height:140px;font-family:var(--mono);font-size:12px;color:var(--text2);" placeholder="Paste raw or minified JavaScript here..."></textarea>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary" onclick="extractJsEndpoints()">📜 Extract Data</button>
+            <button class="btn" style="margin-left:auto;color:var(--text3);font-size:12px;" onclick="document.getElementById('js-extract-input').value='';document.getElementById('js-extract-result').innerHTML='';">✕ Clear</button>
+          </div>
+          <div id="js-extract-result" style="margin-top:16px;"></div>
+        </div>
+        <style>
+          .oob-input { background: rgba(0,0,0,0.2) !important; border: 1px solid var(--border) !important; color: var(--text1) !important; transition: all 0.2s ease; font-size: 13px; }
+          .oob-input:focus { border-color: var(--accent) !important; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2) !important; outline: none; }
+          .oob-btn { background: linear-gradient(135deg, var(--accent) 0%, #5e4bb6 100%); border: none; color: white; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+          .oob-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4); }
+          .oob-btn:active { transform: translateY(0); }
+          .oob-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+          .oob-title { font-weight: 700; margin-bottom: 16px; color: var(--text1); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+          .oob-empty { text-align: center; padding: 40px 20px !important; color: var(--text3) !important; border: 2px dashed var(--border) !important; border-radius: 8px; background: rgba(0,0,0,0.1) !important; font-size: 14px; font-weight: 500; }
+        </style>
+        <div class="card card-glow hunt-panel" id="hunt-oob" style="border: 1px solid var(--accent); background: linear-gradient(180deg, var(--bg3) 0%, rgba(0,0,0,0.4) 100%); padding: 24px;">
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.05);">
+            <div style="background:linear-gradient(135deg, var(--accent), #e879f9);color:white;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 0 20px rgba(139, 92, 246, 0.4);">📡</div>
+            <div>
+              <div style="font-size:20px;font-weight:800;color:var(--text1); letter-spacing: -0.5px;">OOB Catcher Dashboard</div>
+              <div style="font-size:13px;color:var(--text3); margin-top:4px;">Built-in listener for catching Blind XSS and SSRF interactions. Hit URLs automatically generate Critical findings.</div>
+            </div>
+          </div>
+          
+          <div class="oob-card mb20">
+            <div class="oob-title"><span style="color:var(--accent);">⚡</span> Generate New Payload</div>
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:24px;">
+              <input type="text" class="form-control oob-input" id="oob-label" placeholder="Payload Label (e.g. Profile Page SSRF)" style="flex:1;">
+              <select class="form-control oob-input" id="oob-target" style="width:220px;"></select>
+              <button class="oob-btn" onclick="generateOobPayload()">+ Generate Payload</button>
+            </div>
+            
+            <div class="oob-title" style="margin-top:10px;"><span style="color:var(--accent);">🎯</span> Active Payloads</div>
+            <div id="oob-payloads-list"></div>
+          </div>
+
+          <div class="oob-card">
+            <div class="oob-title" style="font-size: 15px; margin-bottom: 20px;">
+              <div class="status-indicator live" style="box-shadow:0 0 10px var(--green); width:10px; height:10px;"></div> Live Hits Stream
+            </div>
+            <div id="oob-hits-list">
+               <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- ANALYTICS -->
+      <div class="page" id="page-analytics">
+        <div class="page-header"><div class="page-title"><span>📈</span> Analytics</div><div class="page-subtitle">Earnings trends, finding acceptance rates, and platform distribution.</div></div>
+        <div class="card mb20">
+          <div class="card-head"><div class="card-head-title">💰 Monthly Earnings (Last 6 Months)</div><button class="btn btn-sm" onclick="loadAndRenderAnalytics()">🔄 Refresh</button></div>
+          <div class="earnings-svg-container">
+            <svg width="100%" height="180" id="earnings-chart-svg" style="display:block;">
+              <defs>
+                <linearGradient id="earnings-gradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#64dc8c"></stop>
+                  <stop offset="100%" stop-color="#2a7a4a"></stop>
+                </linearGradient>
+              </defs>
+              <!-- Populated by JS -->
+            </svg>
+          </div>
+        </div>
+        <div class="g2 mb20">
+          <div class="card">
+            <div class="card-head"><div class="card-head-title">📊 Finding Status Breakdown</div></div>
+            <div id="status-donut"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-head-title">🏆 Platform Distribution</div></div>
+            <div id="platform-stats"></div>
+          </div>
+        </div>
+        
+        <!-- Activity Heatmap Grid -->
+        <div class="card mb20">
+          <div class="card-head"><div class="card-head-title">🔥 30-Day Hunting Activity</div></div>
+          <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start;">
+            <div class="activity-heatmap-wrapper" style="flex: 1; max-width: 624px; min-width: 300px; margin: 0;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Consistency Heatmap</span>
+                <span style="font-size:10px;color:var(--accent);background:rgba(99, 102, 241, 0.1);border:1px solid rgba(99, 102, 241, 0.2);padding:3px 8px;border-radius:12px;font-weight:600;" id="activity-heatmap-summary">0 active days</span>
+              </div>
+              <div id="activity-heatmap-grid" class="activity-heatmap-grid" style="margin-bottom:10px;"></div>
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:9.5px; color:var(--text3); padding: 0 2px;">
+                <span>30 days ago</span>
+                <div style="display:flex; gap:4px; align-items:center;">
+                  <span>Less</span>
+                  <span class="activity-tile legend-tile level-0" style="cursor:default;width:10px;height:10px;margin:0;"></span>
+                  <span class="activity-tile legend-tile level-1" style="cursor:default;width:10px;height:10px;margin:0;"></span>
+                  <span class="activity-tile legend-tile level-2" style="cursor:default;width:10px;height:10px;margin:0;"></span>
+                  <span class="activity-tile legend-tile level-3" style="cursor:default;width:10px;height:10px;margin:0;"></span>
+                  <span class="activity-tile legend-tile level-4" style="cursor:default;width:10px;height:10px;margin:0;"></span>
+                  <span>More</span>
+                </div>
+                <span>Today</span>
+              </div>
+            </div>
+            
+            <!-- Quick Stats Panel -->
+            <div class="activity-heatmap-stats" style="flex:1.2; min-width:280px; display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:12px; margin-top:10px;">
+              <div class="mini-stat" style="text-align:center; padding:12px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--r);">
+                <div class="mini-stat-val" style="font-size:22px;font-weight:700;color:var(--accent);font-family:var(--mono);" id="stat-current-streak">0 days</div>
+                <div class="mini-stat-label" style="font-size:11px;color:var(--text3);margin-top:4px;">Current Streak</div>
+              </div>
+              <div class="mini-stat" style="text-align:center; padding:12px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--r);">
+                <div class="mini-stat-val" style="font-size:22px;font-weight:700;color:var(--purple);font-family:var(--mono);" id="stat-longest-streak">0 days</div>
+                <div class="mini-stat-label" style="font-size:11px;color:var(--text3);margin-top:4px;">Longest Streak</div>
+              </div>
+              <div class="mini-stat" style="text-align:center; padding:12px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--r);">
+                <div class="mini-stat-val" style="font-size:22px;font-weight:700;color:var(--green);font-family:var(--mono);" id="stat-consistency-score">0%</div>
+                <div class="mini-stat-label" style="font-size:11px;color:var(--text3);margin-top:4px;">Consistency</div>
+              </div>
+              <div class="mini-stat" style="text-align:center; padding:12px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--r);">
+                <div class="mini-stat-val" style="font-size:22px;font-weight:700;color:#fff;font-family:var(--mono);" id="stat-total-logs">0 logs</div>
+                <div class="mini-stat-label" style="font-size:11px;color:var(--text3);margin-top:4px;">Total Logs</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><div class="card-head-title">🎖️ Hunting Milestones</div></div>
+          <div id="hunting-stats"></div>
+        </div>
+      </div>
+
+      <!-- SECRETS SCANNER -->
+      <div class="page" id="page-secrets">
+        <div class="page-header"><div class="page-title"><span>🔐</span> Secrets Scanner</div><div class="page-subtitle">Paste JS files, HTML source, or API responses to detect API keys, tokens, and credentials.</div></div>
+        <div class="g2">
+          <div class="card">
+            <div class="card-head"><div class="card-head-title">📋 Input</div></div>
+            <div class="secrets-drop-zone" id="secrets-drop-zone" ondragover="event.preventDefault(); this.classList.add('dragover');" ondragleave="this.classList.remove('dragover');" ondrop="event.preventDefault(); this.classList.remove('dragover'); handleSecretsDrop(event);">
+              <div class="sdz-icon">📥</div>
+              <div class="sdz-text">Drag & drop files here (.js, .txt, .html, .json) or <span class="sdz-link" onclick="document.getElementById('secrets-file-input').click()">browse files</span></div>
+              <input type="file" id="secrets-file-input" style="display:none" onchange="handleSecretsFileSelect(this)">
+            </div>
+            <textarea class="form-control" id="secrets-input" placeholder="Or paste JavaScript source code, HTML, server response, or any text to scan..." style="height:220px;font-family:var(--mono);font-size:12px"></textarea>
+            <div style="margin-top:10px;display:flex;gap:8px">
+              <button class="btn btn-primary" onclick="runSecretsScanner()">🔍 Scan for Secrets</button>
+              <button class="btn" onclick="document.getElementById('secrets-input').value='';document.getElementById('secrets-results').innerHTML=''">Clear</button>
+            </div>
+            <div style="margin-top:10px;font-size:11.5px;color:var(--text3)">
+              Detects: AWS Keys, GitHub Tokens, Stripe Keys, Google API Keys, JWTs, Private Keys, Database URLs, Hardcoded Passwords, and 15+ more patterns.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-head-title">🚨 Results</div></div>
+            <div id="secrets-results" style="display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto">
+              <div style="color:var(--text3);font-size:12px">Paste source code above and click Scan</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DNS LOOKUP -->
+      <div class="page" id="page-dns">
+        <div class="page-header"><div class="page-title"><span>📡</span> DNS Lookup</div><div class="page-subtitle">Query DNS records via DNS-over-HTTPS. Supports A, AAAA, CNAME, MX, TXT, NS, SOA.</div></div>
+        <div class="g2 mb14">
+          <div class="card">
+            <div class="card-head"><div class="card-head-title">🔍 Single Lookup</div></div>
+            <div class="form-row">
+              <div class="form-group" style="flex:2"><label class="form-label">Domain / Host</label><input class="form-control" id="dns-domain" placeholder="target.com" onkeydown="if(event.key==='Enter')dnsLookup()"></div>
+              <div class="form-group"><label class="form-label">Record Type</label>
+                <select class="form-control" id="dns-qtype">
+                  <option value="A">A (IPv4)</option>
+                  <option value="AAAA">AAAA (IPv6)</option>
+                  <option value="CNAME">CNAME</option>
+                  <option value="MX">MX (Mail)</option>
+                  <option value="TXT">TXT</option>
+                  <option value="NS">NS (Nameserver)</option>
+                  <option value="SOA">SOA</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="dnsLookup()">🔍 Lookup</button>
+            <div id="dns-results" style="margin-top:14px;display:flex;flex-direction:column;gap:6px"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-head-title">📋 Bulk Alive Check (A records)</div></div>
+            <textarea class="form-control" id="dns-bulk" placeholder="One domain per line...&#10;sub1.target.com&#10;sub2.target.com" style="height:150px"></textarea>
+            <button class="btn btn-primary" style="margin-top:8px" onclick="dnsBulkLookup()">Check All (max 30)</button>
+            <div id="dns-bulk-results" style="margin-top:10px;max-height:300px;overflow-y:auto"></div>
+          </div>
+        </div>
+
+        <div class="card" id="dns-visualizer-card" style="display:none; margin-bottom: 14px;">
+          <div class="card-head">
+            <div class="card-head-title" style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+              <span>📡 DNS Record & CNAME Chain Map</span>
+              <span id="dns-takeover-warning" style="font-size:11px; text-transform:uppercase; font-family:var(--mono);"></span>
+            </div>
+          </div>
+          <div style="overflow-x:auto; padding: 10px; text-align: center; position:relative;">
+            <svg id="dns-tree-canvas" style="width: 100%; min-width: 600px; height: 320px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px;"></svg>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><div class="card-head-title">💡 Common DNS Tips for Bug Hunters</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;font-size:12.5px;line-height:1.7">
+            <div><strong style="color:var(--accent)">Subdomain Takeover Check:</strong><br>Look for CNAME pointing to services that show "NoSuchBucket", "There is no app at this address", etc.</div>
+            <div><strong style="color:var(--accent)">DNS Zone Transfer:</strong><br><span style="font-family:var(--mono);color:var(--green)">dig axfr @ns1.target.com target.com</span></div>
+            <div><strong style="color:var(--accent)">SPF/DMARC Check:</strong><br>Query TXT records for v=spf1 and _dmarc. Missing = phishing opportunity.</div>
+            <div><strong style="color:var(--accent)">Wildcard DNS:</strong><br>If *.target.com resolves, compare with non-existent.target.com to detect wildcards.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NUCLEI TEMPLATES -->
+      <div class="page" id="page-nuclei">
+        <div class="page-header"><div class="page-title"><span>☢️</span> Nuclei Templates</div><div class="page-subtitle">Searchable reference of common Nuclei templates. Configure CLI parameters and run simulated scans.</div></div>
+        <div class="card mb14">
+          <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+            <div class="form-group" style="flex:2;min-width:220px;margin-bottom:0">
+              <label class="form-label">Target URL</label>
+              <div style="display:flex;gap:8px">
+                <input class="form-control" id="nuclei-target" placeholder="https://target.com" oninput="renderNucleiTemplates()" style="flex:1;margin-bottom:0">
+                <button class="btn btn-sm" onclick="setNucleiTargetFromActive()" style="flex-shrink:0;margin-bottom:0">Use Active</button>
+              </div>
+            </div>
+            <div class="form-group" style="flex:2;min-width:160px;margin-bottom:0">
+              <label class="form-label">Search Templates</label>
+              <input class="form-control" id="nuclei-search" placeholder="e.g. log4j, ssrf, cors..." oninput="nucleiSearch=this.value;renderNucleiTemplates()" style="margin-bottom:0">
+            </div>
+            <div class="form-group" style="flex:1;min-width:120px;margin-bottom:0">
+              <label class="form-label">Tag Filter</label>
+              <select class="form-control" id="nuclei-filter-tag" onchange="nucleiTagFilter=this.value;renderNucleiTemplates()" style="margin-bottom:0">
+                <option value="">All Tags</option>
+                <option value="cve">CVE</option>
+                <option value="rce">RCE</option>
+                <option value="exposure">Exposure</option>
+                <option value="misconfig">Misconfig</option>
+                <option value="vulnerability">Vulnerability</option>
+                <option value="tech">Technology / CMS</option>
+                <option value="workflow">Workflow / Full Scan</option>
+                <option value="secrets">Secrets</option>
+                <option value="cloud">Cloud</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex:1;min-width:120px;margin-bottom:0">
+              <label class="form-label">Severity</label>
+              <select class="form-control" id="nuclei-filter-severity" onchange="nucleiSeverityFilter=this.value;renderNucleiTemplates()" style="margin-bottom:0">
+                <option value="">All Severities</option>
+                <option value="critical">Critical</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+                <option value="info">Info</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex:1;min-width:120px;margin-bottom:0">
+              <label class="form-label">Sort By</label>
+              <select class="form-control" id="nuclei-sort-by" onchange="nucleiSortBy=this.value;renderNucleiTemplates()" style="margin-bottom:0">
+                <option value="default">Default</option>
+                <option value="severity">Severity (High-Low)</option>
+                <option value="cve">Year / CVE</option>
+                <option value="alpha">Alphabetical (A-Z)</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:0;flex-shrink:0">
+              <button class="btn btn-sm btn-primary" id="btn-toggle-nuclei-opts" onclick="toggleNucleiOptions()" style="margin-bottom:0">🔧 Options</button>
+              <button class="btn btn-sm" onclick="clearNucleiFilters()" style="margin-bottom:0">✕ Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Collapsible Advanced Options Panel -->
+        <div class="nuclei-options-panel" id="nuclei-options-panel">
+          <div style="font-weight:700; font-size:13px; color:var(--accent); margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:6px;">🔧 Advanced nuclei CLI Options</div>
+          <div class="nuclei-opt-grid">
+            <label class="nuclei-checkbox-label">
+              <input type="checkbox" id="nuclei-opt-silent" onchange="renderNucleiTemplates()">
+              <span><code>-silent</code> (Silent Mode)</span>
+            </label>
+            <label class="nuclei-checkbox-label">
+              <input type="checkbox" id="nuclei-opt-stats" onchange="renderNucleiTemplates()">
+              <span><code>-stats</code> (Show Statistics)</span>
+            </label>
+            <label class="nuclei-checkbox-label">
+              <input type="checkbox" id="nuclei-opt-nometa" onchange="renderNucleiTemplates()">
+              <span><code>-no-meta</code> (Omit Metadata)</span>
+            </label>
+            <label class="nuclei-checkbox-label">
+              <input type="checkbox" id="nuclei-opt-json" onchange="renderNucleiTemplates()">
+              <span><code>-json</code> (JSON Output)</span>
+            </label>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label" style="font-size:11px; margin-bottom:4px;">Concurrency (<code>-c</code>)</label>
+              <select class="form-control form-control-sm" id="nuclei-opt-concurrency" onchange="renderNucleiTemplates()" style="margin-bottom:0; font-family:var(--mono);">
+                <option value="">Default Concurrency</option>
+                <option value="10">Stealth (-c 10)</option>
+                <option value="50">Fast (-c 50)</option>
+                <option value="150">High Speed (-c 150)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <div style="font-size:12px; color:var(--text3); font-family:var(--mono)" id="nuclei-total-count">Showing 0 templates</div>
+        </div>
+
+        <div id="nuclei-template-list" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+
+      <!-- MODAL/OVERLAY: Nuclei Simulator Terminal Console -->
+      <div class="nuclei-terminal-overlay" id="modal-nuclei-terminal">
+        <div class="nuclei-terminal-container">
+          <div class="nuclei-terminal-header">
+            <div class="nuclei-terminal-title">☢️ Nuclei Scan Simulator Console</div>
+            <div class="nuclei-terminal-status">
+              <span class="nuclei-terminal-status-dot" id="nuclei-term-status-dot"></span>
+              <span id="nuclei-term-status-text">Idle</span>
+            </div>
+          </div>
+          <div class="nuclei-terminal-progress-container">
+            <div class="nuclei-terminal-progress-bar">
+              <div class="nuclei-terminal-progress-fill" id="nuclei-term-progress-fill"></div>
+            </div>
+            <div class="nuclei-terminal-progress-text" id="nuclei-term-progress-text">0%</div>
+          </div>
+          <div class="nuclei-terminal-body" id="nuclei-term-body">
+            <div class="nuclei-terminal-line"><span class="term-prompt">0xhunter@antigravity:~$</span> nuclei -version</div>
+            <div class="nuclei-terminal-line">v3.2.4</div>
+          </div>
+          <div class="nuclei-terminal-footer">
+            <button class="btn btn-sm btn-danger" id="nuclei-term-stop-btn" onclick="stopSimulatedNucleiScan()" style="display:none">Stop Scan</button>
+            <button class="btn btn-sm" onclick="clearNucleiTerminal()">Clear Console</button>
+            <button class="btn btn-sm btn-primary" onclick="closeNucleiTerminal()">Close Console</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GITHUB RESOURCES -->
+      <div class="page" id="page-github">
+        <div class="page-header">
+          <div class="page-title"><span>📚</span> GitHub Resources</div>
+          <div class="page-subtitle">Curated list of essential tools, wordlists, and guides for bug bounty hunting and pentesting.</div>
+        </div>
+        <div class="card mb20">
+          <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+            <div class="form-group" style="flex:1;min-width:200px;margin-bottom:0">
+              <label class="form-label">Search Tools &amp; Resources</label>
+              <input type="search" class="form-control" id="gh-search" placeholder="Search by name, tag, or description..." oninput="ghSearch=this.value;renderGithubResources()">
+            </div>
+            <div class="form-group" style="min-width:140px;margin-bottom:0">
+              <label class="form-label">Sort By</label>
+              <select class="form-control" id="gh-sort" onchange="ghSortBy=this.value;renderGithubResources()">
+                <option value="default">Default List</option>
+                <option value="stars_desc">⭐ Stars (High to Low)</option>
+                <option value="alpha_asc">🔤 Alphabetical (A-Z)</option>
+              </select>
+            </div>
+            <button class="btn btn-sm" style="flex-shrink:0;margin-bottom:0" onclick="document.getElementById('gh-toolkit-upload').click()">⬆️ Import</button>
+            <input type="file" id="gh-toolkit-upload" accept=".json" style="display:none" onchange="importGhToolkit(event)">
+            <button class="btn btn-sm" style="flex-shrink:0;margin-bottom:0" onclick="exportGhToolkit()">⬇️ Export</button>
+            <button class="btn btn-primary btn-sm" style="flex-shrink:0;margin-bottom:0" onclick="openModal('modal-add-gh')">➕ Add Resource</button>
+            <button class="btn btn-sm" style="flex-shrink:0;margin-bottom:0" onclick="ghSearch='';ghCategoryFilter='';ghSortBy='default';document.getElementById('gh-search').value='';document.getElementById('gh-sort').value='default';renderGithubResources()">✕ Clear</button>
+          </div>
+          <div class="gh-filter-bar" id="gh-filter-bar" style="margin-top:14px;margin-bottom:0"></div>
+        </div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:14px;font-family:var(--mono)" id="gh-total-count">0 tools</div>
+        <div id="gh-resources-list"></div>
+      </div>
+
+      <!-- OSINT HUB -->
+      <div class="page" id="page-osint">
+        <div class="page-header">
+          <div class="page-title"><span style="background:linear-gradient(135deg, var(--accent), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">OSINT Hub</span></div>
+          <div class="page-subtitle">Passive threat intelligence collection, domain lookups, username checking, email breach discovery, IP info, and EXIF extraction.</div>
+        </div>
+
+        <!-- OSINT Module Tabs -->
+        <div class="tools-cat-pills" id="osint-module-tabs" style="margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px; gap: 8px;">
+          <button class="tools-cat-pill active" onclick="switchOsintModule('domain', this)"><span>🌐</span> Domain / Web</button>
+          <button class="tools-cat-pill" onclick="switchOsintModule('username', this)"><span>👤</span> Username / Social</button>
+          <button class="tools-cat-pill" onclick="switchOsintModule('email', this)"><span>📧</span> Email / Breaches</button>
+          <button class="tools-cat-pill" onclick="switchOsintModule('ip', this)"><span>🔌</span> IP / Network</button>
+          <button class="tools-cat-pill" onclick="switchOsintModule('exif', this)"><span>📷</span> File Metadata (EXIF)</button>
+          <button class="tools-cat-pill" onclick="switchOsintModule('cli', this)"><span>💻</span> CLI Commands</button>
+        </div>
+        <!-- DOMAIN OSINT SECTION -->
+        <div class="osint-module-section" id="osint-sec-domain">
+          <div class="card" style="margin-bottom: 24px; border-color: rgba(167,139,250,0.3); box-shadow: 0 0 20px rgba(167,139,250,0.05);">
+            <div class="card-head">
+              <div class="card-head-title">🌐 Target Domain OSINT & Dorks</div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+              <input type="text" class="form-control" id="osint-target" placeholder="Enter target domain (e.g. target.com)" style="flex: 1; min-width: 240px; margin-bottom: 0;" onkeyup="updateOsintDomain()">
+              <button class="btn btn-primary" onclick="setOsintTargetFromActive()">Use Active Target</button>
+            </div>
+            
+            <div class="tools-cat-pills" id="osint-tabs" style="margin-bottom: 16px; gap: 8px;">
+              <button class="tools-cat-pill active" onclick="switchOsintTab('google', this)"><span>🌐</span> Google Dorks</button>
+              <button class="tools-cat-pill" onclick="switchOsintTab('github', this)"><span>💻</span> GitHub Search</button>
+              <button class="tools-cat-pill" onclick="switchOsintTab('intel', this)"><span>🛡️</span> Threat Intel</button>
+              <button class="tools-cat-pill" onclick="switchOsintTab('archives', this)"><span>📂</span> Archives & History</button>
+            </div>
+            
+            <div id="osint-dork-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;"></div>
+          </div>
+
+          <!-- Interactive DNS & WHOIS lookup cards -->
+          <div class="g2" style="margin-top: 24px; margin-bottom: 24px;">
+            <div class="card" style="border-color: rgba(139,92,246,0.3); margin-bottom: 0;">
+              <div class="card-head" style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="card-head-title">📡 Live DNS Lookup</div>
+                <button class="btn btn-sm btn-primary" onclick="lookupDnsRecords()" style="margin-bottom:0; font-size:11px; padding:4px 10px;">Resolve DNS ⚡</button>
+              </div>
+              <div id="dns-lookup-result" style="margin-top: 12px; overflow-x: auto; max-height: 400px;">
+                <div class="empty-state" style="padding: 20px 0;">
+                  <div class="es-icon" style="font-size: 24px;">📡</div>
+                  <div class="es-sub" style="font-size:12px; color:var(--text3);">Click "Resolve DNS" to fetch live DNS records via Cloudflare DoH</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card" style="border-color: rgba(139,92,246,0.3); margin-bottom: 0;">
+              <div class="card-head" style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="card-head-title">🔍 WHOIS (RDAP) Lookup</div>
+                <button class="btn btn-sm btn-primary" onclick="lookupWhoisDetails()" style="margin-bottom:0; font-size:11px; padding:4px 10px;">Fetch WHOIS ⚡</button>
+              </div>
+              <div id="whois-lookup-result" style="margin-top: 12px; overflow-x: auto; max-height: 400px;">
+                <div class="empty-state" style="padding: 20px 0;">
+                  <div class="es-icon" style="font-size: 24px;">🔍</div>
+                  <div class="es-sub" style="font-size:12px; color:var(--text3);">Click "Fetch WHOIS" to query standard RDAP registration data</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- USERNAME OSINT SECTION -->
+        <div class="osint-module-section" id="osint-sec-username" style="display: none;">
+          <div class="card" style="margin-bottom: 24px; border-color: rgba(56,189,248,0.3); box-shadow: 0 0 20px rgba(56,189,248,0.05);">
+            <div class="card-head">
+              <div class="card-head-title">👤 Username Profile Lookup & Social Search</div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+              <input type="text" class="form-control" id="osint-username-input" placeholder="Enter username (e.g. admin123)" style="flex: 1; min-width: 240px; margin-bottom: 0;" onkeyup="updateOsintUsername()">
+              <button class="btn btn-primary" onclick="checkAllUsernames()">🚀 Search Platforms</button>
+              <button class="btn" onclick="openAllUsernames()">🌐 Open All Links</button>
+              <button class="btn" onclick="copyUsernameUrls()">📋 Copy URLs</button>
+            </div>
+            
+            <!-- Scan progress & log terminal -->
+            <div id="username-scan-status" style="display: none; margin-top: 16px; margin-bottom: 16px; border: 1px solid var(--border); border-radius: var(--r); padding: 16px; background: var(--bg2);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 12px;">
+                <span id="username-scan-progress-label" style="font-weight: 700; color: var(--accent);">Scanning: 0%</span>
+                <span id="username-scan-stats" style="color: var(--text3); font-family: var(--mono);">0/0 verified</span>
+              </div>
+              <div style="height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 12px;">
+                <div id="username-scan-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent), var(--purple)); transition: width 0.1s ease;"></div>
+              </div>
+              
+              <div>
+                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text3); font-weight:700; margin-bottom:6px;">Live Scan Console</div>
+                <pre class="terminal-block" id="username-scan-log" style="background:#090d16; border:1px solid rgba(56,189,248,0.2); border-radius:var(--r); padding:10px 14px; color:#38bdf8; font-family:var(--mono); font-size:12px; height: 120px; overflow-y:auto; margin:0; line-height: 1.5; text-align: left;"></pre>
+              </div>
+            </div>
+
+            <div id="username-results-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- EMAIL OSINT SECTION -->
+        <div class="osint-module-section" id="osint-sec-email" style="display: none;">
+          <div class="card" style="margin-bottom: 24px; border-color: rgba(34,197,94,0.3); box-shadow: 0 0 20px rgba(34,197,94,0.05);">
+            <div class="card-head">
+              <div class="card-head-title">📧 Email Breach & Profile Analyzer</div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+              <input type="text" class="form-control" id="osint-email-input" placeholder="Enter email address (e.g. user@domain.com)" style="flex: 1; min-width: 240px; margin-bottom: 0;" onkeyup="updateOsintEmail()">
+              <button class="btn btn-primary" onclick="lookupEmailProfiles()">🔍 Analyze Email</button>
+            </div>
+            <div class="g2 mb20">
+              <div class="card" style="background:var(--bg3); margin-bottom: 0;">
+                <div class="card-head"><div class="card-head-title">👤 Gravatar & Public Profiles</div></div>
+                <div id="email-gravatar-result" style="padding:10px 0;">
+                  <div class="empty-state" style="padding:16px 0;"><div class="es-icon" style="font-size:24px;">📧</div><div class="es-sub">Enter an email to lookup Gravatar profile info</div></div>
+                </div>
+              </div>
+              <div class="card" style="background:var(--bg3); margin-bottom: 0;">
+                <div class="card-head"><div class="card-head-title">⚡ Intel & Breaches Quick Searches</div></div>
+                <div id="email-breach-grid" style="display:flex; flex-direction:column; gap:8px;">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- IP OSINT SECTION -->
+        <div class="osint-module-section" id="osint-sec-ip" style="display: none;">
+          <div class="card" style="margin-bottom: 24px; border-color: rgba(239,68,68,0.3); box-shadow: 0 0 20px rgba(239,68,68,0.05);">
+            <div class="card-head">
+              <div class="card-head-title">🔌 IP Intelligence & Geolocation</div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+              <input type="text" class="form-control" id="osint-ip-input" placeholder="Enter IPv4/IPv6 Address (e.g. 8.8.8.8)" style="flex: 1; min-width: 240px; margin-bottom: 0;" onkeyup="updateOsintIP()">
+              <button class="btn btn-primary" onclick="lookupIpDetails()">📡 Geolocation Lookup</button>
+            </div>
+            <div class="g2 mb20">
+              <div class="card" style="background:var(--bg3); margin-bottom: 0;">
+                <div class="card-head"><div class="card-head-title">📍 Live Geolocation Details</div></div>
+                <div id="ip-geolocation-result" style="padding:10px 0;">
+                  <div class="empty-state" style="padding:16px 0;"><div class="es-icon" style="font-size:24px;">📡</div><div class="es-sub">Enter IP and click lookup for live geodata</div></div>
+                </div>
+              </div>
+              <div class="card" style="background:var(--bg3); margin-bottom: 0;">
+                <div class="card-head"><div class="card-head-title">🔗 Threat Intel Portals</div></div>
+                <div id="ip-portals-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Interactive Port Scan Card -->
+            <div class="card" style="border-color: rgba(239,68,68,0.3); margin-top: 20px;">
+              <div class="card-head" style="display:flex; justify-content:space-between; align-items:center;">
+                <div class="card-head-title">⚡ Quick Port Scanner</div>
+                <button class="btn btn-sm btn-primary" onclick="runPortScan()" style="margin-bottom:0; font-size:11px; padding:4px 10px;">Scan Standard Ports 🔍</button>
+              </div>
+              <div id="port-scan-result" style="margin-top:12px;">
+                <div class="empty-state" style="padding:16px 0;">
+                  <div class="es-icon" style="font-size:24px;">⚡</div>
+                  <div class="es-sub" style="font-size:12px; color:var(--text3);">Click "Scan Standard Ports" to perform a live, passive TCP port scan</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FILE METADATA SECTION -->
+        <div class="osint-module-section" id="osint-sec-exif" style="display: none;">
+          <div class="card" style="margin-bottom: 24px; border-color: rgba(234,179,8,0.3); box-shadow: 0 0 20px rgba(234,179,8,0.05);">
+            <div class="card-head">
+              <div class="card-head-title">📷 File Metadata (EXIF) Extractor</div>
+            </div>
+            <div style="margin-top: 12px; margin-bottom: 16px;">
+              <div id="exif-dropzone" class="exif-dropzone" onclick="document.getElementById('exif-file-input').click()">
+                <div style="font-size: 32px; margin-bottom: 10px;">📤</div>
+                <div style="font-weight:700; font-size:14px; color:var(--text1);">Drag & Drop Image or Click to Browse</div>
+                <div style="font-size:11px; color:var(--text3); margin-top:4px;">Supports JPEG/JPG & PNG files. Processing is 100% client-side.</div>
+              </div>
+              <input type="file" id="exif-file-input" style="display:none;" onchange="handleExifUpload(event)">
+            </div>
+            
+            <div id="exif-results-container" style="display: none; margin-top: 20px;">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+                
+                <!-- Card 1: File details & parsed tags -->
+                <div class="card" style="background:var(--bg3); margin-bottom: 0; display: flex; flex-direction: column;">
+                  <div class="card-head" style="border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
+                    <div class="card-head-title">📁 File Details & Metadata Tags</div>
+                  </div>
+                  <div style="overflow-x: auto; flex-grow: 1; max-height: 450px; overflow-y: auto;">
+                    <table class="table" style="width:100%; font-size:12px; border-collapse: collapse;">
+                      <thead>
+                        <tr>
+                          <th style="text-align:left; padding: 8px; border-bottom: 1px solid var(--border); color: var(--text2);">Tag Name</th>
+                          <th style="text-align:left; padding: 8px; border-bottom: 1px solid var(--border); color: var(--text2);">Value</th>
+                        </tr>
+                      </thead>
+                      <tbody id="exif-tags-table-body">
+                        <!-- Populated by JS -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- Card 2: Image Preview & ASCII Inspector -->
+                <div class="card" style="background:var(--bg3); margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
+                  <div>
+                    <div class="card-head" style="border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
+                      <div class="card-head-title">🖼️ Image Preview & Analysis</div>
+                    </div>
+                    <div style="text-align: center; background: rgba(0,0,0,0.3); border-radius: var(--r); padding: 12px; border: 1px dashed var(--border); position: relative; min-height: 180px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                      <img id="exif-preview-img" style="max-width: 100%; max-height: 220px; object-fit: contain; border-radius: 4px; display: none;" />
+                      <div id="exif-preview-placeholder" style="color: var(--text3); font-size: 12px;">
+                        <span style="font-size: 32px; display: block; margin-bottom: 8px;">🖼️</span>
+                        No preview available
+                      </div>
+                    </div>
+                    <div id="exif-meta-badges" style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+                      <!-- Populated by JS -->
+                    </div>
+                  </div>
+                  
+                  <div style="margin-top: 16px;">
+                    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text3); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                      <span>⌨️</span> Potential Metadata Strings
+                    </div>
+                    <div id="exif-ascii-console" style="background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 4px; padding: 10px; font-family: var(--mono); font-size: 11px; color: var(--accent); max-height: 120px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;">
+                      <!-- Populated by JS -->
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 3: Geolocation Map Details -->
+                <div class="card" style="background:var(--bg3); margin-bottom: 0; display: flex; flex-direction: column;">
+                  <div class="card-head" style="border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
+                    <div class="card-head-title">🗺️ Geolocation Map & Details</div>
+                  </div>
+                  <div id="exif-gps-details" style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <!-- Populated by JS -->
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CLI CHEAT SHEETS SECTION -->
+        <div class="osint-module-section" id="osint-sec-cli" style="display: none;">
+          <div class="card" style="margin-bottom: 24px; border-color: rgba(139,92,246,0.3); box-shadow: 0 0 20px rgba(139,92,246,0.05);">
+            <div class="card-head">
+              <div class="card-head-title">💻 OSINT CLI Commands Cheat Sheet Generator</div>
+            </div>
+            <div class="g2" style="margin-top: 12px; gap: 20px;">
+              <div>
+                <div class="form-group">
+                  <label class="form-label">Select OSINT Tool</label>
+                  <select class="form-control" id="osint-cli-tool-select" onchange="renderCliSec()">
+                    <option value="sherlock">👤 sherlock (Username Search)</option>
+                    <option value="holehe">📧 holehe (Email Registered Sites)</option>
+                    <option value="amass">🌐 amass (Subdomains & ASN Mapping)</option>
+                    <option value="subfinder">🔍 subfinder (Passive Subdomain Discovery)</option>
+                    <option value="theharvester">🌾 theHarvester (Emails, Names, Hosts)</option>
+                    <option value="phoneinfoga">📞 phoneinfoga (Phone Number Intelligence)</option>
+                    <option value="spiderfoot">🕷️ spiderfoot (OSINT Automation)</option>
+                    <option value="gowitness">📸 gowitness (Web Screenshot)</option>
+                    <option value="dnsrecon">🧬 dnsrecon (DNS Reconnaissance)</option>
+                    <option value="whois">🔍 whois (Domain WHOIS Query)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">OSINT Target Input</label>
+                  <input class="form-control" id="osint-cli-target-input" placeholder="e.g. target.com, user123, email@domain.com" value="" onkeyup="renderCliCommand()">
+                </div>
+                <div id="osint-cli-options-wrap">
+                  <!-- Populated by JS based on select -->
+                </div>
+              </div>
+              <div style="display:flex; flex-direction:column; justify-content:space-between;">
+                <div>
+                  <label class="form-label">Tool Description & Installation</label>
+                  <div id="osint-cli-tool-info" style="font-size:12.5px; color:var(--text2); line-height:1.5; padding:12px; background:var(--bg3); border-radius:var(--r); border:1px solid var(--border); margin-bottom:12px;"></div>
+                </div>
+                <div>
+                  <label class="form-label">Run Command</label>
+                  <div style="position:relative;">
+                    <pre class="terminal-block" style="background:#090d16; border:1px solid var(--accent); border-radius:var(--r); padding:16px; color:#38bdf8; font-family:var(--mono); font-size:12.5px; overflow-x:auto; margin:0;"><code id="osint-cli-command-code">sherlock target</code></pre>
+                    <button class="btn btn-sm btn-primary" onclick="copyCliCommand()" style="position:absolute; right:8px; top:8px; font-size:11px; padding:3px 8px;">Copy</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOOKMARKS -->
+      <div class="page" id="page-bookmarks">
+        <div class="page-header">
+          <div class="page-title"><span style="background:linear-gradient(135deg, var(--accent), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Bookmarks</span></div>
+          <div class="page-subtitle">Massive collection of bookmark resources, search engines, and hacking tools. Add your own custom bookmarks.</div>
+        </div>
+
+        <!-- SEARCH BAR -->
+        <div class="bm-search-wrap">
+          <div class="tools-search-bar-row">
+            <div class="tools-search-input-wrap">
+              <span class="tools-search-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              </span>
+              <input
+                class="tools-search-input"
+                id="bm-search-input"
+                type="text"
+                placeholder="Search OSINT tools by name, url, or tag..."
+                oninput="bmSearchQuery = this.value; renderBookmarks()"
+                autocomplete="off"
+              >
+              <div class="tools-search-clear" id="bm-search-clear" onclick="document.getElementById('bm-search-input').value=''; bmSearchQuery=''; renderBookmarks()" title="Clear Search">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </div>
+            </div>
+            <div class="tools-search-meta" id="bm-search-count" style="color:var(--accent); font-weight:700;">0 bookmarks</div>
+          </div>
+          <!-- Filter Pills -->
+          <div class="tools-cat-pills" id="bm-cat-pills" style="margin-top:16px;"></div>
+        </div>
+
+        <datalist id="bm-categories-list"></datalist>
+        <div id="bookmarks-list"></div>
+      </div>
+
+      <!-- REPORT GENERATOR -->
+      <div class="page" id="page-report">
+        <div class="page-header"><div class="page-title"><span>📄</span> Report Generator</div><div class="page-subtitle">Generate professional vulnerability reports from your findings.</div></div>
+        <div class="g2" style="margin-bottom:14px;">
+          <div class="card">
+            <div class="card-head"><div class="card-head-title">⚙️ Configure</div></div>
+            <div class="form-group"><label class="form-label">Report Title</label><input type="text" class="form-control" id="rpt-title" placeholder="Bug Bounty Report — Acme Corp" oninput="updateReport()"></div>
+            <div class="form-group"><label class="form-label">Researcher / Handle</label><input type="text" class="form-control" id="rpt-researcher" placeholder="0xHunter" oninput="updateReport()"></div>
+            <div class="form-group"><label class="form-label">Program (optional)</label><select class="form-control" id="rpt-target" onchange="updateReport()"><option value="">— Optional program —</option></select></div>
+            <div class="form-group"><label class="form-label">Select Finding</label><select class="form-control" id="rpt-finding" onchange="updateReport()"><option value="">— Select a Finding —</option></select></div>
+            <div class="form-group"><label class="form-label">Format</label><select class="form-control" id="rpt-format" onchange="updateReport()"><option value="markdown">Markdown</option><option value="html">HTML Document</option><option value="text">Plain Text</option></select></div>
+            <div class="form-group"><label class="form-label">Additional Impact Context</label><textarea class="form-control" id="rpt-context" placeholder="Impact, affected users, business logic..." style="height:80px;" oninput="updateReport()"></textarea></div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-primary" onclick="updateReport()">🔄 Generate</button>
+              <button class="btn" onclick="copyReport()">📋 Copy</button>
+              <button class="btn btn-green" onclick="downloadReport()">⬇ Download</button>
+            </div>
+          </div>
+          <div class="card"><div class="card-head"><div class="card-head-title">📄 Report Preview</div></div>
+            <div class="report-preview" id="report-preview">Select a finding and click Generate...</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<input type="file" id="import-file" accept=".json" style="display:none;" onchange="handleImport(event)">
+<script src="/static/js/bookmarks.js?v=5" defer></script>
+<script src="/static/js/huntkit.js?v=2" defer></script>
+<script src="/static/js/gh_resources.js?v=4" defer></script>
+<script src="/static/js/app.js?v=5" defer></script>
+<script src="/static/js/features.js?v=2" defer></script>
+<script src="/static/js/oob.js?v=2" defer></script>
+
+<!-- Quickview Slide-out Drawer -->
+<div class="quickview-overlay" id="quickview-overlay" onclick="closeQuickviewDrawer()"></div>
+<div class="quickview-drawer" id="quickview-drawer">
+  <div class="quickview-drawer-header">
+    <div class="quickview-drawer-title" id="quickview-drawer-title">Finding Details</div>
+    <button class="btn btn-sm btn-danger" onclick="closeQuickviewDrawer()" style="margin-bottom:0;padding:2px 6px;">✕ Close</button>
+  </div>
+  <div class="quickview-drawer-body" id="quickview-drawer-body">
+    <!-- Loaded dynamically -->
+  </div>
+</div>
+
+</body></html>

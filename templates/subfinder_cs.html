@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Subfinder Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/theme.css">
+<style>
+  :root {
+    --color-background-primary: var(--bg2, #0d1220);
+    --color-background-secondary: var(--bg3, #131929);
+    --color-background-tertiary: var(--bg4, #1c2538);
+    --color-border-secondary: var(--border-light, rgba(255,255,255,0.12));
+    --color-border-tertiary: var(--border, rgba(255,255,255,0.07));
+    --color-text-primary: var(--text, #e2eaf6);
+    --color-text-secondary: var(--text2, #8b9ec5);
+    --color-text-tertiary: var(--text3, #566283);
+    --font-sans: var(--font, 'Inter', sans-serif);
+    --font-mono: var(--mono, monospace);
+    --border-radius-lg: var(--r2, 10px);
+    --border-radius-md: var(--r, 6px);
+  }
+  body {
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    background: var(--bg);
+  }
+</style>
+<script>
+  // Apply saved theme from 0xhunter_v2
+  try {
+    const sData = localStorage.getItem('0xhunter_v2');
+    if (sData) {
+      const parsed = JSON.parse(sData);
+      if (parsed.theme && parsed.theme !== 'cyber') {
+        document.documentElement.classList.add('theme-' + parsed.theme);
+      }
+    }
+  } catch(e) {}
+</script>
+</head>
+<body>
+
+<style>
+  :root { --gap: 24px; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); color: var(--color-text-primary); }
+
+  .cs-wrap { padding: 0 8px; width: 100%; max-width: 100%; }
+  .sr-only { display: none; }
+
+  .cs-header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--color-border-tertiary); }
+  .cs-header h1 { font-size: 24px; font-weight: 600; color: var(--color-text-primary); letter-spacing: -0.5px; display: flex; align-items: center; gap: 12px; }
+  .cs-header p { font-size: 14px; color: var(--color-text-secondary); margin-top: 8px; font-weight: 400; }
+
+  .tab-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 2.5rem; }
+  .tab-btn {
+    font-family: var(--font-sans); font-size: 13px; font-weight: 500;
+    padding: 8px 16px; border-radius: 6px;
+    border: 1px solid var(--color-border-tertiary);
+    background: transparent; color: var(--color-text-secondary);
+    cursor: pointer; transition: all 0.2s ease;
+  }
+  .tab-btn:hover { background: rgba(255,255,255,0.05); color: var(--color-text-primary); border-color: var(--color-border-secondary); }
+  .tab-btn.active { background: rgba(0, 240, 255, 0.1); border-color: var(--accent, #00f0ff); color: var(--accent, #00f0ff); }
+
+  .section { display: none; flex-direction: column; gap: var(--gap); animation: fadeIn 0.3s ease; }
+  .section.visible { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin-bottom: 2rem;
+  }
+  
+  .card-label {
+    font-family: var(--font-sans); font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--color-text-secondary); margin-bottom: 20px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .cmd-row {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px; align-items: start;
+  }
+
+  .cmd-item { display: flex; flex-direction: column; gap: 8px; }
+  
+  code, .pipe-code {
+    font-family: var(--font-mono); font-size: 13px;
+    background: var(--color-background-secondary);
+    color: var(--accent, #00f0ff);
+    padding: 16px 24px; border-radius: 8px;
+    word-break: break-all; display: block; width: 100%;
+    border: 1px solid var(--color-border-tertiary);
+    line-height: 1.6;
+  }
+  
+  .cmd-desc, .pipe-desc {
+    font-family: var(--font-sans); font-size: 13px;
+    color: var(--color-text-secondary);
+    line-height: 1.5; margin-left: 4px;
+  }
+
+  .cmd-full {
+    display: flex; flex-direction: column; gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 3px 8px; border-radius: 4px; margin-left: 8px;
+    font-family: var(--font-sans);
+  }
+  .badge-purple { background: rgba(188, 19, 254, 0.15); color: #bc13fe; border: 1px solid rgba(188, 19, 254, 0.3); }
+  .badge-teal   { background: rgba(0, 240, 255, 0.15); color: #00f0ff; border: 1px solid rgba(0, 240, 255, 0.3); }
+  .badge-amber  { background: rgba(255, 170, 0, 0.15); color: #ffaa00; border: 1px solid rgba(255, 170, 0, 0.3); }
+  .badge-coral  { background: rgba(255, 68, 68, 0.15); color: #ff4444; border: 1px solid rgba(255, 68, 68, 0.3); }
+
+  .tip-box {
+    background: transparent;
+    border-left: 3px solid var(--accent, #00f0ff);
+    padding: 8px 16px;
+    font-family: var(--font-sans); font-size: 13px;
+    color: var(--color-text-secondary); line-height: 1.6;
+    margin-top: 12px;
+  }
+  .tip-box strong { color: var(--accent, #00f0ff); font-weight: 600; font-size: 12px; margin-right: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .flag-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+  .flag-table th {
+    font-family: var(--font-sans); font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1px;
+    color: var(--color-text-secondary); text-align: left;
+    padding: 12px 16px; border-bottom: 1px solid var(--color-border-secondary);
+  }
+  .flag-table td {
+    padding: 12px 16px; border-bottom: 1px solid var(--color-border-tertiary);
+    vertical-align: middle; color: var(--color-text-primary);
+  }
+  .flag-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .flag-table tr:last-child td { border-bottom: none; }
+  .flag-table td:nth-child(1) { font-family: var(--font-mono); color: var(--accent, #00f0ff); }
+  .flag-table td:nth-child(2) { font-family: var(--font-sans); color: var(--color-text-secondary); }
+  .flag-table td:nth-child(3) { font-family: var(--font-mono); color: var(--color-text-tertiary); font-size: 12px; }
+
+  .pipeline-row { display: flex; flex-direction: column; gap: 24px; }
+  .pipe-item { display: flex; flex-direction: column; gap: 8px; }
+  .pipe-label { font-family: var(--font-sans); font-size: 14px; font-weight: 500; color: var(--color-text-primary); display: flex; align-items: center; margin-left: 4px; }
+</style>
+
+<div class="cs-wrap">
+  <h2 class="sr-only">Subfinder cheat sheet — flags, commands, sources, and pipeline examples</h2>
+
+  <div class="cs-header">
+    <h1>Subfinder cheat sheet <span class="badge badge-purple">v2.x</span></h1>
+    <p>Fast passive subdomain enumeration tool by ProjectDiscovery</p>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="show('basics')">Basics</button>
+    <button class="tab-btn" onclick="show('flags')">All flags</button>
+    <button class="tab-btn" onclick="show('output')">Output & filtering</button>
+    <button class="tab-btn" onclick="show('sources')">Sources</button>
+    <button class="tab-btn" onclick="show('pipelines')">Pipelines</button>
+    <button class="tab-btn" onclick="show('config')">Config</button>
+  </div>
+
+  <!-- BASICS -->
+  <div id="basics" class="section visible">
+
+    <div class="card">
+      <div class="card-label">Installation</div>
+      <div class="pipeline-row">
+        <div class="pipe-item">
+          <div class="pipe-label">Go install</div>
+          <div class="pipe-code">go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest</div>
+        </div>
+        <div class="pipe-item">
+          <div class="pipe-label">Docker</div>
+          <div class="pipe-code">docker pull projectdiscovery/subfinder:latest</div>
+        </div>
+        <div class="pipe-item">
+          <div class="pipe-label">Homebrew (macOS/Linux)</div>
+          <div class="pipe-code">brew install subfinder</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Core usage</div>
+      <div class="cmd-row">
+        <div class="cmd-item">
+          <code>subfinder -d example.com</code>
+          <span class="cmd-desc">Basic single domain enum</span>
+        </div>
+        <div class="cmd-item">
+          <code>subfinder -d example.com -v</code>
+          <span class="cmd-desc">Verbose — show sources per result</span>
+        </div>
+        <div class="cmd-item">
+          <code>subfinder -d example.com -o out.txt</code>
+          <span class="cmd-desc">Save results to file</span>
+        </div>
+        <div class="cmd-item">
+          <code>subfinder -d example.com -oJ</code>
+          <span class="cmd-desc">JSON output (stdout)</span>
+        </div>
+        <div class="cmd-item">
+          <code>subfinder -dL domains.txt</code>
+          <span class="cmd-desc">Read domains from file</span>
+        </div>
+        <div class="cmd-item">
+          <code>subfinder -d example.com -silent</code>
+          <span class="cmd-desc">Only print subdomains (clean pipe)</span>
+        </div>
+        <div class="cmd-item">
+          <code>subfinder -d example.com -all</code>
+          <span class="cmd-desc">Use all available sources</span>
+        </div>
+        <div class="cmd-item">
+          <code>subfinder -d example.com -recursive</code>
+          <span class="cmd-desc">Recursive on found subdomains</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Quick rate & concurrency</div>
+      <div class="cmd-row">
+        <div class="cmd-item">
+          <code>subfinder -d example.com -t 10</code>
+          <span class="cmd-desc">10 concurrent goroutines</span>
+        </div>
+        <div class="cmd-item">
+          <code>subfinder -d example.com -timeout 30</code>
+          <span class="cmd-desc">30s timeout per source</span>
+        </div>
+        <div class="cmd-item">
+          <code>subfinder -d example.com -rl 100</code>
+          <span class="cmd-desc">100 requests/min rate limit</span>
+        </div>
+        <div class="cmd-item">
+          <code>subfinder -d example.com -max-time 5</code>
+          <span class="cmd-desc">Cap total runtime to 5 min</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <strong>Pro tip:</strong> Always use <code style="background:none;padding:0;color:#534AB7;">-silent</code> when piping into other tools (httpx, naabu, nuclei) so only subdomains are emitted to stdout — no banners, no logs.
+    </div>
+
+  </div>
+
+  <!-- ALL FLAGS -->
+  <div id="flags" class="section">
+    <div class="card">
+      <div class="card-label">Input flags</div>
+      <table class="flag-table">
+        <tr><th>Flag</th><th>Description</th><th>Default</th></tr>
+        <tr><td>-d &lt;domain&gt;</td><td>Target domain</td><td>—</td></tr>
+        <tr><td>-dL &lt;file&gt;</td><td>List of target domains file</td><td>—</td></tr>
+        <tr><td>-r &lt;resolvers&gt;</td><td>Custom resolvers (comma-sep or file)</td><td>System</td></tr>
+        <tr><td>-rL &lt;file&gt;</td><td>File with list of custom resolvers</td><td>—</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-label">Source flags</div>
+      <table class="flag-table">
+        <tr><th>Flag</th><th>Description</th><th>Default</th></tr>
+        <tr><td>-s &lt;sources&gt;</td><td>Specific sources to use (comma-sep)</td><td>All free</td></tr>
+        <tr><td>-es &lt;sources&gt;</td><td>Exclude specific sources</td><td>None</td></tr>
+        <tr><td>-all</td><td>Use all sources incl. paid</td><td>false</td></tr>
+        <tr><td>-recursive</td><td>Run subfinder recursively on results</td><td>false</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-label">Output flags</div>
+      <table class="flag-table">
+        <tr><th>Flag</th><th>Description</th><th>Default</th></tr>
+        <tr><td>-o &lt;file&gt;</td><td>Output to file</td><td>stdout</td></tr>
+        <tr><td>-oJ</td><td>JSON output</td><td>false</td></tr>
+        <tr><td>-oD &lt;dir&gt;</td><td>Output to directory (per domain file)</td><td>—</td></tr>
+        <tr><td>-oI</td><td>IP address in output</td><td>false</td></tr>
+        <tr><td>-cs</td><td>Include source in output</td><td>false</td></tr>
+        <tr><td>-v</td><td>Verbose — show sources per sub</td><td>false</td></tr>
+        <tr><td>-silent</td><td>Subdomain-only output (no logs)</td><td>false</td></tr>
+        <tr><td>-no-color</td><td>Disable color output</td><td>false</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-label">Tuning flags</div>
+      <table class="flag-table">
+        <tr><th>Flag</th><th>Description</th><th>Default</th></tr>
+        <tr><td>-t &lt;n&gt;</td><td>Number of concurrent goroutines</td><td>10</td></tr>
+        <tr><td>-timeout &lt;n&gt;</td><td>Seconds timeout per source</td><td>30</td></tr>
+        <tr><td>-rl &lt;n&gt;</td><td>Global rate limit (req/min)</td><td>—</td></tr>
+        <tr><td>-rls &lt;key=n&gt;</td><td>Per-source rate limit</td><td>—</td></tr>
+        <tr><td>-max-time &lt;n&gt;</td><td>Max minutes for enumeration</td><td>—</td></tr>
+        <tr><td>-duc</td><td>Disable domain in uppercase</td><td>false</td></tr>
+        <tr><td>-nW</td><td>Remove wildcard subdomains</td><td>false</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-label">Config flags</div>
+      <table class="flag-table">
+        <tr><th>Flag</th><th>Description</th><th>Default</th></tr>
+        <tr><td>-config &lt;file&gt;</td><td>Config file path</td><td>~/.config/subfinder/config.yaml</td></tr>
+        <tr><td>-pc &lt;file&gt;</td><td>Provider config (API keys)</td><td>~/.config/subfinder/provider-config.yaml</td></tr>
+        <tr><td>-version</td><td>Show version</td><td>—</td></tr>
+        <tr><td>-update</td><td>Update to latest release</td><td>—</td></tr>
+        <tr><td>-proxy &lt;url&gt;</td><td>HTTP proxy URL</td><td>—</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- OUTPUT & FILTERING -->
+  <div id="output" class="section">
+    <div class="card">
+      <div class="card-label">Output formats</div>
+      <div class="cmd-row">
+        <div class="cmd-item">
+          <code>-o subs.txt</code>
+          <span class="cmd-desc">Plain text, one sub per line</span>
+        </div>
+        <div class="cmd-item">
+          <code>-oJ -o subs.json</code>
+          <span class="cmd-desc">JSON with host + source fields</span>
+        </div>
+        <div class="cmd-item">
+          <code>-oD ./output/</code>
+          <span class="cmd-desc">Directory: one file per domain</span>
+        </div>
+        <div class="cmd-item">
+          <code>-cs</code>
+          <span class="cmd-desc">Append source to each result</span>
+        </div>
+        <div class="cmd-item">
+          <code>-oI</code>
+          <span class="cmd-desc">Resolve & append IP to output</span>
+        </div>
+        <div class="cmd-item">
+          <code>-v</code>
+          <span class="cmd-desc">Verbose: show source per sub live</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Filtering & dedup</div>
+      <div class="pipeline-row">
+        <div class="pipe-item">
+          <div class="pipe-label">Remove wildcards</div>
+          <div class="pipe-code">subfinder -d example.com -nW -silent</div>
+          <div class="pipe-desc">Strips subdomains that resolve to wildcard IPs</div>
+        </div>
+        <div class="pipe-item">
+          <div class="pipe-label">Sort & dedup with anew</div>
+          <div class="pipe-code">subfinder -d example.com -silent | anew subs.txt</div>
+          <div class="pipe-desc">Append only new results to file (tomnomnom/anew)</div>
+        </div>
+        <div class="pipe-item">
+          <div class="pipe-label">Filter by TLD / string</div>
+          <div class="pipe-code">subfinder -d example.com -silent | grep "\.staging\." </div>
+          <div class="pipe-desc">Grep for specific environment patterns</div>
+        </div>
+        <div class="pipe-item">
+          <div class="pipe-label">Count unique results</div>
+          <div class="pipe-code">subfinder -d example.com -silent | sort -u | wc -l</div>
+          <div class="pipe-desc">Deduplicate and count total unique subdomains</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">JSON output fields</div>
+      <table class="flag-table">
+        <tr><th>Field</th><th>Description</th></tr>
+        <tr><td>host</td><td>Subdomain found</td></tr>
+        <tr><td>input</td><td>Original target domain</td></tr>
+        <tr><td>source</td><td>Source that discovered it</td></tr>
+        <tr><td>type</td><td>Result type (subdomain)</td></tr>
+        <tr><td>ip</td><td>Resolved IP (only with -oI)</td></tr>
+      </table>
+    </div>
+
+    <div class="tip-box">
+      <strong>JSON tip:</strong> Use <code style="background:none;padding:0;color:#534AB7;">jq</code> to process JSON output — e.g. <code style="background:none;padding:0;color:#534AB7;">subfinder -d target.com -oJ -silent | jq -r '.host'</code> extracts only hostnames from the JSON stream.
+    </div>
+  </div>
+
+  <!-- SOURCES -->
+  <div id="sources" class="section">
+    <div class="card">
+      <div class="card-label">Source usage</div>
+      <div class="cmd-row">
+        <div class="cmd-item">
+          <code>-s shodan,censys</code>
+          <span class="cmd-desc">Use only these sources</span>
+        </div>
+        <div class="cmd-item">
+          <code>-es alienvault,github</code>
+          <span class="cmd-desc">Exclude specific sources</span>
+        </div>
+        <div class="cmd-item">
+          <code>-all</code>
+          <span class="cmd-desc">Enable all (incl. paid)</span>
+        </div>
+        <div class="cmd-item">
+          <code>-v</code>
+          <span class="cmd-desc">See which source found what</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Free sources <span class="badge badge-teal">No key needed</span></div>
+      <div class="cmd-row">
+        <div class="cmd-item"><code>crtsh</code><span class="cmd-desc">Certificate Transparency (crt.sh)</span></div>
+        <div class="cmd-item"><code>alienvault</code><span class="cmd-desc">OTX AlienVault</span></div>
+        <div class="cmd-item"><code>hackertarget</code><span class="cmd-desc">HackerTarget API</span></div>
+        <div class="cmd-item"><code>threatcrowd</code><span class="cmd-desc">ThreatCrowd API</span></div>
+        <div class="cmd-item"><code>anubis</code><span class="cmd-desc">Anubis-DB</span></div>
+        <div class="cmd-item"><code>rapiddns</code><span class="cmd-desc">RapidDNS</span></div>
+        <div class="cmd-item"><code>sublist3r</code><span class="cmd-desc">Sublist3r API</span></div>
+        <div class="cmd-item"><code>dnsbufferover</code><span class="cmd-desc">BufferOver DNS</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">API-key sources <span class="badge badge-amber">Requires key</span></div>
+      <div class="cmd-row">
+        <div class="cmd-item"><code>shodan</code><span class="cmd-desc">Shodan (high value)</span></div>
+        <div class="cmd-item"><code>censys</code><span class="cmd-desc">Censys certificate data</span></div>
+        <div class="cmd-item"><code>github</code><span class="cmd-desc">GitHub code search</span></div>
+        <div class="cmd-item"><code>virustotal</code><span class="cmd-desc">VirusTotal passive DNS</span></div>
+        <div class="cmd-item"><code>binaryedge</code><span class="cmd-desc">BinaryEdge scan data</span></div>
+        <div class="cmd-item"><code>securitytrails</code><span class="cmd-desc">SecurityTrails DNS history</span></div>
+        <div class="cmd-item"><code>chaos</code><span class="cmd-desc">Chaos (ProjectDiscovery)</span></div>
+        <div class="cmd-item"><code>fofa</code><span class="cmd-desc">FOFA search engine</span></div>
+        <div class="cmd-item"><code>zoomeye</code><span class="cmd-desc">ZoomEye search engine</span></div>
+        <div class="cmd-item"><code>passivetotal</code><span class="cmd-desc">PassiveTotal / RiskIQ</span></div>
+        <div class="cmd-item"><code>fullhunt</code><span class="cmd-desc">FullHunt attack surface</span></div>
+        <div class="cmd-item"><code>intelx</code><span class="cmd-desc">IntelligenceX</span></div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <strong>Best bang for buck:</strong> Enable <code style="background:none;padding:0;color:#534AB7;">shodan</code>, <code style="background:none;padding:0;color:#534AB7;">censys</code>, <code style="background:none;padding:0;color:#534AB7;">github</code>, and <code style="background:none;padding:0;color:#534AB7;">securitytrails</code> with API keys — these four sources alone dramatically increase result coverage on most targets.
+    </div>
+  </div>
+
+  <!-- PIPELINES -->
+  <div id="pipelines" class="section">
+    <div class="card">
+      <div class="card-label">Recon pipelines</div>
+      <div class="pipeline-row">
+        <div class="pipe-item">
+          <div class="pipe-label">Live subdomain check <span class="badge badge-purple">httpx</span></div>
+          <div class="pipe-code">subfinder -d example.com -silent | httpx -silent</div>
+          <div class="pipe-desc">Find subdomains → probe which ones serve HTTP/S</div>
+        </div>
+        <div class="pipe-item">
+          <div class="pipe-label">Port scan <span class="badge badge-purple">naabu</span></div>
+          <div class="pipe-code">subfinder -d example.com -silent | naabu -silent</div>
+          <div class="pipe-desc">Enumerate subdomains → port-scan all of them</div>
+        </div>
+        <div class="pipe-item">
+          <div class="pipe-label">Vuln scan <span class="badge badge-coral">nuclei</span></div>
+          <div class="pipe-code">subfinder -d example.com -silent | httpx -silent | nuclei -t cves/</div>
+          <div class="pipe-desc">Full chain: find subs → alive check → scan with nuclei CVE templates</div>
+        </div>
+        <div class="pipe-item">
+          <div class="pipe-label">Screenshot <span class="badge badge-teal">gowitness</span></div>
+          <div class="pipe-code">subfinder -d example.com -silent | httpx -silent | gowitness file -f -</div>
+          <div class="pipe-desc">Screenshot all live web assets for manual review</div>
+        </div>
+        <div class="pipe-item">
+          <div class="pipe-label">Multi-domain bulk</div>
+          <div class="pipe-code">subfinder -dL domains.txt -silent -o all_subs.txt -t 20</div>
+          <div class="pipe-desc">Enumerate hundreds of domains concurrently, write all to one file</div>
+        </div>
+        <div class="pipe-item">
+          <div class="pipe-label">Continuous monitoring with anew</div>
+          <div class="pipe-code">subfinder -d example.com -silent | anew subs_baseline.txt</div>
+          <div class="pipe-desc">Run on a schedule — anew prints ONLY newly discovered subdomains each run</div>
+        </div>
+        <div class="pipe-item">
+          <div class="pipe-label">Resolve IPs and deduplicate</div>
+          <div class="pipe-code">subfinder -d example.com -silent -oI | awk '{print $2}' | sort -u</div>
+          <div class="pipe-desc">Extract unique IPs from subdomain resolution (-oI flag outputs "sub ip")</div>
+        </div>
+        <div class="pipe-item">
+          <div class="pipe-label">Docker one-liner</div>
+          <div class="pipe-code">docker run projectdiscovery/subfinder -d example.com -silent</div>
+          <div class="pipe-desc">No install needed — run directly from Docker</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">ProjectDiscovery full stack</div>
+      <div class="pipeline-row">
+        <div class="pipe-item">
+          <div class="pipe-label">recon → alive → tech detect → vuln scan</div>
+          <div class="pipe-code">subfinder -d example.com -silent \
+  | httpx -silent -title -tech-detect -status-code \
+  | tee alive.txt \
+  | nuclei -t exposures/ -t cves/ -silent</div>
+          <div class="pipe-desc">One pipeline from zero to CVE detection with tech fingerprinting along the way</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIG -->
+  <div id="config" class="section">
+    <div class="card">
+      <div class="card-label">Config file location</div>
+      <div class="pipeline-row">
+        <div class="pipe-item">
+          <div class="pipe-label">Linux / macOS</div>
+          <div class="pipe-code">~/.config/subfinder/config.yaml</div>
+        </div>
+        <div class="pipe-item">
+          <div class="pipe-label">Provider / API keys</div>
+          <div class="pipe-code">~/.config/subfinder/provider-config.yaml</div>
+        </div>
+        <div class="pipe-item">
+          <div class="pipe-label">Generate default config</div>
+          <div class="pipe-code">subfinder -d example.com  # runs once to create config</div>
+        </div>
+        <div class="pipe-item">
+          <div class="pipe-label">Use custom config</div>
+          <div class="pipe-code">subfinder -d example.com -config /path/to/config.yaml</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">provider-config.yaml — API key format</div>
+      <div class="pipe-code" style="border-radius:8px; padding: 12px 14px; line-height: 1.9; font-size: 12px;">
+shodan:<br>
+&nbsp;&nbsp;- YOUR_SHODAN_API_KEY<br>
+censys:<br>
+&nbsp;&nbsp;- YOUR_CENSYS_API_ID:YOUR_CENSYS_SECRET<br>
+github:<br>
+&nbsp;&nbsp;- ghp_TOKEN1<br>
+&nbsp;&nbsp;- ghp_TOKEN2<br>
+virustotal:<br>
+&nbsp;&nbsp;- YOUR_VT_API_KEY<br>
+securitytrails:<br>
+&nbsp;&nbsp;- YOUR_ST_API_KEY<br>
+binaryedge:<br>
+&nbsp;&nbsp;- YOUR_BE_API_KEY
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">config.yaml — global settings</div>
+      <div class="pipe-code" style="border-radius:8px; padding: 12px 14px; line-height: 1.9; font-size: 12px;">
+resolvers:<br>
+&nbsp;&nbsp;- 1.1.1.1<br>
+&nbsp;&nbsp;- 8.8.8.8<br>
+sources:<br>
+&nbsp;&nbsp;- shodan<br>
+&nbsp;&nbsp;- crtsh<br>
+&nbsp;&nbsp;- censys<br>
+exclude-sources:<br>
+&nbsp;&nbsp;- dnsbufferover<br>
+all-sources: false<br>
+threads: 10<br>
+timeout: 30
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Multiple GitHub tokens (recommended)</div>
+      <div class="pipeline-row">
+        <div class="pipe-item">
+          <div class="pipe-desc">GitHub has aggressive rate limits. Add 3–5 PAT tokens (read-only, no permissions needed) to provider-config.yaml under <code>github:</code> — subfinder round-robins between them automatically, multiplying your effective rate limit.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <strong>Env var override:</strong> API keys can also be set via environment variables — e.g. <code style="background:none;padding:0;color:#534AB7;">export SHODAN_API_KEY=xyz</code>. Useful in CI/CD pipelines where you don't want keys on disk.
+    </div>
+  </div>
+
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('visible');
+  event.target.classList.add('active');
+}
+</script>
+
+</body>
+</html>

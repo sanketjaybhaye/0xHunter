@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — 0xHunter</title>
+<meta name="description" content="Sign in to your 0xHunter bug bounty workspace.">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #030611;
+    --bg2: #070b18;
+    --bg3: #0c1224;
+    --bg4: #131b32;
+    --border: rgba(56, 189, 248, 0.12);
+    --border-light: rgba(56, 189, 248, 0.22);
+    --accent: #38bdf8;
+    --accent-dim: rgba(56, 189, 248, 0.08);
+    --accent-glow: rgba(56, 189, 248, 0.3);
+    --green: #22d3a6;
+    --red: #f87171;
+    --orange: #fb923c;
+    --text: #f0f5fc;
+    --text2: #94a3b8;
+    --text3: #4f5e7b;
+    --font: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono: "JetBrains Mono", monospace;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+  }
+
+  /* ─── SCANLINES OVERLAY ─── */
+  .scanlines {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      rgba(18, 16, 16, 0) 50%, 
+      rgba(0, 0, 0, 0.20) 50%
+    );
+    background-size: 100% 4px;
+    z-index: 100;
+    opacity: 0.75;
+  }
+
+  /* ─── ANIMATED BACKGROUND CANVAS ─── */
+  #canvas-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.85;
+  }
+  .bg-particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+  }
+  .particle {
+    position: absolute;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: rgba(56, 189, 248, 0.12);
+    white-space: nowrap;
+    animation: particleDrift linear infinite;
+    user-select: none;
+    pointer-events: none;
+  }
+  @keyframes particleDrift {
+    from { transform: translateY(105vh) rotate(-8deg); opacity: 0; }
+    15%  { opacity: 0.8; }
+    85%  { opacity: 0.8; }
+    to   { transform: translateY(-15vh) rotate(-8deg); opacity: 0; }
+  }
+
+  /* Large radial glows */
+  .bg-glow-1 {
+    position: absolute;
+    width: 800px;
+    height: 800px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(56,189,248,0.05) 0%, transparent 70%);
+    top: -300px;
+    right: -200px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .bg-glow-2 {
+    position: absolute;
+    width: 700px;
+    height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(167,139,250,0.04) 0%, transparent 70%);
+    bottom: -200px;
+    left: -200px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ─── SPLIT LAYOUT ─── */
+  .split-container {
+    display: flex;
+    width: 100vw;
+    min-height: 100vh;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Left Side: Cyber Command HUD */
+  .hud-panel {
+    width: 42%;
+    border-right: 1px solid var(--border);
+    background: rgba(3, 6, 17, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 10;
+    overflow-y: auto;
+  }
+
+  /* Right Side: Centered Login Wrapper */
+  .login-panel {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    z-index: 10;
+    perspective: 1000px;
+  }
+
+  /* ─── HUD COMPONENTS ─── */
+  .hud-header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+  }
+  .hud-title {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--accent);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hud-title-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--accent);
+    animation: flash 1.5s infinite;
+  }
+  @keyframes flash {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+  }
+  .hud-subtitle {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 6px;
+    font-family: var(--mono);
+    text-transform: uppercase;
+  }
+
+  .hud-section {
+    margin-bottom: 28px;
+  }
+  .hud-sec-lbl {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .hud-sec-lbl::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Scrolling Logs Console */
+  .hud-console {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--green);
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    height: 180px;
+    overflow: hidden;
+    line-height: 1.7;
+    position: relative;
+  }
+  .hud-console::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0) 70%, rgba(0,0,0,0.6));
+    pointer-events: none;
+  }
+
+  /* Environment Grid */
+  .hud-env-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .hud-env-card {
+    background: rgba(12, 18, 36, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+  }
+  .hud-env-lbl {
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    font-family: var(--mono);
+  }
+  .hud-env-val {
+    font-size: 12.5px;
+    font-family: var(--mono);
+    color: #fff;
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  /* Gauges & Indicators */
+  .hud-meters {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .hud-meter-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+  .hud-meter-bar {
+    width: 60%;
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  .hud-meter-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0;
+    transition: width 0.4s ease;
+  }
+
+  /* ─── LOGIN CARD ─── */
+  .login-card {
+    width: 100%;
+    max-width: 410px;
+    background: rgba(8, 12, 24, 0.8);
+    border: 1px solid rgba(56, 189, 248, 0.16);
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow:
+      0 30px 80px rgba(0,0,0,0.85),
+      0 0 35px rgba(56,189,248,0.04),
+      inset 0 1px 0 rgba(255,255,255,0.03);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    animation: cardIn 0.6s cubic-bezier(.16,1,.3,1);
+    position: relative;
+    transform-style: preserve-3d;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .login-card:hover {
+    border-color: rgba(56, 189, 248, 0.35);
+    box-shadow:
+      0 35px 90px rgba(0,0,0,0.9),
+      0 0 40px rgba(56,189,248,0.12),
+      inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: scale(0.96) translateY(30px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  /* Reticle corners */
+  .corner-border {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    pointer-events: none;
+    z-index: 2;
+    transition: all 0.3s ease;
+  }
+  .corner-border.top-left {
+    top: 12px; left: 12px;
+    border-top: 2px solid rgba(56, 189, 248, 0.4);
+    border-left: 2px solid rgba(56, 189, 248, 0.4);
+  }
+  .corner-border.top-right {
+    top: 12px; right: 12px;
+    border-top: 2px solid rgba(56, 189, 248, 0.4);
+    border-right: 2px solid rgba(56, 189, 248, 0.4);
+  }
+  .corner-border.bottom-left {
+    bottom: 12px; left: 12px;
+    border-bottom: 2px solid rgba(56, 189, 248, 0.4);
+    border-left: 2px solid rgba(56, 189, 248, 0.4);
+  }
+  .corner-border.bottom-right {
+    bottom: 12px; right: 12px;
+    border-bottom: 2px solid rgba(56, 189, 248, 0.4);
+    border-right: 2px solid rgba(56, 189, 248, 0.4);
+  }
+  .login-card:hover .corner-border {
+    border-color: var(--accent);
+    filter: drop-shadow(0 0 5px var(--accent));
+  }
+
+  /* ─── LOGO & HEADER ─── */
+  .logo-section {
+    text-align: center;
+    margin-bottom: 30px;
+    transform: translateZ(20px);
+  }
+  .logo-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--accent), #0ea5e9);
+    border-radius: 12px;
+    font-family: var(--mono);
+    font-size: 19px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 16px;
+    box-shadow: 0 0 24px rgba(56,189,248,0.3), 0 4px 12px rgba(0,0,0,0.4);
+    letter-spacing: -1px;
+    animation: logoPulse 4s ease-in-out infinite;
+  }
+  @keyframes logoPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(56,189,248,0.3), 0 4px 12px rgba(0,0,0,0.4); }
+    50% { box-shadow: 0 0 32px rgba(56,189,248,0.55), 0 4px 16px rgba(56,189,248,0.15); }
+  }
+  .logo-name {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .logo-name em {
+    color: var(--accent);
+    font-style: normal;
+    text-shadow: 0 0 15px rgba(56,189,248,0.5);
+    animation: textGlitch 6s infinite alternate;
+    display: inline-block;
+  }
+  @keyframes textGlitch {
+    0%, 90%, 100% { text-shadow: 0 0 15px rgba(56,189,248,0.5); transform: skew(0); }
+    92% { text-shadow: -2px 0 var(--red), 2px 0 var(--green), 0 0 15px rgba(56,189,248,0.5); transform: skew(-3deg); }
+    94% { text-shadow: 2px -1px var(--red), -2px 1px var(--green), 0 0 15px rgba(56,189,248,0.5); transform: skew(3deg); }
+    96% { text-shadow: 0 0 15px rgba(56,189,248,0.5); transform: skew(0); }
+  }
+  .logo-tagline {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 600;
+  }
+
+  .form-divider {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text3);
+    margin-bottom: 24px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    transform: translateZ(10px);
+  }
+
+  /* ─── FORM INPUTS ─── */
+  .field-group {
+    margin-bottom: 18px;
+    transform: translateZ(15px);
+  }
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text2);
+    margin-bottom: 8px;
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+  }
+  .field-group:focus-within label {
+    color: var(--accent);
+    text-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+  }
+
+  .input-wrap {
+    position: relative;
+  }
+  .input-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 15px;
+    opacity: 0.45;
+    pointer-events: none;
+    transition: all 0.2s ease;
+  }
+  .field-group:focus-within .input-icon {
+    opacity: 0.9;
+    color: var(--accent);
+    filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.5));
+  }
+
+  input[type="text"],
+  input[type="password"] {
+    width: 100%;
+    padding: 12px 42px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: var(--font);
+    transition: all 0.2s ease;
+    outline: none;
+  }
+  input[type="text"] {
+    padding-right: 14px;
+  }
+  input:focus {
+    border-color: var(--accent);
+    background: var(--bg4);
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+  input::placeholder { color: var(--text3); }
+
+  .password-toggle-btn {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    font-size: 15px;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+    outline: none;
+    z-index: 5;
+  }
+  .password-toggle-btn:hover {
+    color: var(--accent);
+  }
+
+  .caps-warning {
+    display: none;
+    align-items: center;
+    gap: 4px;
+    color: var(--orange);
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 6px;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Submit button */
+  .submit-btn {
+    width: 100%;
+    padding: 13px;
+    background: linear-gradient(135deg, #0ea5e9, var(--accent));
+    border: 1px solid rgba(56,189,248,0.35);
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 15px;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: all 0.22s ease;
+    box-shadow: 0 4px 20px rgba(56,189,248,0.2);
+    position: relative;
+    overflow: hidden;
+    margin-top: 8px;
+    transform: translateZ(10px);
+  }
+  .submit-btn::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -150%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+    transform: skewX(-20deg);
+    animation: shine 4.5s infinite;
+  }
+  .submit-btn:hover {
+    transform: translateZ(10px) translateY(-1px);
+    box-shadow: 0 8px 28px rgba(56,189,248,0.35);
+  }
+  .submit-btn:active {
+    transform: translateZ(10px) translateY(0);
+  }
+
+  /* Flash message */
+  .flash {
+    background: rgba(248,113,113,0.08);
+    border: 1px solid rgba(248,113,113,0.25);
+    color: var(--red);
+    padding: 11px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transform: translateZ(10px);
+    animation: shake 0.4s ease;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-4px); }
+    40%, 80% { transform: translateX(4px); }
+  }
+
+  /* Footer */
+  .login-footer {
+    margin-top: 28px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transform: translateZ(5px);
+  }
+  .login-footer-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 6px var(--green); opacity: 1; }
+    50% { box-shadow: 0 0 12px var(--green); opacity: 0.65; }
+  }
+  .login-footer-text {
+    font-size: 12px;
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+  .login-footer-text strong { color: var(--text2); font-weight: 600; }
+
+  /* ─── AUTHENTICATION LOADER OVERLAY ─── */
+  .auth-loader {
+    position: absolute;
+    inset: 0;
+    background: rgba(7, 10, 20, 0.96);
+    border-radius: 16px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 36px;
+    animation: fadeIn 0.2s ease-out;
+  }
+  .loader-terminal {
+    width: 100%;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: left;
+  }
+  .loader-line {
+    color: var(--text2);
+    white-space: nowrap;
+    overflow: hidden;
+    border-right: 2px solid transparent;
+    width: 0;
+    animation: typeLine 0.5s steps(30, end) forwards;
+  }
+  .loader-line .lbl {
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .loader-line:nth-child(4) .lbl {
+    color: var(--green);
+  }
+  .loader-progress {
+    width: 100%;
+    height: 4px;
+    background: var(--bg);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .loader-progress-bar {
+    width: 0;
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--green));
+    animation: fillProgress 1.4s cubic-bezier(.1, .7, .1, 1) forwards;
+  }
+
+  @keyframes typeLine {
+    from { width: 0; }
+    to { width: 100%; }
+  }
+  @keyframes fillProgress {
+    to { width: 100%; }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* ─── RESPONSIVE RULES ─── */
+  @media (max-width: 950px) {
+    .hud-panel {
+      display: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- High Tech Scanline effect -->
+<div class="scanlines"></div>
+
+<!-- Background Canvas for Neural Network constellation -->
+<canvas id="canvas-bg"></canvas>
+<div class="bg-particles" id="bg-particles"></div>
+
+<!-- Top level light glow sources -->
+<div class="bg-glow-1"></div>
+<div class="bg-glow-2"></div>
+
+<div class="split-container">
+  
+  <!-- Left Side: Interactive Cyber Command HUD -->
+  <div class="hud-panel">
+    <div class="hud-header">
+      <div class="hud-title">
+        <div class="hud-title-dot"></div>
+        0xHunter Control Console
+      </div>
+      <div class="hud-subtitle">Environment & Security Daemon Status</div>
+    </div>
+
+    <!-- Section 1: environment metrics -->
+    <div class="hud-section">
+      <div class="hud-sec-lbl">Environment Metrics</div>
+      <div class="hud-env-grid">
+        <div class="hud-env-card">
+          <div class="hud-env-lbl">Local Time</div>
+          <div class="hud-env-val" id="hud-time">18:00:00</div>
+        </div>
+        <div class="hud-env-card">
+          <div class="hud-env-lbl">Host Node</div>
+          <div class="hud-env-val" id="hud-node">127.0.0.1</div>
+        </div>
+        <div class="hud-env-card">
+          <div class="hud-env-lbl">Latency</div>
+          <div class="hud-env-val" id="hud-latency">-- ms</div>
+        </div>
+        <div class="hud-env-card">
+          <div class="hud-env-lbl">Resolution</div>
+          <div class="hud-env-val" id="hud-res">1920x1080</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: live event feed logs -->
+    <div class="hud-section">
+      <div class="hud-sec-lbl">Security Feed Logs</div>
+      <div class="hud-console" id="hud-logs">
+        <div>[OK] Booting 0xHunter engine v2.0...</div>
+        <div>[OK] Secure session token initialized.</div>
+        <div>[DB] Connected to sqlite workspace databases.</div>
+      </div>
+    </div>
+
+    <!-- Section 3: CPU/RAM status indicators -->
+    <div class="hud-section" style="margin-bottom: 0;">
+      <div class="hud-sec-lbl">Active Node Resources</div>
+      <div class="hud-meters">
+        <div class="hud-meter-row">
+          <span>CPU USAGE</span>
+          <div class="hud-meter-bar">
+            <div class="hud-meter-fill" id="meter-cpu" style="width: 28%"></div>
+          </div>
+          <span id="txt-cpu" style="width: 32px; text-align: right;">28%</span>
+        </div>
+        <div class="hud-meter-row">
+          <span>RAM ALLOC</span>
+          <div class="hud-meter-bar">
+            <div class="hud-meter-fill" id="meter-ram" style="width: 64%"></div>
+          </div>
+          <span id="txt-ram" style="width: 32px; text-align: right;">64%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side: Interactive Login Portal -->
+  <div class="login-panel">
+    <div class="login-card">
+      
+      <!-- Reticle corner highlights -->
+      <div class="corner-border top-left"></div>
+      <div class="corner-border top-right"></div>
+      <div class="corner-border bottom-left"></div>
+      <div class="corner-border bottom-right"></div>
+
+      <!-- Simulated Cryptographic Authentication Loader -->
+      <div id="auth-loader" class="auth-loader" style="display: none;">
+        <div class="loader-terminal">
+          <div class="loader-line"><span class="lbl">[INIT]</span> Establishing secure handshake...</div>
+          <div class="loader-line" style="animation-delay: 0.3s;"><span class="lbl">[AUTH]</span> Verifying identity credentials...</div>
+          <div class="loader-line" style="animation-delay: 0.6s;"><span class="lbl">[CRYPT]</span> Decrypting database keys...</div>
+          <div class="loader-line" style="animation-delay: 0.9s;"><span class="lbl">[OK]</span> Launching workspace node...</div>
+          <div class="loader-progress">
+            <div class="loader-progress-bar"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logo -->
+      <div class="logo-section">
+        <div class="logo-icon">0x</div>
+        <div class="logo-name"><em>0x</em>Hunter</div>
+        <div class="logo-tagline">Elite Bug Bounty Workspace</div>
+      </div>
+
+      <div class="form-divider">Sign in to continue</div>
+
+      <!-- Flash messages -->
+      {% with messages = get_flashed_messages() %}
+      {% if messages %}
+      <div class="flash">⚠️ {{ messages[0] }}</div>
+      {% endif %}
+      {% endwith %}
+
+      <!-- Form -->
+      <form method="post" autocomplete="on">
+        <div class="field-group">
+          <label for="username">Username</label>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input type="text" id="username" name="username" required autofocus autocomplete="username" placeholder="Enter your username">
+          </div>
+        </div>
+        <div class="field-group">
+          <label for="password">Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔑</span>
+            <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="Enter your password">
+            <button type="button" id="toggle-password" class="password-toggle-btn" title="Show/Hide password">👁️</button>
+          </div>
+          <div id="caps-lock-warning" class="caps-warning">
+            <span>⚠️</span> Caps Lock is active
+          </div>
+        </div>
+        <button type="submit" class="submit-btn">Sign In →</button>
+      </form>
+
+      <!-- Footer -->
+      <div class="login-footer">
+        <div class="login-footer-dot"></div>
+        <div class="login-footer-text"><strong>0xHunter</strong> · Offline-first · v2.0</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Script controls -->
+<script>
+  // 1. Constellation Neural Network Canvas Background
+  const canvas = document.getElementById('canvas-bg');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  const mouse = { x: null, y: null };
+
+  // 1b. Drifting code vulnerability tag particles (nmap, sqli, ssrf etc.)
+  const words = ['nmap', 'sqli', 'ssrf', 'xss', 'lfi', 'rce', 'csrf', 'idor', 'xxe', 'nmap -sV', 'sqlmap', 'subfinder', '0x41', 'null', '<svg>', '0x0d', '%0a', '../', 'etc/passwd', 'admin\'--', 'JWT', 'blind', 'cors'];
+  const particleContainer = document.getElementById('bg-particles');
+  if (particleContainer) {
+    for (let i = 0; i < 22; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.textContent = words[Math.floor(Math.random() * words.length)];
+      p.style.left = Math.random() * 92 + 4 + '%';
+      
+      const scale = 0.75 + Math.random() * 0.45;
+      p.style.transform = `scale(${scale})`;
+      p.style.opacity = (0.04 + Math.random() * 0.12).toFixed(2);
+      p.style.animationDuration = 14 + Math.random() * 18 + 's';
+      p.style.animationDelay = Math.random() * 12 + 's';
+      
+      particleContainer.appendChild(p);
+    }
+  }
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  window.addEventListener('mousemove', (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  });
+
+  class Particle {
+    constructor() {
+      this.x = Math.random() * canvas.width;
+      this.y = Math.random() * canvas.height;
+      this.vx = (Math.random() - 0.5) * 0.7;
+      this.vy = (Math.random() - 0.5) * 0.7;
+      this.radius = Math.random() * 1.5 + 1;
+    }
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+      if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+      if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+      // Mouse interactive push/attract
+      if (mouse.x && mouse.y) {
+        const dx = mouse.x - this.x;
+        const dy = mouse.y - this.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 110) {
+          const force = (110 - dist) / 110;
+          this.x -= (dx / dist) * force * 1.2;
+          this.y -= (dy / dist) * force * 1.2;
+        }
+      }
+    }
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.35)';
+      ctx.fill();
+    }
+  }
+
+  // Populate particles
+  const particleCount = Math.min(Math.floor((canvas.width * canvas.height) / 18000), 75);
+  for (let i = 0; i < particleCount; i++) {
+    particles.push(new Particle());
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw connections
+    for (let a = 0; a < particles.length; a++) {
+      particles[a].update();
+      particles[a].draw();
+      for (let b = a + 1; b < particles.length; b++) {
+        const dx = particles[a].x - particles[b].x;
+        const dy = particles[a].y - particles[b].y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 130) {
+          ctx.beginPath();
+          ctx.moveTo(particles[a].x, particles[a].y);
+          ctx.lineTo(particles[b].x, particles[b].y);
+          ctx.strokeStyle = `rgba(56, 189, 248, ${0.12 * (1 - dist/130)})`;
+          ctx.lineWidth = 0.75;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  // 2. HUD Real-time Time & Latency Simulation
+  function updateHUDTime() {
+    const el = document.getElementById('hud-time');
+    if (el) {
+      const now = new Date();
+      el.textContent = now.toTimeString().split(' ')[0];
+    }
+  }
+  setInterval(updateHUDTime, 1000);
+  updateHUDTime();
+
+  // Screen resolution display
+  const resEl = document.getElementById('hud-res');
+  if (resEl) {
+    resEl.textContent = `${window.screen.width}x${window.screen.height}`;
+  }
+
+  // Latency Simulator
+  function updateHUDLatency() {
+    const latEl = document.getElementById('hud-latency');
+    if (latEl) {
+      const start = Date.now();
+      // Fast check ping equivalent
+      const randLat = Math.floor(Math.random() * 25) + 8;
+      latEl.textContent = `${randLat} ms`;
+    }
+  }
+  setInterval(updateHUDLatency, 4000);
+  updateHUDLatency();
+
+  // 3. Live Console log additions simulator
+  const logEntries = [
+    "[NET] Websockets tunnel listener standing by.",
+    "[WARN] Blocked suspicious port-knock on :22.",
+    "[OK] OOB handler checking DNS interaction state...",
+    "[INFO] No recent webhooks triggered.",
+    "[OK] Nuclei scanner module compiled and waiting.",
+    "[DB] Syncing background findings logs...",
+    "[INFO] System daemon checking health status.",
+    "[SEC] JWT session token verification layer ready.",
+    "[INFO] Active subdomains listening database check complete.",
+    "[OK] Local proxy module routed via secure path."
+  ];
+  
+  const consoleEl = document.getElementById('hud-logs');
+  function appendHUDLog() {
+    if (!consoleEl) return;
+    const div = document.createElement('div');
+    const txt = logEntries[Math.floor(Math.random() * logEntries.length)];
+    div.textContent = txt;
+    consoleEl.appendChild(div);
+    if (consoleEl.children.length > 8) {
+      consoleEl.removeChild(consoleEl.children[0]);
+    }
+    consoleEl.scrollTop = consoleEl.scrollHeight;
+  }
+  setInterval(appendHUDLog, 6000);
+
+  // 4. Resource Usage fluctuation meters
+  const cpuFill = document.getElementById('meter-cpu');
+  const cpuTxt = document.getElementById('txt-cpu');
+  const ramFill = document.getElementById('meter-ram');
+  const ramTxt = document.getElementById('txt-ram');
+  
+  function updateResources() {
+    if (cpuFill && cpuTxt) {
+      const nextCpu = Math.floor(Math.random() * 30) + 12;
+      cpuFill.style.width = nextCpu + '%';
+      cpuTxt.textContent = nextCpu + '%';
+    }
+    if (ramFill && ramTxt) {
+      const nextRam = Math.floor(Math.random() * 6) + 60;
+      ramFill.style.width = nextRam + '%';
+      ramTxt.textContent = nextRam + '%';
+    }
+  }
+  setInterval(updateResources, 3000);
+
+  // 5. 3D Card Tilt Parallax Effect
+  const card = document.querySelector('.login-card');
+  if (card) {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      
+      const rotateX = -(y - centerY) / 18;
+      const rotateY = (x - centerX) / 18;
+      
+      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+    });
+    
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)`;
+    });
+  }
+
+  // 6. Password Visibility Toggle
+  const toggleBtn = document.getElementById('toggle-password');
+  const passwordField = document.getElementById('password');
+  if (toggleBtn && passwordField) {
+    toggleBtn.addEventListener('click', () => {
+      const isPass = passwordField.type === 'password';
+      passwordField.type = isPass ? 'text' : 'password';
+      toggleBtn.textContent = isPass ? '🙈' : '👁️';
+    });
+  }
+
+  // 7. Caps Lock State Detection
+  const capsWarning = document.getElementById('caps-lock-warning');
+  if (passwordField && capsWarning) {
+    const checkCaps = (e) => {
+      if (e.getModifierState && e.getModifierState('CapsLock')) {
+        capsWarning.style.display = 'flex';
+      } else {
+        capsWarning.style.display = 'none';
+      }
+    };
+    passwordField.addEventListener('keyup', checkCaps);
+    passwordField.addEventListener('keydown', checkCaps);
+  }
+
+  // 8. Authentication Loader Form Interceptor
+  const form = document.querySelector('form');
+  const loader = document.getElementById('auth-loader');
+  if (form && loader) {
+    form.addEventListener('submit', (e) => {
+      if (form.dataset.loadingDone === 'true') return;
+      e.preventDefault();
+      loader.style.display = 'flex';
+      
+      setTimeout(() => {
+        form.dataset.loadingDone = 'true';
+        form.submit();
+      }, 1500);
+    });
+  }
+</script>
+
+</body>
+</html>
