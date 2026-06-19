@@ -4374,7 +4374,7 @@ const massiveTools = [
     name: 'Subfinder',
     author: 'ProjectDiscovery',
     desc: 'Fast passive subdomain discovery tool.',
-    coverImg: 'https://raw.githubusercontent.com/projectdiscovery/subfinder/main/static/subfinder-logo.png',
+    coverImg: '/static/images/subfinder.png',
     cmd: 'subfinder -d target.com -all -o subs.txt',
     tags: ['Recon & Discovery', 'Subdomains'],
     books: 'Bug Bounty Bootcamp',
@@ -4389,7 +4389,7 @@ const massiveTools = [
     name: 'Amass',
     author: 'OWASP',
     desc: 'In-depth attack surface mapping and asset discovery.',
-    coverImg: 'https://raw.githubusercontent.com/owasp-amass/amass/master/images/amass_logo.png',
+    coverImg: '/static/images/amass.png',
     cmd: 'amass enum -passive -d target.com -o amass.txt',
     tags: ['Recon & Discovery', 'Subdomains', 'ASN'],
     books: 'The Hacker Playbook 3',
@@ -4411,6 +4411,7 @@ amass track -d target.com (track changes over time)`
   },
   {
     name: 'Naabu',
+    coverImg: '/static/images/naabu.png',
     desc: 'Fast port scanner with reliability focus.',
     cmd: 'naabu -host target.com -top-ports 1000 -o ports.txt',
     tags: ['Recon & Discovery', 'Port Scanning'],
@@ -4422,6 +4423,7 @@ amass track -d target.com (track changes over time)`
   },
   {
     name: 'Nmap',
+    coverImg: '/static/images/nmap.png',
     desc: 'The industry standard network mapper.',
     cmd: 'nmap -sC -sV -p- -T4 target.com',
     tags: ['Recon & Discovery', 'Port Scanning'],
@@ -4553,6 +4555,7 @@ cat urls.txt | grep -vE '\\.(jpg|jpeg|gif|css|tif|tiff|png|ttf|woff|woff2|ico)$'
   // === FUZZING & DIRECTORY BRUTEFORCING ===
   {
     name: 'ffuf',
+    coverImg: '/static/images/ffuf.png',
     desc: 'Fast web fuzzer written in Go.',
     cmd: 'ffuf -w wordlist.txt -u https://target.com/FUZZ',
     tags: ['Fuzzing', 'Web Directories'],
@@ -4659,6 +4662,7 @@ trufflehog github --org=targetorg --only-verified
   },
   {
     name: 'SQLMap',
+    coverImg: '/static/images/sqlmap.png',
     desc: 'Automatic SQL injection and database takeover tool.',
     cmd: 'sqlmap -u "http://target.com/vuln?id=1" --batch',
     tags: ['Scanning', 'SQLi'],
