@@ -1,16 +1,17 @@
-"""Create or update an admin user. Usage: python create_admin.py username password"""
+"""Create or update an admin user. Usage: python scripts/create_admin.py username password"""
 import os
 import sys
+
+# Add project root directory to sys.path to resolve imports properly
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from werkzeug.security import generate_password_hash
-
-from init_db import init_db, get_conn
-
-DB_PATH = os.environ.get('DATABASE_PATH', 'database.sqlite')
+from init_db import init_master_db, get_master_conn
 
 
 def create_user(username, password):
-    init_db()
-    conn = get_conn()
+    init_master_db()
+    conn = get_master_conn()
     c = conn.cursor()
     ph = generate_password_hash(password)
     c.execute('SELECT id FROM users WHERE username = ?', (username,))
@@ -28,6 +29,6 @@ def create_user(username, password):
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
-        print('Usage: python create_admin.py <username> <password>')
+        print('Usage: python scripts/create_admin.py <username> <password>')
         sys.exit(1)
     create_user(sys.argv[1], sys.argv[2])
