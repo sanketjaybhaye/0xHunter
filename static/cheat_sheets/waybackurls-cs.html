@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>waybackurls — Master Cheat Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0904;
+    --bg-soft:#120e08;
+    --card:#16110a;
+    --card-border:#2c2114;
+    --card-border-soft:#221b10;
+    --amber:#e7a13a;
+    --amber-dim:#a9762a;
+    --amber-glow:rgba(231,161,58,0.35);
+    --teal:#5fc8b8;
+    --teal-dim:#3c8a7d;
+    --text:#f3ead9;
+    --text-dim:#b6a98e;
+    --text-faint:#7a6f59;
+    --warn:#e0763f;
+    --ok:#84bf6a;
+    --radius:10px;
+    --mono:'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+    --display:'Space Grotesk', sans-serif;
+    --body:'Inter', sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(231,161,58,0.07), transparent 45%),
+      radial-gradient(circle at 90% 15%, rgba(95,200,184,0.06), transparent 40%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--body);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{color:var(--teal);}
+
+  ::selection{background:var(--amber-glow);}
+
+  :focus-visible{
+    outline:2px solid var(--amber);
+    outline-offset:2px;
+    border-radius:4px;
+  }
+
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:64px 28px 80px;
+  }
+
+  /* ---------- HERO ---------- */
+
+  .hero{
+    border-bottom:1px solid var(--card-border-soft);
+    padding-bottom:46px;
+    margin-bottom:46px;
+  }
+
+  .eyebrow{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:0.14em;
+    color:var(--amber);
+    background:rgba(231,161,58,0.08);
+    border:1px solid rgba(231,161,58,0.25);
+    padding:6px 12px;
+    border-radius:999px;
+    margin-bottom:22px;
+  }
+  .eyebrow .dot{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--amber);
+    box-shadow:0 0 8px var(--amber);
+  }
+
+  .hero h1{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:64px;
+    line-height:1.02;
+    margin:0;
+    color:var(--text);
+    letter-spacing:-0.01em;
+  }
+  .hero h2{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:40px;
+    margin:2px 0 22px;
+    background:linear-gradient(95deg, var(--amber) 0%, #f3cf8f 45%, var(--teal) 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+
+  .lede{
+    max-width:680px;
+    color:var(--text-dim);
+    font-size:16.5px;
+    margin:0 0 36px;
+  }
+  .lede code{
+    font-family:var(--mono);
+    color:var(--amber);
+    background:rgba(231,161,58,0.08);
+    padding:1px 6px;
+    border-radius:4px;
+    font-size:0.92em;
+  }
+
+  /* ---------- SIGNATURE: ARCHIVE TIMELINE ---------- */
+
+  .archive-strip{
+    margin-bottom:40px;
+  }
+  .archive-track{
+    position:relative;
+    height:54px;
+    overflow:hidden;
+    border-radius:8px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.015), transparent);
+  }
+  .archive-track .rail{
+    position:absolute;
+    top:50%;
+    left:0;right:0;
+    height:1px;
+    background:var(--card-border);
+    transform:translateY(-50%);
+  }
+  .scan-glow{
+    position:absolute;
+    top:0; bottom:0;
+    width:22%;
+    background:linear-gradient(90deg, transparent, var(--amber-glow), transparent);
+    filter:blur(2px);
+    animation:scan 5.5s linear infinite;
+  }
+  @keyframes scan{
+    0%{transform:translateX(-30%);}
+    100%{transform:translateX(430%);}
+  }
+  .tick{
+    position:absolute;
+    top:50%;
+    transform:translate(-50%,-50%);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+  }
+  .tick .dot{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--bg);
+    border:2px solid var(--text-faint);
+  }
+  .tick.active .dot{
+    border-color:var(--amber);
+    background:var(--amber);
+    box-shadow:0 0 10px var(--amber-glow);
+  }
+  .tick .year{
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--text-faint);
+    letter-spacing:0.04em;
+  }
+  .tick.active .year{ color:var(--amber); }
+
+  .archive-caption{
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:var(--text-faint);
+    margin:14px 2px 0;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .scan-glow{animation:none; opacity:0.5;}
+  }
+
+  /* ---------- STATS ---------- */
+
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:28px;
+  }
+  .stat .num{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:30px;
+    color:var(--text);
+  }
+  .stat .label{
+    font-family:var(--mono);
+    font-size:11.5px;
+    letter-spacing:0.08em;
+    color:var(--text-faint);
+    text-transform:uppercase;
+    margin-top:4px;
+  }
+
+  /* ---------- CARD / SECTION ---------- */
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--card-border-soft);
+    border-radius:var(--radius);
+    padding:30px 30px 32px;
+    margin-bottom:28px;
+  }
+
+  .card-head{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:26px;
+  }
+  .icon-box{
+    width:38px;height:38px;
+    border-radius:9px;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(231,161,58,0.1);
+    border:1px solid rgba(231,161,58,0.22);
+    color:var(--amber);
+    flex-shrink:0;
+  }
+  .icon-box svg{width:19px;height:19px;}
+  .card-head h3{
+    font-family:var(--display);
+    font-size:19px;
+    font-weight:600;
+    margin:0;
+    color:var(--text);
+    letter-spacing:0.01em;
+  }
+  .badge{
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:0.08em;
+    padding:4px 10px;
+    border-radius:999px;
+    text-transform:uppercase;
+  }
+  .badge.setup{ color:var(--teal); background:rgba(95,200,184,0.1); border:1px solid rgba(95,200,184,0.25); }
+  .badge.core{ color:var(--amber); background:rgba(231,161,58,0.1); border:1px solid rgba(231,161,58,0.25); }
+  .badge.flow{ color:#c9a6e8; background:rgba(201,166,232,0.1); border:1px solid rgba(201,166,232,0.25); }
+  .badge.filt{ color:#7fb8e0; background:rgba(127,184,224,0.1); border:1px solid rgba(127,184,224,0.25); }
+  .badge.exp{ color:var(--ok); background:rgba(132,191,106,0.1); border:1px solid rgba(132,191,106,0.25); }
+  .badge.warn{ color:var(--warn); background:rgba(224,118,63,0.1); border:1px solid rgba(224,118,63,0.25); }
+
+  /* ---------- COLUMNS / GRID ---------- */
+
+  .cols-3{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:22px; }
+  .cols-2{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px; }
+  .cols-3 > div, .cols-2 > div{ min-width:0; }
+
+  .col-label{
+    font-family:var(--mono);
+    font-size:11.5px;
+    letter-spacing:0.06em;
+    color:var(--text-faint);
+    text-transform:uppercase;
+    margin-bottom:12px;
+  }
+
+  .caption{
+    font-size:13px;
+    color:var(--text-faint);
+    margin-top:10px;
+  }
+
+  /* ---------- CODE BLOCKS ---------- */
+
+  .code-block{
+    position:relative;
+    background:var(--bg-soft);
+    border:1px solid var(--card-border);
+    border-left:3px solid var(--amber-dim);
+    border-radius:8px;
+    padding:13px 44px 13px 16px;
+    margin-bottom:10px;
+    overflow:hidden;
+  }
+  .code-block pre{
+    margin:0;
+    font-family:var(--mono);
+    font-size:13.5px;
+    color:var(--text);
+    white-space:pre;
+    overflow-x:auto;
+    display:block;
+    width:100%;
+    padding-bottom:4px;
+  }
+  .code-block pre::-webkit-scrollbar {
+    height:4px;
+  }
+  .code-block pre::-webkit-scrollbar-track {
+    background:transparent;
+  }
+  .code-block pre::-webkit-scrollbar-thumb {
+    background:var(--card-border);
+    border-radius:2px;
+  }
+  .code-block pre::-webkit-scrollbar-thumb:hover {
+    background:var(--amber-dim);
+  }
+  .code-block .flag{ color:var(--teal); }
+  .code-block .cmd{ color:var(--amber); }
+  .code-block .str{ color:#c9b88a; }
+  .code-block .com{ color:var(--text-faint); }
+
+  .copy-btn{
+    position:absolute;
+    top:8px; right:8px;
+    width:26px; height:26px;
+    border-radius:6px;
+    background:rgba(255,255,255,0.04);
+    border:1px solid var(--card-border);
+    color:var(--text-faint);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .copy-btn:hover{ color:var(--amber); border-color:var(--amber-dim); background:rgba(231,161,58,0.08); }
+  .copy-btn svg{width:13px;height:13px;}
+  .copy-btn.copied{ color:var(--ok); border-color:var(--ok); }
+
+  .recipe{
+    margin-bottom:20px;
+  }
+  .recipe-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:9px;
+  }
+  .recipe-title{
+    font-size:14px;
+    color:var(--text);
+    font-weight:500;
+  }
+  .tag{
+    font-family:var(--mono);
+    font-size:9.5px;
+    letter-spacing:0.06em;
+    padding:2px 8px;
+    border-radius:5px;
+    white-space:nowrap;
+    text-transform:uppercase;
+  }
+  .tag.js{ color:var(--amber); background:rgba(231,161,58,0.12); }
+  .tag.params{ color:var(--teal); background:rgba(95,200,184,0.12); }
+  .tag.sensitive{ color:var(--warn); background:rgba(224,118,63,0.14); }
+  .tag.auth{ color:#c9a6e8; background:rgba(201,166,232,0.12); }
+  .tag.dedup{ color:#7fb8e0; background:rgba(127,184,224,0.12); }
+  .tag.alive{ color:var(--ok); background:rgba(132,191,106,0.12); }
+
+  /* ---------- FLAGS TABLE ---------- */
+
+  table.flags{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:4px;
+  }
+  table.flags th{
+    text-align:left;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--text-faint);
+    padding:0 0 10px;
+    border-bottom:1px solid var(--card-border-soft);
+  }
+  table.flags td{
+    padding:12px 0;
+    border-bottom:1px solid var(--card-border-soft);
+    font-size:13.5px;
+    color:var(--text-dim);
+    vertical-align:top;
+  }
+  table.flags tr:last-child td{ border-bottom:none; }
+  table.flags td.flagname{
+    font-family:var(--mono);
+    color:var(--amber);
+    white-space:nowrap;
+    padding-right:22px;
+    font-size:13px;
+  }
+
+  /* ---------- CALLOUTS ---------- */
+
+  .callouts{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+  }
+  .callout{
+    border-radius:8px;
+    padding:16px 18px;
+    display:flex;
+    gap:12px;
+    border:1px solid;
+  }
+  .callout.ok{ background:rgba(132,191,106,0.06); border-color:rgba(132,191,106,0.25); }
+  .callout.warn{ background:rgba(224,118,63,0.06); border-color:rgba(224,118,63,0.28); }
+  .callout .ic{ flex-shrink:0; margin-top:1px; }
+  .callout.ok .ic{ color:var(--ok); }
+  .callout.warn .ic{ color:var(--warn); }
+  .callout h4{
+    margin:0 0 4px;
+    font-size:13.5px;
+    font-family:var(--mono);
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+  }
+  .callout.ok h4{ color:var(--ok); }
+  .callout.warn h4{ color:var(--warn); }
+  .callout p{
+    margin:0;
+    font-size:13.5px;
+    color:var(--text-dim);
+  }
+  .callout code{
+    font-family:var(--mono);
+    color:var(--text);
+    background:rgba(255,255,255,0.06);
+    padding:1px 5px;
+    border-radius:4px;
+    font-size:0.9em;
+  }
+
+  .tip-list{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+  .tip{
+    display:flex;
+    gap:14px;
+    padding-bottom:16px;
+    border-bottom:1px solid var(--card-border-soft);
+  }
+  .tip:last-child{ border-bottom:none; padding-bottom:0; }
+  .tip-num{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--amber);
+    background:rgba(231,161,58,0.1);
+    border:1px solid rgba(231,161,58,0.22);
+    width:26px;height:26px;
+    border-radius:7px;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .tip h4{
+    margin:0 0 4px;
+    font-size:14.5px;
+    color:var(--text);
+    font-weight:600;
+  }
+  .tip p{
+    margin:0;
+    font-size:13.5px;
+    color:var(--text-dim);
+  }
+  .tip code{
+    font-family:var(--mono);
+    color:var(--amber);
+    background:rgba(231,161,58,0.08);
+    padding:1px 5px;
+    border-radius:4px;
+    font-size:0.9em;
+  }
+
+  footer{
+    margin-top:50px;
+    padding-top:26px;
+    border-top:1px solid var(--card-border-soft);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:14px;
+  }
+  footer p{
+    font-size:12.5px;
+    color:var(--text-faint);
+    margin:0;
+    max-width:560px;
+  }
+  footer a{ color:var(--amber); text-decoration:none; }
+  footer a:hover{ text-decoration:underline; }
+  .footer-mark{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--text-faint);
+  }
+
+  @media (max-width:860px){
+    .hero h1{font-size:46px;}
+    .hero h2{font-size:28px;}
+    .stats{grid-template-columns:repeat(2,1fr); row-gap:22px;}
+    .cols-3, .cols-2{grid-template-columns:1fr;}
+    .callouts{grid-template-columns:1fr;}
+    .wrap{padding:40px 18px 60px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===================== HERO ===================== -->
+  <header class="hero">
+    <span class="eyebrow"><span class="dot"></span>RECON · OSINT · CLI</span>
+    <h1>waybackurls</h1>
+    <h2>Master Cheat Sheet</h2>
+    <p class="lede">The definitive command reference for mining the Wayback Machine, CommonCrawl, and VirusTotal for every URL a target domain has ever exposed — old endpoints, leaked params, dead admin panels, and forgotten JS. Built by <code>tomnomnom</code> for bug bounty hunters and OSINT analysts.</p>
+
+    <div class="archive-strip">
+      <div class="archive-track">
+        <div class="rail"></div>
+        <span class="scan-glow"></span>
+        <div class="tick" style="left:6%"><span class="dot"></span><span class="year">2003</span></div>
+        <div class="tick" style="left:24%"><span class="dot"></span><span class="year">2009</span></div>
+        <div class="tick" style="left:42%"><span class="dot"></span><span class="year">2014</span></div>
+        <div class="tick" style="left:60%"><span class="dot"></span><span class="year">2019</span></div>
+        <div class="tick" style="left:78%"><span class="dot"></span><span class="year">2023</span></div>
+        <div class="tick active" style="left:95%"><span class="dot"></span><span class="year">NOW</span></div>
+      </div>
+      <p class="archive-caption">// every snapshot the crawler ever took — the CDX index never forgets a URL</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="num">3</div><div class="label">Archive sources</div></div>
+      <div class="stat"><div class="num">Go</div><div class="label">Single binary</div></div>
+      <div class="stat"><div class="num">stdin</div><div class="label">Bulk input mode</div></div>
+      <div class="stat"><div class="num">0</div><div class="label">Keys required by default</div></div>
+    </div>
+  </header>
+
+  <!-- ===================== INSTALLATION ===================== -->
+  <section class="card" id="install">
+    <div class="card-head">
+      <div class="icon-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"></path></svg>
+      </div>
+      <h3>Installation</h3>
+      <span class="badge setup">Setup</span>
+    </div>
+
+    <div class="cols-3">
+      <div>
+        <div class="col-label">Method 1 — go install (recommended)</div>
+        <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre><span class="cmd">go install</span> github.com/tomnomnom/waybackurls@latest</pre></div>
+        <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre>waybackurls <span class="flag">-h</span></pre></div>
+        <p class="caption">Needs Go 1.17+. Binary lands in <code style="font-family:var(--mono);color:var(--amber);">$(go env GOPATH)/bin</code> — add it to PATH.</p>
+      </div>
+
+      <div>
+        <div class="col-label">Method 2 — legacy go get</div>
+        <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre><span class="cmd">go get</span> -u github.com/tomnomnom/waybackurls</pre></div>
+        <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre>waybackurls example.com</pre></div>
+        <p class="caption">Deprecated for binaries since Go 1.17 — use Method 1 unless you're stuck on an old toolchain.</p>
+      </div>
+
+      <div>
+        <div class="col-label">Method 3 — build from source</div>
+        <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre><span class="cmd">git clone</span> https://github.com/tomnomnom/waybackurls.git</pre></div>
+        <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre><span class="cmd">cd</span> waybackurls && go build .</pre></div>
+        <p class="caption">Best option if you want to patch the CDX query logic yourself.</p>
+      </div>
+    </div>
+
+    <div class="callouts" style="margin-top:22px;">
+      <div class="callout ok">
+        <div class="ic">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+        <div>
+          <h4>Verify install</h4>
+          <p>Run <code>waybackurls -h</code> to confirm it's on PATH. If the shell can't find it, export <code>PATH=$PATH:$(go env GOPATH)/bin</code>.</p>
+        </div>
+      </div>
+      <div class="callout warn">
+        <div class="ic">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.29 3.86 1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"></path></svg>
+        </div>
+        <div>
+          <h4>Optional third source</h4>
+          <p>VirusTotal lookups stay silent unless you <code>export VT_API_KEY=yourkey</code> — without it, you still get Wayback + CommonCrawl.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CORE COMMANDS ===================== -->
+  <section class="card" id="core">
+    <div class="card-head">
+      <div class="icon-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+      </div>
+      <h3>Core Commands</h3>
+      <span class="badge core">Essential</span>
+    </div>
+
+    <div class="cols-2">
+      <div>
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">Scan a single domain</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre>waybackurls example.com</pre></div>
+          <p class="caption">Includes all subdomains by default.</p>
+        </div>
+
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">Bulk scan from a domain list</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre><span class="cmd">cat</span> domains.txt | waybackurls > urls.txt</pre></div>
+          <p class="caption">One domain per line on stdin — this is the tool's primary mode.</p>
+        </div>
+
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">Restrict to the exact domain</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre>waybackurls <span class="flag">-no-subs</span> example.com</pre></div>
+          <p class="caption">Drops every subdomain hit — useful when you've already enumerated subs separately.</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">Show snapshot dates</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre>waybackurls <span class="flag">-dates</span> example.com</pre></div>
+          <p class="caption">Prefixes each URL with its first-seen timestamp, RFC3339 formatted.</p>
+        </div>
+
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">Pull archived replay links</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre><span class="cmd">cat</span> urls.txt | waybackurls <span class="flag">-get-versions</span></pre></div>
+          <p class="caption">Mode switch — input is treated as full URLs, output is direct archive.org replay links for every snapshot.</p>
+        </div>
+
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">Stack flags together</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre>waybackurls <span class="flag">-dates -no-subs</span> example.com</pre></div>
+          <p class="caption">Flags compose freely — just keep them before the domain (see Pro Tips).</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-label" style="margin-top:8px;">Quick flag reference</div>
+    <table class="flags">
+      <tr><th style="width:160px;">Flag</th><th>What it does</th></tr>
+      <tr><td class="flagname">(none)</td><td>Fetches every known URL for the domain, expanding to all subdomains.</td></tr>
+      <tr><td class="flagname">-no-subs</td><td>Keeps results to the exact domain given — subdomains are filtered out.</td></tr>
+      <tr><td class="flagname">-dates</td><td>Adds the first-seen snapshot timestamp as a column before each URL.</td></tr>
+      <tr><td class="flagname">-get-versions</td><td>Switches modes entirely: input becomes specific URLs, output becomes one archive.org replay link per snapshot of each.</td></tr>
+    </table>
+  </section>
+
+  <!-- ===================== RECON PIPELINE COMBOS ===================== -->
+  <section class="card" id="combos">
+    <div class="card-head">
+      <div class="icon-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M20 4L8.12 15.88"></path><path d="M14.47 14.48L20 20"></path><path d="M8.12 8.12L12 12"></path></svg>
+      </div>
+      <h3>Recon Pipeline Combos</h3>
+      <span class="badge flow">Workflow</span>
+    </div>
+
+    <div class="cols-2">
+      <div>
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">Full subdomain sweep first</span><span class="tag dedup">Coverage</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre><span class="cmd">subfinder</span> -d example.com -silent | waybackurls | sort -u > urls.txt</pre></div>
+          <p class="caption">Feeds every discovered subdomain into waybackurls for maximum surface area.</p>
+        </div>
+
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">Wider coverage with gau</span><span class="tag dedup">Coverage</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre><span class="cmd">waybackurls</span> example.com | <span class="cmd">anew</span> all_urls.txt
+<span class="cmd">gau</span> example.com | <span class="cmd">anew</span> all_urls.txt</pre></div>
+          <p class="caption">gau queries a different mix of sources — run both and merge for fewer blind spots.</p>
+        </div>
+
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">Continuous monitoring diff</span><span class="tag dedup">Tracking</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre>waybackurls example.com | <span class="cmd">anew</span> master_urls.txt</pre></div>
+          <p class="caption"><code style="font-family:var(--mono);color:var(--amber);">anew</code> only prints lines that are genuinely new — perfect for a daily cron job.</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">Probe what's still alive</span><span class="tag alive">Validation</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre><span class="cmd">cat</span> urls.txt | <span class="cmd">httpx</span> -silent -mc 200,301,302</pre></div>
+          <p class="caption">Most archived URLs are dead — httpx tells you which ones still respond.</p>
+        </div>
+
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">Pattern-match for bug classes</span><span class="tag params">Triage</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre><span class="cmd">cat</span> urls.txt | <span class="cmd">gf</span> xss</pre></div>
+          <p class="caption">gf wraps grep with prebuilt patterns for XSS, SSRF, redirect params, and more.</p>
+        </div>
+
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">Fuzz discovered parameters</span><span class="tag params">Fuzzing</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre><span class="cmd">cat</span> urls.txt | grep <span class="str">'='</span> | <span class="cmd">qsreplace</span> <span class="str">'FUZZ'</span></pre></div>
+          <p class="caption">Swaps every query value with a marker, ready to pipe into a fuzzer or nuclei templates.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FILTERING & EXTRACTION ===================== -->
+  <section class="card" id="filters">
+    <div class="card-head">
+      <div class="icon-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+      </div>
+      <h3>Filtering &amp; Extraction</h3>
+      <span class="badge filt">Filters</span>
+    </div>
+
+    <div class="cols-2">
+      <div>
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">Pull JavaScript files only</span><span class="tag js">JS Recon</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre>grep -E <span class="str">'\.js(\?|$)'</span> urls.txt</pre></div>
+        </div>
+
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">Isolate parameterized URLs</span><span class="tag params">Params</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre>grep <span class="str">'='</span> urls.txt</pre></div>
+          <p class="caption">Anything with a <code style="font-family:var(--mono);color:var(--amber);">?key=value</code> is a potential injection point.</p>
+        </div>
+
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">Surface admin / auth paths</span><span class="tag auth">Auth Surfaces</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre>grep -Ei <span class="str">'(admin|login|dashboard|wp-admin|cpanel)'</span> urls.txt</pre></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">Hunt leftover sensitive files</span><span class="tag sensitive">Sensitive</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre>grep -EI <span class="str">'\.(env|bak|old|sql|zip|log|pem|key)(\?|$)'</span> urls.txt</pre></div>
+          <p class="caption">Old backups and config files are a classic Wayback find.</p>
+        </div>
+
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">Collapse to unique paths</span><span class="tag dedup">Dedup</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre>sed <span class="str">'s/?.*//'</span> urls.txt | sort -u</pre></div>
+          <p class="caption">Strips query strings before dedup — great for endpoint-level coverage maps.</p>
+        </div>
+
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">List every unique param name</span><span class="tag params">Params</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre><span class="cmd">cat</span> urls.txt | <span class="cmd">unfurl</span> keys | sort -u</pre></div>
+          <p class="caption">Requires tomnomnom's <code style="font-family:var(--mono);color:var(--amber);">unfurl</code> — turns thousands of URLs into a wordlist of param names.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== OUTPUT & EXPORT ===================== -->
+  <section class="card" id="export">
+    <div class="card-head">
+      <div class="icon-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      </div>
+      <h3>Output &amp; Export</h3>
+      <span class="badge exp">Reporting</span>
+    </div>
+
+    <div class="cols-2">
+      <div>
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">Clean deduped file</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre>waybackurls example.com | sort -u > example_urls.txt</pre></div>
+        </div>
+
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">Dated audit trail</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre>waybackurls <span class="flag">-dates</span> example.com > example_dated.txt</pre></div>
+          <p class="caption">Keeps a timestamp next to each URL — handy for reporting "first seen" evidence.</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">Multi-target sweep with a count</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre><span class="cmd">cat</span> domains.txt | waybackurls | tee all_urls.txt | wc -l</pre></div>
+        </div>
+
+        <div class="recipe">
+          <div class="recipe-head"><span class="recipe-title">One file per target</span></div>
+          <div class="code-block"><button class="copy-btn" aria-label="Copy"></button><pre><span class="cmd">while</span> read d; <span class="cmd">do</span> waybackurls <span class="str">"$d"</span> | sort -u > <span class="str">"${d}.txt"</span>; <span class="cmd">done</span> &lt; domains.txt</pre></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PRO TIPS ===================== -->
+  <section class="card" id="tips">
+    <div class="card-head">
+      <div class="icon-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.29 3.86 1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"></path></svg>
+      </div>
+      <h3>Pro Tips &amp; Gotchas</h3>
+      <span class="badge warn">Important</span>
+    </div>
+
+    <div class="tip-list">
+      <div class="tip">
+        <span class="tip-num">1</span>
+        <div>
+          <h4>Flags must come before the domain</h4>
+          <p>Go's flag parser stops at the first non-flag argument. <code>waybackurls example.com -dates</code> silently ignores <code>-dates</code>. Always write the flag first: <code>waybackurls -dates example.com</code>.</p>
+        </div>
+      </div>
+
+      <div class="tip">
+        <span class="tip-num">2</span>
+        <div>
+          <h4>Three sources, three reliability tiers</h4>
+          <p>Wayback's CDX index is the primary, fastest source. CommonCrawl is queried in parallel but its index updates less often. VirusTotal only fires if <code>VT_API_KEY</code> is set in your environment — no key means no error, just no third source.</p>
+        </div>
+      </div>
+
+      <div class="tip">
+        <span class="tip-num">3</span>
+        <div>
+          <h4>Read the -get-versions output format</h4>
+          <p>Each line is a ready-to-open replay URL shaped like <code>web.archive.org/web/{timestamp}if_/{original}</code>. The <code>if_</code> suffix serves the raw page without the Wayback toolbar — ideal for diffing JS file history snapshot by snapshot.</p>
+        </div>
+      </div>
+
+      <div class="tip">
+        <span class="tip-num">4</span>
+        <div>
+          <h4>There's no built-in rate limiting</h4>
+          <p>Scanning hundreds of domains back-to-back can get your IP throttled by archive.org. Wrap multi-domain loops with a short <code>sleep</code> between requests.</p>
+        </div>
+      </div>
+
+      <div class="tip">
+        <span class="tip-num">5</span>
+        <div>
+          <h4>Getting nothing back? Check the basics first</h4>
+          <p>Confirm the domain actually has Wayback history at <code>web.archive.org/web/*/domain.com</code>, and make sure outbound HTTPS to archive.org isn't blocked by a corporate proxy or VPN.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Use against domains you're authorized to test. Built around <a href="https://github.com/tomnomnom/waybackurls" target="_blank" rel="noopener">tomnomnom/waybackurls</a> — verify flags with <code style="font-family:var(--mono);">waybackurls -h</code> if the upstream tool changes.</p>
+    <span class="footer-mark">// cheat-sheet v1.0</span>
+  </footer>
+
+</div>
+
+<script>
+  document.querySelectorAll('.copy-btn').forEach(function(btn){
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg>';
+    btn.addEventListener('click', function(){
+      var pre = btn.parentElement.querySelector('pre');
+      var text = pre.innerText;
+      navigator.clipboard.writeText(text).then(function(){
+        btn.classList.add('copied');
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        setTimeout(function(){
+          btn.classList.remove('copied');
+          btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg>';
+        }, 1500);
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
