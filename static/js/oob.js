@@ -47,7 +47,7 @@ window.renderOobPage = function() {
             </div>
           </div>
           <div style="display:flex;gap:8px;">
-            <button class="btn btn-sm" onclick="navigator.clipboard.writeText('${window.location.protocol}//${window.location.host}/oob/${p.uid}');toast('Copied payload URL','success')" style="background:var(--bg4);border:1px solid var(--border);color:var(--text1);">Copy URL</button>
+            <button class="btn btn-sm" onclick="window.copyTextToClipboard('${window.location.protocol}//${window.location.host}/oob/${p.uid}').then(()=>toast('Copied payload URL','success'))" style="background:var(--bg4);border:1px solid var(--border);color:var(--text1);">Copy URL</button>
             <button class="btn btn-sm btn-danger" onclick="deleteOobPayload('${p.uid}')">🗑️</button>
           </div>
         </div>

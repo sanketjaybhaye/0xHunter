@@ -729,7 +729,7 @@ function runSecretsScanner() {
       <div class="secret-hit-val">${esc(f.value)}</div>
       <pre class="secret-hit-ctx">${ctxHtml}</pre>
       <div style="margin-top:10px;text-align:right;">
-        <button class="btn btn-sm" onclick="navigator.clipboard.writeText('${f.value.replace(/'/g,"\\'")}').then(()=>toast('Copied Key!'))">📋 Copy Key</button>
+        <button class="btn btn-sm" onclick="window.copyTextToClipboard('${f.value.replace(/'/g,"\\'\")}').then(()=>toast('Copied Key!'))">📋 Copy Key</button>
       </div>
     </div>`;
   }).join('');
@@ -764,7 +764,7 @@ async function dnsLookup() {
           <span class="dns-name">${esc(r.name)}</span>
           <span class="dns-data">${esc(r.data)}</span>
           <span class="dns-ttl">TTL: ${r.TTL}s</span>
-          <button class="copy-btn" onclick="navigator.clipboard.writeText('${r.data.replace(/'/g,"\\'")}').then(()=>toast('Copied!'))">📋</button>
+          <button class="copy-btn" onclick="window.copyTextToClipboard('${r.data.replace(/'/g,"\\'\")}').then(()=>toast('Copied!'))">📋</button>
         </div>`).join('')}
       ${data.Authority ? data.Authority.map(r => `<div class="dns-record dns-authority"><span class="dns-type">AUTH</span><span class="dns-data">${esc(r.data)}</span></div>`).join('') : ''}`;
       
@@ -1124,7 +1124,7 @@ function openFindingDetail(id) {
 function copyFindingPayload(id) {
   const f = S.findings.find(x => x.id == id);
   if (f && f.payload) {
-    navigator.clipboard.writeText(f.payload).then(() => toast('Payload copied!', 'success'));
+    window.copyTextToClipboard(f.payload).then(() => toast('Payload copied!', 'success'));
   }
 }
 
@@ -1164,7 +1164,7 @@ ${f.bountyEarned ? `Bounty Earned: ${f.bountyEarned}` : 'Describe the business i
 
 ## Remediation
 ${f.remediation || 'Apply appropriate input validation and defense-in-depth controls.'}`;
-  navigator.clipboard.writeText(md).then(() => toast('Markdown report copied!', 'success'));
+  window.copyTextToClipboard(md).then(() => toast('Markdown report copied!', 'success'));
 }
 
 function copyFindingAsH1(id) {
@@ -1188,7 +1188,7 @@ ${f.payload || 'N/A'}
 **Affected Endpoint:** ${f.endpoint || 'N/A'}
 **Severity:** ${(f.severity || '').toUpperCase()}
 **CVSS:** ${f.cvss || 'N/A'}`;
-  navigator.clipboard.writeText(h1).then(() => toast('HackerOne template copied!', 'success'));
+  window.copyTextToClipboard(h1).then(() => toast('HackerOne template copied!', 'success'));
 }
 
 // ── NUCLEI TEMPLATE BROWSER ───────────────────────────────────
@@ -1334,11 +1334,11 @@ function renderNucleiTemplates() {
             </div>
             <div style="display:flex;align-items:center;gap:8px">
               <span class="sev-badge sev-${sevTag}">${sevTag}</span>
-              <button class="copy-btn" data-cmd="${esc(fullCmd).replace(/"/g, '&quot;')}" onclick="navigator.clipboard.writeText(this.getAttribute('data-cmd')).then(()=>toast('Command copied!'))">📋 Copy</button>
+              <button class="copy-btn" data-cmd="${esc(fullCmd).replace(/"/g, '&quot;')}" onclick="window.copyTextToClipboard(this.getAttribute('data-cmd')).then(()=>toast('Command copied!'))">📋 Copy</button>
               <button class="btn btn-primary btn-sm" onclick="runSimulatedNucleiScan('${esc(t.id)}')">⚡ Run</button>
             </div>
           </div>
-          <div class="nuclei-cmd" onclick="navigator.clipboard.writeText(this.innerText).then(()=>toast('Command copied!'))">${esc(fullCmd)}</div>
+          <div class="nuclei-cmd" onclick="window.copyTextToClipboard(this.innerText).then(()=>toast('Command copied!'))">${esc(fullCmd)}</div>
           <div class="nuclei-tags">
             ${t.tags.map(tag => `<span class="tag-chip" onclick="nucleiTagFilter='${esc(tag)}'; document.getElementById('nuclei-filter-tag').value='${esc(tag)}'; renderNucleiTemplates()">${esc(tag)}</span>`).join('')}
           </div>

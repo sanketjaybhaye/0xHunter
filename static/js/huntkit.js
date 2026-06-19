@@ -214,7 +214,7 @@ function dorkLiveLabel() {
 function copyDork() {
   const v = document.getElementById('dork-output').value;
   if (!v) { toast('Generate a dork first', 'error'); return; }
-  navigator.clipboard.writeText(v).then(() => toast('Dork copied!', 'success'));
+  window.copyTextToClipboard(v).then(() => toast('Dork copied!', 'success'));
 }
 
 function copyAllDorks() {
@@ -222,7 +222,7 @@ function copyAllDorks() {
   const all = googleDorkTemplates.map(t =>
     `# ${t.cat}: ${t.label}\n` + t.q.replace(/\{\{domain\}\}/g, domain)
   ).join('\n\n');
-  navigator.clipboard.writeText(all).then(() => toast(`All ${googleDorkTemplates.length} dorks copied!`, 'success'));
+  window.copyTextToClipboard(all).then(() => toast(`All ${googleDorkTemplates.length} dorks copied!`, 'success'));
 }
 
 function openDorkEngine() {
@@ -356,7 +356,7 @@ function renderHuntKitPage() {
   const cveEl = document.getElementById('cve-list');
   if (cveEl && !cveEl.dataset.ready) {
     cveEl.innerHTML = cveQuickRef.map(c =>
-      `<div class="bookmark-item" onclick="navigator.clipboard.writeText('${c.id}').then(()=>toast('Copied ${c.id}'))">
+      `<div class="bookmark-item" onclick="window.copyTextToClipboard('${c.id}').then(()=>toast('Copied ${c.id}'))">
         <span class="chip chip-${c.sev === 'critical' ? 'red' : 'orange'}">${c.sev}</span>
         <strong>${c.id}</strong> — ${c.name}
       </div>`
@@ -378,7 +378,7 @@ function applyShodanTemplate(i) {
 
 function copyDork() {
   const v = document.getElementById('dork-output').value;
-  navigator.clipboard.writeText(v).then(() => toast('Dork copied', 'success'));
+  window.copyTextToClipboard(v).then(() => toast('Dork copied', 'success'));
 }
 
 function openDorkGoogle() {
@@ -438,7 +438,7 @@ function analyzeSecurityHeaders() {
         </div>
         <div style="font-size:11.5px;font-family:var(--mono);color:var(--text2);background:var(--bg2);padding:6px;border-radius:4px;border:1px dashed var(--border);display:flex;justify-content:space-between;align-items:center;">
           <span>${esc(check.remediation)}</span>
-          <button class="btn btn-sm" style="padding:2px 6px;font-size:10px;" onclick="navigator.clipboard.writeText('${check.remediation.replace(/'/g,"\\'")}').then(()=>toast('Copied remediation'))">Copy</button>
+          <button class="btn btn-sm" style="padding:2px 6px;font-size:10px;" onclick="window.copyTextToClipboard('${check.remediation.replace(/'/g,"\\'")}').then(()=>toast('Copied remediation'))">Copy</button>
         </div>
       </div>`;
     }
@@ -566,7 +566,7 @@ function testOpenRedirect() {
   out.innerHTML = payloads.map(p => {
     const testUrl = base.includes('FUZZ') ? base.replace('FUZZ', encodeURIComponent(p)) : base + sep + param + '=' + encodeURIComponent(p);
     return `<div class="bookmark-item"><a href="${esc(testUrl)}" target="_blank">${esc(testUrl)}</a>
-      <button class="btn btn-sm" onclick="navigator.clipboard.writeText('${esc(testUrl)}').then(()=>toast('Copied'))">Copy</button></div>`;
+      <button class="btn btn-sm" onclick="window.copyTextToClipboard('${esc(testUrl)}').then(()=>toast('Copied'))">Copy</button></div>`;
   }).join('');
 }
 
@@ -855,7 +855,7 @@ function extractJsEndpoints() {
     html += `<div style="border:1px solid var(--border);border-radius:var(--r);background:var(--bg);padding:10px 12px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
         <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;">Extracted Paths (${paths.length})</div>
-        <button class="btn btn-sm" onclick="navigator.clipboard.writeText('${paths.join('\n').replace(/'/g,"\'")}').then(()=>toast('Copied paths'))">Copy All</button>
+        <button class="btn btn-sm" onclick="window.copyTextToClipboard('${paths.join('\n').replace(/'/g,"\\'")}').then(()=>toast('Copied paths'))">Copy All</button>
       </div>
       <div style="max-height:200px;overflow-y:auto;background:var(--bg2);padding:8px;border-radius:4px;border:1px solid var(--border);font-family:var(--mono);font-size:11.5px;color:var(--text);white-space:pre-wrap;line-height:1.5;">${paths.map(p => esc(p)).join('\n')}</div>
     </div>`;
@@ -866,7 +866,7 @@ function extractJsEndpoints() {
     html += `<div style="border:1px solid var(--border);border-radius:var(--r);background:var(--bg);padding:10px 12px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
         <div style="font-size:11px;font-weight:700;color:var(--orange);text-transform:uppercase;">Extracted Absolute URLs (${urls.length})</div>
-        <button class="btn btn-sm" onclick="navigator.clipboard.writeText('${urls.join('\n').replace(/'/g,"\'")}').then(()=>toast('Copied URLs'))">Copy All</button>
+        <button class="btn btn-sm" onclick="window.copyTextToClipboard('${urls.join('\n').replace(/'/g,"\\'")}').then(()=>toast('Copied URLs'))">Copy All</button>
       </div>
       <div style="max-height:200px;overflow-y:auto;background:var(--bg2);padding:8px;border-radius:4px;border:1px solid var(--border);font-family:var(--mono);font-size:11.5px;color:var(--text);white-space:pre-wrap;line-height:1.5;">${urls.map(u => esc(u)).join('\n')}</div>
     </div>`;
@@ -886,7 +886,7 @@ function extractJsEndpoints() {
           <div style="font-size:10px;color:var(--text3);margin-bottom:2px;">${esc(s.type)}</div>
           <div style="font-family:var(--mono);font-size:12px;color:var(--red);word-break:break-all;">${esc(s.value)}</div>
         </div>
-        <button class="btn btn-sm" style="padding:2px 6px;font-size:10px;" onclick="navigator.clipboard.writeText('${esc(s.value).replace(/'/g,"\'")}').then(()=>toast('Copied secret'))">Copy</button>
+        <button class="btn btn-sm" style="padding:2px 6px;font-size:10px;" onclick="window.copyTextToClipboard('${esc(s.value).replace(/'/g,"\\'")}').then(()=>toast('Copied secret'))">Copy</button>
       </div>`;
     });
     

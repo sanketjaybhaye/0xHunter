@@ -359,8 +359,8 @@ function renderGithubResources() {
               </div>
               <div class="gh-card-desc">${esc(r.desc)}</div>
               <div style="display:flex; gap: 8px; margin-bottom: 8px;">
-                <div class="gh-card-cmd" style="flex:1; margin-bottom:0;" onclick="navigator.clipboard.writeText(this.innerText).then(()=>toast('Command copied!'))" title="Copy Run Command">${esc(r.cmd)}</div>
-                <button class="copy-btn" style="padding: 0 10px; height: auto;" data-cmd="${esc(installCmd).replace(/"/g, '&quot;')}" onclick="navigator.clipboard.writeText(this.getAttribute('data-cmd')).then(()=>toast('Install command copied!'))" title="Copy Install Cmd">⬇️ Install</button>
+                <div class="gh-card-cmd" style="flex:1; margin-bottom:0;" onclick="window.copyTextToClipboard(this.innerText).then(()=>toast('Command copied!'))" title="Copy Run Command">${esc(r.cmd)}</div>
+                <button class="copy-btn" style="padding: 0 10px; height: auto;" data-cmd="${esc(installCmd).replace(/"/g, '&quot;')}" onclick="window.copyTextToClipboard(this.getAttribute('data-cmd')).then(()=>toast('Install command copied!'))" title="Copy Install Cmd">⬇️ Install</button>
               </div>
               <div class="gh-card-tags">${(r.tags||[]).map(t => `<span class="tag-chip" onclick="ghSearch='${t}';document.getElementById('gh-search').value='${t}';renderGithubResources()">${esc(t)}</span>`).join('')}</div>
             </div>`;
