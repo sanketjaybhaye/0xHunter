@@ -27,5 +27,6 @@ static/test_metadata.*
 
 # Helper scripts
 push_to_github.bat
+scratch/
 
 
