@@ -729,7 +729,7 @@ function runSecretsScanner() {
       <div class="secret-hit-val">${esc(f.value)}</div>
       <pre class="secret-hit-ctx">${ctxHtml}</pre>
       <div style="margin-top:10px;text-align:right;">
-        <button class="btn btn-sm" onclick="window.copyTextToClipboard('${f.value.replace(/'/g,"\\'\")}').then(()=>toast('Copied Key!'))">📋 Copy Key</button>
+        <button class="btn btn-sm" onclick="window.copyTextToClipboard('${f.value.replace(/'/g,"\\\\'")}').then(()=>toast('Copied Key!'))">📋 Copy Key</button>
       </div>
     </div>`;
   }).join('');
@@ -764,7 +764,7 @@ async function dnsLookup() {
           <span class="dns-name">${esc(r.name)}</span>
           <span class="dns-data">${esc(r.data)}</span>
           <span class="dns-ttl">TTL: ${r.TTL}s</span>
-          <button class="copy-btn" onclick="window.copyTextToClipboard('${r.data.replace(/'/g,"\\'\")}').then(()=>toast('Copied!'))">📋</button>
+          <button class="copy-btn" onclick="window.copyTextToClipboard('${r.data.replace(/'/g,"\\\\'")}').then(()=>toast('Copied!'))">📋</button>
         </div>`).join('')}
       ${data.Authority ? data.Authority.map(r => `<div class="dns-record dns-authority"><span class="dns-type">AUTH</span><span class="dns-data">${esc(r.data)}</span></div>`).join('') : ''}`;
       
