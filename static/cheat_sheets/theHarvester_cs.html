@@ -607,13 +607,35 @@ jq -r '.emails[]' target_full.json | sort -u</pre>
     btn.addEventListener('click', () => {
       const pre = btn.closest('.code-block').querySelector('pre');
       const text = pre.innerText;
-      navigator.clipboard.writeText(text).then(() => {
+      clipCopy(text, function() {
         btn.textContent = 'copied';
         btn.classList.add('copied');
         setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1400);
       });
     });
   });
+
+/* ── Clipboard fallback (works on HTTP / LAN) ── */
+function clipCopy(text, onSuccess) {
+  function doFallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;top:0;left:0;width:2em;height:2em;padding:0;border:none;outline:none;box-shadow:none;background:transparent;opacity:0;';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    try { if (document.execCommand('copy') && onSuccess) onSuccess(); }
+    catch(e) { console.warn('clipCopy fallback failed', e); }
+    document.body.removeChild(ta);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() {
+      if (onSuccess) onSuccess();
+    }).catch(function() { doFallback(); });
+  } else {
+    doFallback();
+  }
+}
+
 </script>
 
 </body>

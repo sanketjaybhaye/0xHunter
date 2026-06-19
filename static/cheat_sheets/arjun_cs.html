@@ -116,7 +116,7 @@ function renderTabs(){
 function setTab(c){activeCat=c;render();}
 
 function copyCode(btn,code){
-  navigator.clipboard.writeText(code).then(()=>{
+  clipCopy(code, function() {
     btn.innerHTML='<i class="ti ti-check" aria-hidden="true"></i> Copied';
     setTimeout(()=>{btn.innerHTML='<i class="ti ti-copy" aria-hidden="true"></i> Copy';},1500);
   });
@@ -186,4 +186,26 @@ function render(){
 }
 
 render();
+
+/* ── Clipboard fallback (works on HTTP / LAN) ── */
+function clipCopy(text, onSuccess) {
+  function doFallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;top:0;left:0;width:2em;height:2em;padding:0;border:none;outline:none;box-shadow:none;background:transparent;opacity:0;';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    try { if (document.execCommand('copy') && onSuccess) onSuccess(); }
+    catch(e) { console.warn('clipCopy fallback failed', e); }
+    document.body.removeChild(ta);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() {
+      if (onSuccess) onSuccess();
+    }).catch(function() { doFallback(); });
+  } else {
+    doFallback();
+  }
+}
+
 </script>
