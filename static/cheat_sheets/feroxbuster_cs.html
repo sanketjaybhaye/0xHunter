@@ -1,0 +1,407 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-mono);background:transparent}
+.root{padding:1rem 0 2rem;max-width:100%}
+.hero{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem}
+.hero-icon{font-size:28px;color:#E24B4A}
+.hero-title{font-size:20px;font-weight:500;color:var(--color-text-primary)}
+.hero-sub{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+.badge{display:inline-block;font-size:10px;font-weight:500;padding:2px 8px;border-radius:4px;background:#FCEBEB;color:#A32D2D;margin-left:8px;font-family:var(--font-mono)}
+.section-label{font-size:11px;font-weight:500;letter-spacing:0.08em;color:var(--color-text-tertiary);text-transform:uppercase;margin:1.5rem 0 0.6rem;padding-left:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;margin-bottom:4px}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.1rem;overflow:hidden}
+.card-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.card-icon{font-size:16px;color:var(--color-text-secondary)}
+.card-title{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.cmd-block{background:var(--color-background-secondary);border-radius:6px;padding:8px 10px;margin-bottom:6px;border-left:2px solid #E24B4A}
+.cmd-desc{font-size:11px;color:var(--color-text-secondary);margin-bottom:3px}
+.cmd{font-family:var(--font-mono);font-size:11.5px;color:var(--color-text-primary);word-break:break-all;line-height:1.5}
+.flag{color:#185FA5}
+.val{color:#3B6D11}
+.kw{color:#993C1D}
+.comment{color:var(--color-text-tertiary);font-size:10.5px}
+.flag-table{width:100%;border-collapse:collapse;font-size:11.5px}
+.flag-table tr{border-bottom:0.5px solid var(--color-border-tertiary)}
+.flag-table tr:last-child{border-bottom:none}
+.flag-table td{padding:5px 4px;vertical-align:top}
+.flag-table td:first-child{font-family:var(--font-mono);color:#185FA5;white-space:nowrap;padding-right:10px;font-size:11px}
+.flag-table td:last-child{color:var(--color-text-secondary);font-size:11px}
+.tip-block{background:#EAF3DE;border:0.5px solid #C0DD97;border-radius:6px;padding:7px 10px;margin-top:8px;font-size:11px;color:#27500A;font-family:var(--font-sans)}
+.warn-block{background:#FAEEDA;border:0.5px solid #FAC775;border-radius:6px;padding:7px 10px;margin-top:8px;font-size:11px;color:#633806;font-family:var(--font-sans)}
+.pill{display:inline-block;font-size:10px;padding:1px 7px;border-radius:10px;font-family:var(--font-mono);margin:1px}
+.pill-blue{background:#E6F1FB;color:#0C447C}
+.pill-red{background:#FCEBEB;color:#A32D2D}
+.pill-green{background:#EAF3DE;color:#27500A}
+.pill-amber{background:#FAEEDA;color:#633806}
+.pill-gray{background:#F1EFE8;color:#444441}
+.flow{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:6px}
+.flow-step{background:var(--color-background-secondary);border:0.5px solid var(--color-border-secondary);border-radius:6px;padding:4px 8px;font-size:11px;color:var(--color-text-primary);font-family:var(--font-mono)}
+.flow-arrow{color:var(--color-text-tertiary);font-size:12px}
+.full{grid-column:1/-1}
+.tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.tab{padding:4px 10px;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;border:0.5px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-secondary)}
+.tab.active{background:#FCEBEB;color:#A32D2D;border-color:#F09595}
+.tab-content{display:none}.tab-content.show{display:block}
+</style>
+<div class="root">
+  <h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Feroxbuster master cheat sheet covering commands, flags, wordlists, and recon workflows</h2>
+
+  <div class="hero">
+    <i class="ti ti-radar-2 hero-icon" aria-hidden="true"></i>
+    <div>
+      <div class="hero-title">feroxbuster <span class="badge">web fuzzer</span></div>
+      <div class="hero-sub">fast, recursive content discovery written in Rust — master reference</div>
+    </div>
+  </div>
+
+  <div class="section-label">quick-start commands</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-header"><i class="ti ti-player-play card-icon" aria-hidden="true"></i><span class="card-title">Basic scan</span></div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Minimal — url + wordlist</div>
+        <div class="cmd"><span class="kw">feroxbuster</span> <span class="flag">-u</span> <span class="val">https://target.com</span> <span class="flag">-w</span> <span class="val">/usr/share/wordlists/dirb/common.txt</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Specify extensions + threads</div>
+        <div class="cmd"><span class="kw">feroxbuster</span> <span class="flag">-u</span> <span class="val">https://target.com</span> <span class="flag">-w</span> <span class="val">raft-medium-words.txt</span> <span class="flag">-x</span> <span class="val">php,html,js,txt</span> <span class="flag">-t</span> <span class="val">50</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">With output file</div>
+        <div class="cmd"><span class="kw">feroxbuster</span> <span class="flag">-u</span> <span class="val">https://target.com</span> <span class="flag">-w</span> <span class="val">words.txt</span> <span class="flag">-o</span> <span class="val">results.txt</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><i class="ti ti-repeat card-icon" aria-hidden="true"></i><span class="card-title">Recursive + depth control</span></div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Recursive scan, depth 3</div>
+        <div class="cmd"><span class="kw">feroxbuster</span> <span class="flag">-u</span> <span class="val">https://target.com</span> <span class="flag">-r</span> <span class="flag">--depth</span> <span class="val">3</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Limit discovered dirs (auto-tune)</div>
+        <div class="cmd"><span class="kw">feroxbuster</span> <span class="flag">-u</span> <span class="val">https://target.com</span> <span class="flag">--auto-tune</span> <span class="flag">--depth</span> <span class="val">4</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Scan from URL list file</div>
+        <div class="cmd"><span class="kw">feroxbuster</span> <span class="flag">--stdin</span> <span class="flag">-w</span> <span class="val">words.txt</span> <span class="comment"> &lt; urls.txt</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">filtering results</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-header"><i class="ti ti-filter card-icon" aria-hidden="true"></i><span class="card-title">Filter by status code</span></div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Only show 200 and 301</div>
+        <div class="cmd"><span class="flag">-s</span> <span class="val">200,301</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Filter OUT 404, 403</div>
+        <div class="cmd"><span class="flag">--filter-status</span> <span class="val">404,403</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Common useful set</div>
+        <div class="cmd"><span class="flag">-s</span> <span class="val">200,204,301,302,307,401,403</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><i class="ti ti-ruler-2 card-icon" aria-hidden="true"></i><span class="card-title">Filter by size / words / lines</span></div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Filter response size (bytes)</div>
+        <div class="cmd"><span class="flag">--filter-size</span> <span class="val">4321</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Filter by word count in response</div>
+        <div class="cmd"><span class="flag">--filter-words</span> <span class="val">24</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Filter by line count</div>
+        <div class="cmd"><span class="flag">--filter-lines</span> <span class="val">10</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Filter by regex in response body</div>
+        <div class="cmd"><span class="flag">--filter-regex</span> <span class="val">"Access Denied|Not Found"</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><i class="ti ti-text-size card-icon" aria-hidden="true"></i><span class="card-title">Filter by similarity</span></div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Auto-filter similar responses (wildcard detect)</div>
+        <div class="cmd"><span class="flag">--auto-bail</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Manually set similarity threshold (0.0–1.0)</div>
+        <div class="cmd"><span class="flag">--filter-similar-to</span> <span class="val">https://target.com/404-page</span></div>
+      </div>
+      <div class="tip-block"><i class="ti ti-bulb" aria-hidden="true" style="margin-right:4px"></i>Use <code>--auto-tune</code> + <code>--auto-bail</code> together for noisy targets — feroxbuster will adapt rate and auto-filter wildcard responses.</div>
+    </div>
+  </div>
+
+  <div class="section-label">authentication & headers</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-header"><i class="ti ti-key card-icon" aria-hidden="true"></i><span class="card-title">Auth methods</span></div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Basic auth</div>
+        <div class="cmd"><span class="flag">-u</span> <span class="val">https://target.com</span> <span class="flag">--username</span> <span class="val">admin</span> <span class="flag">--password</span> <span class="val">secret</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Cookie-based auth</div>
+        <div class="cmd"><span class="flag">-b</span> <span class="val">"session=abc123; PHPSESSID=xyz"</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Bearer token header</div>
+        <div class="cmd"><span class="flag">-H</span> <span class="val">"Authorization: Bearer eyJ..."</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Multiple headers</div>
+        <div class="cmd"><span class="flag">-H</span> <span class="val">"X-Forwarded-For: 127.0.0.1"</span> <span class="flag">-H</span> <span class="val">"X-Custom: pentest"</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><i class="ti ti-shield card-icon" aria-hidden="true"></i><span class="card-title">Proxy & TLS</span></div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Route through Burp Suite</div>
+        <div class="cmd"><span class="flag">--proxy</span> <span class="val">http://127.0.0.1:8080</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Ignore TLS certificate errors</div>
+        <div class="cmd"><span class="flag">-k</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Custom user-agent</div>
+        <div class="cmd"><span class="flag">-a</span> <span class="val">"Mozilla/5.0 (pentest)"</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Follow redirects</div>
+        <div class="cmd"><span class="flag">-r</span> <span class="comment"> (also enables recursive scan)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">performance tuning</div>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-header"><i class="ti ti-gauge card-icon" aria-hidden="true"></i><span class="card-title">Thread & rate control</span></div>
+      <table class="flag-table">
+        <tr><td>-t N</td><td>Concurrent threads (default 50)</td></tr>
+        <tr><td>--rate-limit N</td><td>Max requests per second</td></tr>
+        <tr><td>--timeout N</td><td>Request timeout (secs)</td></tr>
+        <tr><td>--auto-tune</td><td>Adapt rate dynamically</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-header"><i class="ti ti-settings card-icon" aria-hidden="true"></i><span class="card-title">Scan behavior</span></div>
+      <table class="flag-table">
+        <tr><td>--depth N</td><td>Max recursion depth</td></tr>
+        <tr><td>--scan-limit N</td><td>Limit concurrent recursive scans</td></tr>
+        <tr><td>--burp-replay-proxy</td><td>Replay matches to Burp</td></tr>
+        <tr><td>--dont-scan</td><td>Exclude path patterns</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-header"><i class="ti ti-activity card-icon" aria-hidden="true"></i><span class="card-title">Resume & state</span></div>
+      <table class="flag-table">
+        <tr><td>--resume-from FILE</td><td>Resume a previous scan</td></tr>
+        <tr><td>--json</td><td>JSON output format</td></tr>
+        <tr><td>-q</td><td>Quiet (results only)</td></tr>
+        <tr><td>--no-state</td><td>Disable .feroxbuster state</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-label">HTTP methods & request tuning</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-header"><i class="ti ti-api card-icon" aria-hidden="true"></i><span class="card-title">HTTP method + data</span></div>
+      <div class="cmd-block">
+        <div class="cmd-desc">POST requests with data</div>
+        <div class="cmd"><span class="flag">-m</span> <span class="val">POST</span> <span class="flag">-d</span> <span class="val">"user=FUZZ&pass=test"</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Use HEAD for speed (no body)</div>
+        <div class="cmd"><span class="flag">-m</span> <span class="val">HEAD</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Multiple HTTP methods</div>
+        <div class="cmd"><span class="flag">-m</span> <span class="val">GET</span> <span class="flag">-m</span> <span class="val">POST</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><i class="ti ti-code card-icon" aria-hidden="true"></i><span class="card-title">URL & path manipulation</span></div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Add URL suffix to every request</div>
+        <div class="cmd"><span class="flag">--add-slash</span> <span class="comment"> (appends /)</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Force extension on every word</div>
+        <div class="cmd"><span class="flag">-x</span> <span class="val">php,asp,aspx,jsp,txt,bak</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Prefix each word with string</div>
+        <div class="cmd"><span class="flag">--query-string</span> <span class="val">"?v=1"</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">wordlist strategy</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-header"><i class="ti ti-list card-icon" aria-hidden="true"></i><span class="card-title">Recommended wordlists</span></div>
+      <table class="flag-table">
+        <tr><td>/usr/share/seclists/Discovery/Web-Content/raft-medium-words.txt</td><td>General dirs/files — best all-rounder</td></tr>
+        <tr><td>/usr/share/seclists/Discovery/Web-Content/raft-small-words.txt</td><td>Fast recon, less noise</td></tr>
+        <tr><td>/usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt</td><td>Classic dirbuster list</td></tr>
+        <tr><td>/usr/share/seclists/Discovery/Web-Content/common.txt</td><td>Small, quick check</td></tr>
+        <tr><td>/usr/share/seclists/Discovery/Web-Content/api/api-endpoints.txt</td><td>API path discovery</td></tr>
+        <tr><td>/usr/share/seclists/Discovery/Web-Content/big.txt</td><td>Thorough — slow</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-header"><i class="ti ti-layers-intersect card-icon" aria-hidden="true"></i><span class="card-title">Multiple wordlists</span></div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Combine two wordlists</div>
+        <div class="cmd"><span class="flag">-w</span> <span class="val">raft-medium.txt</span> <span class="flag">-w</span> <span class="val">common.txt</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Stdin pipe from custom generator</div>
+        <div class="cmd"><span class="kw">crunch 4 6 | feroxbuster</span> <span class="flag">-u</span> <span class="val">https://target.com</span> <span class="flag">--stdin</span></div>
+      </div>
+      <div class="tip-block"><i class="ti ti-bulb" aria-hidden="true" style="margin-right:4px"></i>Combine <code>raft-medium-words</code> with tech-specific lists (e.g., <code>spring-boot.txt</code>, <code>wp-plugins.txt</code>) for maximum coverage.</div>
+    </div>
+  </div>
+
+  <div class="section-label">real-world attack workflows</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-header"><i class="ti ti-planet card-icon" aria-hidden="true"></i><span class="card-title">Initial web recon</span></div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Step 1 — fast surface recon</div>
+        <div class="cmd"><span class="kw">feroxbuster</span> <span class="flag">-u</span> <span class="val">https://target.com</span> <span class="flag">-w</span> <span class="val">raft-small-words.txt</span> <span class="flag">-t</span> <span class="val">100</span> <span class="flag">-q</span> <span class="flag">-o</span> <span class="val">initial.txt</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Step 2 — deep scan with extensions</div>
+        <div class="cmd"><span class="kw">feroxbuster</span> <span class="flag">-u</span> <span class="val">https://target.com</span> <span class="flag">-w</span> <span class="val">raft-medium-words.txt</span> <span class="flag">-x</span> <span class="val">php,js,txt,bak,old,xml</span> <span class="flag">--depth</span> <span class="val">4</span> <span class="flag">-o</span> <span class="val">deep.txt</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><i class="ti ti-api card-icon" aria-hidden="true"></i><span class="card-title">API endpoint discovery</span></div>
+      <div class="cmd-block">
+        <div class="cmd-desc">REST API — common patterns</div>
+        <div class="cmd"><span class="kw">feroxbuster</span> <span class="flag">-u</span> <span class="val">https://api.target.com</span> <span class="flag">-w</span> <span class="val">api-endpoints.txt</span> <span class="flag">-m</span> <span class="val">GET,POST</span> <span class="flag">-H</span> <span class="val">"Content-Type: application/json"</span> <span class="flag">-H</span> <span class="val">"Accept: application/json"</span> <span class="flag">-s</span> <span class="val">200,201,400,401,403,404,500</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Versioned API paths</div>
+        <div class="cmd"><span class="kw">feroxbuster</span> <span class="flag">-u</span> <span class="val">https://api.target.com/v1</span> <span class="flag">-w</span> <span class="val">api-endpoints.txt</span> <span class="flag">--depth</span> <span class="val">3</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><i class="ti ti-lock-open card-icon" aria-hidden="true"></i><span class="card-title">Authenticated scan</span></div>
+      <div class="cmd-block">
+        <div class="cmd-desc">JWT auth + proxy to Burp</div>
+        <div class="cmd"><span class="kw">feroxbuster</span> <span class="flag">-u</span> <span class="val">https://target.com/dashboard</span> <span class="flag">-w</span> <span class="val">raft-medium.txt</span> <span class="flag">-H</span> <span class="val">"Authorization: Bearer TOKEN"</span> <span class="flag">--proxy</span> <span class="val">http://127.0.0.1:8080</span> <span class="flag">-k</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Session cookie</div>
+        <div class="cmd"><span class="kw">feroxbuster</span> <span class="flag">-u</span> <span class="val">https://target.com/admin</span> <span class="flag">-b</span> <span class="val">"session=abc123"</span> <span class="flag">-w</span> <span class="val">raft-medium.txt</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><i class="ti ti-cloud card-icon" aria-hidden="true"></i><span class="card-title">Stealth / low-noise scan</span></div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Rate limited + randomised UA</div>
+        <div class="cmd"><span class="kw">feroxbuster</span> <span class="flag">-u</span> <span class="val">https://target.com</span> <span class="flag">-w</span> <span class="val">raft-small.txt</span> <span class="flag">--rate-limit</span> <span class="val">10</span> <span class="flag">-t</span> <span class="val">5</span> <span class="flag">--random-agent</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Bypass common WAF headers</div>
+        <div class="cmd"><span class="flag">-H</span> <span class="val">"X-Forwarded-For: 127.0.0.1"</span> <span class="flag">-H</span> <span class="val">"X-Originating-IP: 127.0.0.1"</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">output formats</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-header"><i class="ti ti-file-text card-icon" aria-hidden="true"></i><span class="card-title">Output options</span></div>
+      <table class="flag-table">
+        <tr><td>-o FILE</td><td>Write results to file (plaintext)</td></tr>
+        <tr><td>--json -o out.json</td><td>JSON format (pipe-friendly)</td></tr>
+        <tr><td>-q</td><td>Quiet mode — results only, no banner</td></tr>
+        <tr><td>-v</td><td>Verbose — extra details</td></tr>
+        <tr><td>--no-state</td><td>Disable auto-save .feroxbuster state file</td></tr>
+        <tr><td>--output-level 0-3</td><td>Control verbosity level</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-header"><i class="ti ti-terminal card-icon" aria-hidden="true"></i><span class="card-title">Parsing output</span></div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Extract only 200s from output file</div>
+        <div class="cmd"><span class="kw">grep</span> <span class="val">"^200"</span> results.txt</div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Get just URLs from JSON output</div>
+        <div class="cmd"><span class="kw">jq</span> <span class="val">'.results[].url'</span> out.json</div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-desc">Sort & deduplicate results</div>
+        <div class="cmd"><span class="kw">sort -u</span> results.txt | <span class="kw">grep</span> <span class="val">"200\|301"</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">all key flags — reference</div>
+  <div class="card">
+    <div class="card-header"><i class="ti ti-flag card-icon" aria-hidden="true"></i><span class="card-title">Complete flag reference</span></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:0 24px">
+      <table class="flag-table">
+        <tr><td>-u URL</td><td>Target URL (required)</td></tr>
+        <tr><td>-w WORDLIST</td><td>Path to wordlist (required)</td></tr>
+        <tr><td>-x ext1,ext2</td><td>File extensions to append</td></tr>
+        <tr><td>-t N</td><td>Threads (default 50)</td></tr>
+        <tr><td>-d / --depth N</td><td>Max recursion depth</td></tr>
+        <tr><td>-r</td><td>Follow redirects</td></tr>
+        <tr><td>-k</td><td>Disable TLS verification</td></tr>
+        <tr><td>-o FILE</td><td>Output file</td></tr>
+        <tr><td>-q</td><td>Quiet mode</td></tr>
+        <tr><td>-s CODES</td><td>Allow-list status codes</td></tr>
+      </table>
+      <table class="flag-table">
+        <tr><td>-m METHOD</td><td>HTTP method (GET/POST/HEAD)</td></tr>
+        <tr><td>-d DATA</td><td>POST body data</td></tr>
+        <tr><td>-H HEADER</td><td>Add HTTP header</td></tr>
+        <tr><td>-b COOKIE</td><td>Set cookie header</td></tr>
+        <tr><td>-a UA</td><td>Set user-agent string</td></tr>
+        <tr><td>--proxy URL</td><td>HTTP/SOCKS proxy</td></tr>
+        <tr><td>--random-agent</td><td>Random user-agent per request</td></tr>
+        <tr><td>--timeout N</td><td>Request timeout (secs)</td></tr>
+        <tr><td>--rate-limit N</td><td>Max requests/second</td></tr>
+        <tr><td>--scan-limit N</td><td>Concurrent recursive scans</td></tr>
+      </table>
+      <table class="flag-table">
+        <tr><td>--filter-status</td><td>Remove these status codes</td></tr>
+        <tr><td>--filter-size</td><td>Filter by response bytes</td></tr>
+        <tr><td>--filter-words</td><td>Filter by word count</td></tr>
+        <tr><td>--filter-lines</td><td>Filter by line count</td></tr>
+        <tr><td>--filter-regex</td><td>Filter by body regex</td></tr>
+        <tr><td>--filter-similar-to</td><td>Similarity filter vs URL</td></tr>
+        <tr><td>--auto-tune</td><td>Auto-adapt rate/threads</td></tr>
+        <tr><td>--auto-bail</td><td>Stop on too many similar results</td></tr>
+        <tr><td>--dont-scan REGEX</td><td>Exclude matching paths</td></tr>
+        <tr><td>--resume-from FILE</td><td>Resume previous scan state</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-label">tips & gotchas</div>
+  <div class="grid-3">
+    <div class="tip-block" style="margin-top:0"><i class="ti ti-bulb" aria-hidden="true" style="margin-right:4px"></i><strong>Wildcard detection:</strong> if every path returns 200, use <code>--filter-similar-to</code> pointing at a known-404 URL to baseline the noise.</div>
+    <div class="warn-block" style="margin-top:0"><i class="ti ti-alert-triangle" aria-hidden="true" style="margin-right:4px"></i><strong>Recursion explosion:</strong> always set <code>--depth</code> and <code>--scan-limit</code> on large sites — unlimited recursion can run for hours.</div>
+    <div class="tip-block" style="margin-top:0"><i class="ti ti-bulb" aria-hidden="true" style="margin-right:4px"></i><strong>Resume scans:</strong> feroxbuster saves a state file automatically. Run with <code>--resume-from ferox-STATE.state</code> to continue after a crash.</div>
+    <div class="tip-block" style="margin-top:0"><i class="ti ti-bulb" aria-hidden="true" style="margin-right:4px"></i><strong>Config file:</strong> put repeated flags in <code>~/.config/feroxbuster/ferox-config.toml</code> to avoid typing them every time.</div>
+    <div class="warn-block" style="margin-top:0"><i class="ti ti-alert-triangle" aria-hidden="true" style="margin-right:4px"></i><strong>Burp + TLS:</strong> always pair <code>--proxy http://127.0.0.1:8080</code> with <code>-k</code> to ignore Burp's self-signed cert.</div>
+    <div class="tip-block" style="margin-top:0"><i class="ti ti-bulb" aria-hidden="true" style="margin-right:4px"></i><strong>JSON output:</strong> use <code>--json -o results.json</code> for downstream tooling — fields include url, status, size, words, lines, duration.</div>
+  </div>
+</div>

@@ -1,0 +1,528 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);color:var(--color-text-primary);background:transparent}
+.root{padding:1.5rem 0;max-width:100%}
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.5rem;border-bottom:0.5px solid var(--color-border-tertiary);padding-bottom:1rem}
+.nav-btn{font-size:12px;font-weight:500;padding:5px 12px;border-radius:20px;cursor:pointer;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);transition:all .15s}
+.nav-btn.active{background:#1D9E75;border-color:#1D9E75;color:#fff}
+.nav-btn:hover:not(.active){background:var(--color-background-secondary);color:var(--color-text-primary)}
+.section{display:none}
+.section.visible{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-bottom:1rem}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:1rem}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.1rem}
+.card-title{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;color:#0F6E56;margin-bottom:.75rem;display:flex;align-items:center;gap:6px}
+.card-title i{font-size:16px}
+.cmd-block{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:.6rem .85rem;margin-bottom:8px}
+.cmd{font-family:var(--font-mono);font-size:12.5px;color:#185FA5;line-height:1.5;word-break:break-all}
+.cmd .flag{color:#A32D2D;font-weight:500}
+.cmd .val{color:#3B6D11}
+.cmd .comment{color:var(--color-text-secondary);font-style:italic;font-size:11.5px}
+.desc{font-size:12px;color:var(--color-text-secondary);margin-top:4px;line-height:1.45}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:2px 8px;border-radius:12px;margin:2px}
+.b-crit{background:#FCEBEB;color:#A32D2D}
+.b-high{background:#FAEEDA;color:#854F0B}
+.b-med{background:#E6F1FB;color:#185FA5}
+.b-low{background:#EAF3DE;color:#3B6D11}
+.b-info{background:#EEEDFE;color:#3C3489}
+.b-tag{background:var(--color-background-secondary);color:var(--color-text-secondary);border:0.5px solid var(--color-border-tertiary)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary);padding:6px 10px}
+td{padding:7px 10px;border-bottom:0.5px solid var(--color-border-tertiary);vertical-align:top;line-height:1.5}
+td:first-child{font-family:var(--font-mono);font-size:12px;color:#A32D2D;white-space:nowrap}
+td:last-child{color:var(--color-text-secondary);font-size:12px}
+tr:last-child td{border-bottom:none}
+.highlight-row td{background:var(--color-background-secondary)}
+.h2{font-size:14px;font-weight:500;color:var(--color-text-primary);margin:1.2rem 0 .6rem;display:flex;align-items:center;gap:6px}
+.h2 i{font-size:18px;color:#1D9E75}
+.tip{background:#E1F5EE;border-left:3px solid #1D9E75;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;padding:.6rem .9rem;font-size:12.5px;color:#085041;margin:.75rem 0;line-height:1.5}
+.warn{background:#FAEEDA;border-left:3px solid #EF9F27;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;padding:.6rem .9rem;font-size:12.5px;color:#633806;margin:.75rem 0;line-height:1.5}
+.cols-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:500px){.cols-2{grid-template-columns:1fr}}
+.flow{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:.5rem 0}
+.flow-box{background:var(--color-background-secondary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:4px 10px;font-size:12px;font-weight:500}
+.arrow{color:var(--color-text-secondary);font-size:14px}
+.search-box{width:100%;padding:8px 12px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);font-size:13px;font-family:var(--font-mono);margin-bottom:1rem;background:var(--color-background-primary);color:var(--color-text-primary)}
+.search-box:focus{outline:none;border-color:#1D9E75}
+.copy-btn{font-size:10px;background:transparent;border:none;cursor:pointer;color:var(--color-text-secondary);padding:2px 4px;float:right;opacity:.6}
+.copy-btn:hover{opacity:1}
+</style>
+
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Nuclei master cheat sheet — commands, flags, templates, workflows, and YAML reference</h2>
+
+<div class="root">
+<nav class="nav">
+  <button class="nav-btn active" onclick="show('basics')"><i class="ti ti-terminal-2" aria-hidden="true"></i> Basics</button>
+  <button class="nav-btn" onclick="show('flags')"><i class="ti ti-adjustments" aria-hidden="true"></i> Flags</button>
+  <button class="nav-btn" onclick="show('templates')"><i class="ti ti-template" aria-hidden="true"></i> Templates</button>
+  <button class="nav-btn" onclick="show('workflows')"><i class="ti ti-sitemap" aria-hidden="true"></i> Workflows</button>
+  <button class="nav-btn" onclick="show('yaml')"><i class="ti ti-file-code" aria-hidden="true"></i> YAML Ref</button>
+  <button class="nav-btn" onclick="show('output')"><i class="ti ti-file-export" aria-hidden="true"></i> Output</button>
+  <button class="nav-btn" onclick="show('advanced')"><i class="ti ti-rocket" aria-hidden="true"></i> Advanced</button>
+</nav>
+
+<!-- BASICS -->
+<div id="basics" class="section visible">
+  <div class="h2"><i class="ti ti-terminal-2" aria-hidden="true"></i> Installation & setup</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-download" aria-hidden="true"></i> Install</div>
+      <div class="cmd-block"><div class="cmd">go install <span class="val">-v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest</span></div><div class="desc">Install via Go (requires Go 1.21+)</div></div>
+      <div class="cmd-block"><div class="cmd">brew install <span class="val">nuclei</span></div><div class="desc">macOS via Homebrew</div></div>
+      <div class="cmd-block"><div class="cmd">docker pull <span class="val">projectdiscovery/nuclei:latest</span></div><div class="desc">Docker image</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-refresh" aria-hidden="true"></i> Templates update</div>
+      <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-update-templates</span></div><div class="desc">Update official templates to latest</div></div>
+      <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-update</span></div><div class="desc">Update nuclei binary itself</div></div>
+      <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-ut</span> <span class="flag">-ud</span> <span class="val">~/custom-templates</span></div><div class="desc">Update templates to a custom directory</div></div>
+    </div>
+  </div>
+
+  <div class="h2"><i class="ti ti-bolt" aria-hidden="true"></i> Essential one-liners</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-crosshair" aria-hidden="true"></i> Single target</div>
+      <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-u</span> <span class="val">https://target.com</span></div><div class="desc">Scan with all default templates</div></div>
+      <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-u</span> <span class="val">https://target.com</span> <span class="flag">-t</span> <span class="val">exposures/</span></div><div class="desc">Run only exposure templates</div></div>
+      <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-u</span> <span class="val">https://target.com</span> <span class="flag">-severity</span> <span class="val">critical,high</span></div><div class="desc">Only critical/high severity checks</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-list" aria-hidden="true"></i> Multiple targets</div>
+      <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-l</span> <span class="val">targets.txt</span></div><div class="desc">Scan list of URLs from file</div></div>
+      <div class="cmd-block"><div class="cmd">cat <span class="val">urls.txt</span> | nuclei <span class="flag">-t</span> <span class="val">cves/</span></div><div class="desc">Pipe targets from stdin</div></div>
+      <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-l</span> <span class="val">targets.txt</span> <span class="flag">-c</span> <span class="val">50</span> <span class="flag">-rl</span> <span class="val">200</span></div><div class="desc">50 concurrent, 200 req/sec rate limit</div></div>
+    </div>
+  </div>
+
+  <div class="h2"><i class="ti ti-layers-intersect" aria-hidden="true"></i> Common severity badges</div>
+  <div style="margin-bottom:.75rem">
+    <span class="badge b-crit">critical</span>
+    <span class="badge b-high">high</span>
+    <span class="badge b-med">medium</span>
+    <span class="badge b-low">low</span>
+    <span class="badge b-info">info</span>
+  </div>
+
+  <div class="tip"><i class="ti ti-info-circle" aria-hidden="true"></i> <strong>Template path:</strong> Templates are stored at <code>~/nuclei-templates/</code> by default. Point <code>-t</code> to any subdirectory (e.g. <code>cves/2024/</code>) to narrow scope dramatically.</div>
+  <div class="warn"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Always get written permission before scanning. Many templates are active and will send real HTTP requests.</div>
+</div>
+
+<!-- FLAGS -->
+<div id="flags" class="section">
+  <div class="h2"><i class="ti ti-target" aria-hidden="true"></i> Target flags</div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="table-wrap">
+      <table>
+        <tr><th>Flag</th><th>Short</th><th>Description</th></tr>
+        <tr><td>-target</td><td>-u</td><td>Single target URL to scan</td></tr>
+        <tr class="highlight-row"><td>-list</td><td>-l</td><td>File containing list of target URLs</td></tr>
+        <tr><td>-resume</td><td></td><td>Resume scan from resume.cfg (created after interrupt)</td></tr>
+        <tr class="highlight-row"><td>-exclude-hosts</td><td>-eh</td><td>Skip hosts matching this list/pattern</td></tr>
+        <tr><td>-scan-all-ips</td><td>-sa</td><td>Scan all IPs for a host (multi-IP targets)</td></tr>
+        <tr class="highlight-row"><td>-ip-version</td><td>-ipv</td><td>IP version: 4, 6, or both</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="h2"><i class="ti ti-template" aria-hidden="true"></i> Template flags</div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="table-wrap">
+      <table>
+        <tr><th>Flag</th><th>Short</th><th>Description</th></tr>
+        <tr><td>-templates</td><td>-t</td><td>Template path(s), directory, or URL</td></tr>
+        <tr class="highlight-row"><td>-template-id</td><td>-tid</td><td>Run templates matching this ID</td></tr>
+        <tr><td>-template-url</td><td>-tu</td><td>Remote URL to fetch template from</td></tr>
+        <tr class="highlight-row"><td>-tags</td><td></td><td>Only run templates with these tags (comma-sep)</td></tr>
+        <tr><td>-etags</td><td></td><td>Exclude templates with these tags</td></tr>
+        <tr class="highlight-row"><td>-exclude-templates</td><td>-et</td><td>Exclude specific template file(s)/dirs</td></tr>
+        <tr><td>-severity</td><td></td><td>Filter by severity: critical,high,medium,low,info</td></tr>
+        <tr class="highlight-row"><td>-exclude-severity</td><td>-es</td><td>Exclude templates of specified severity</td></tr>
+        <tr><td>-type</td><td>-tp</td><td>Protocol type: http, dns, tcp, tls, code, file…</td></tr>
+        <tr class="highlight-row"><td>-author</td><td>-a</td><td>Run templates by specific author(s)</td></tr>
+        <tr><td>-new-templates</td><td>-nt</td><td>Only run templates added in latest release</td></tr>
+        <tr class="highlight-row"><td>-validate</td><td></td><td>Validate templates and exit (syntax check)</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="h2"><i class="ti ti-gauge" aria-hidden="true"></i> Rate & concurrency flags</div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="table-wrap">
+      <table>
+        <tr><th>Flag</th><th>Short</th><th>Description</th></tr>
+        <tr><td>-concurrency</td><td>-c</td><td>Number of concurrent template executions (default 25)</td></tr>
+        <tr class="highlight-row"><td>-bulk-size</td><td>-bs</td><td>Max hosts per template batch (default 25)</td></tr>
+        <tr><td>-rate-limit</td><td>-rl</td><td>Max requests per second (global)</td></tr>
+        <tr class="highlight-row"><td>-rate-limit-minute</td><td>-rlm</td><td>Max requests per minute</td></tr>
+        <tr><td>-timeout</td><td></td><td>Time limit per request in seconds (default 5)</td></tr>
+        <tr class="highlight-row"><td>-retries</td><td></td><td>Number of retries on failure (default 1)</td></tr>
+        <tr><td>-max-host-error</td><td>-mhe</td><td>Skip host after N errors (default 30)</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="h2"><i class="ti ti-settings" aria-hidden="true"></i> Config & misc flags</div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="table-wrap">
+      <table>
+        <tr><th>Flag</th><th>Short</th><th>Description</th></tr>
+        <tr><td>-config</td><td>-config</td><td>Path to nuclei config file (YAML)</td></tr>
+        <tr class="highlight-row"><td>-proxy</td><td>-p</td><td>Proxy URL (http/socks5://host:port)</td></tr>
+        <tr><td>-header</td><td>-H</td><td>Custom headers to send with every request</td></tr>
+        <tr class="highlight-row"><td>-vars</td><td>-V</td><td>Custom vars for templates (key=value)</td></tr>
+        <tr><td>-silent</td><td>-s</td><td>Show only results, suppress status output</td></tr>
+        <tr class="highlight-row"><td>-verbose</td><td>-v</td><td>Show verbose template execution output</td></tr>
+        <tr><td>-debug</td><td></td><td>Show full request/response for debug</td></tr>
+        <tr class="highlight-row"><td>-disable-redirects</td><td>-dr</td><td>Disable following HTTP redirects</td></tr>
+        <tr><td>-no-color</td><td>-nc</td><td>Disable color in output</td></tr>
+        <tr class="highlight-row"><td>-stats</td><td></td><td>Display scan progress statistics</td></tr>
+        <tr><td>-metrics</td><td></td><td>Expose metrics on port 9092 (Prometheus)</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- TEMPLATES -->
+<div id="templates" class="section">
+  <div class="h2"><i class="ti ti-folder" aria-hidden="true"></i> Template directory structure</div>
+  <div class="card" style="margin-bottom:12px;font-family:var(--font-mono);font-size:12.5px;line-height:1.9">
+    <span style="color:#1D9E75">~/nuclei-templates/</span><br>
+    &nbsp;├── <span style="color:#185FA5">cves/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--color-text-secondary);font-family:var(--font-sans);font-size:11.5px">— CVE-specific checks (year subdirs)</span><br>
+    &nbsp;├── <span style="color:#185FA5">exposures/</span>&nbsp;&nbsp;&nbsp;<span style="color:var(--color-text-secondary);font-family:var(--font-sans);font-size:11.5px">— Exposed files, configs, panels</span><br>
+    &nbsp;├── <span style="color:#185FA5">technologies/</span>&nbsp;<span style="color:var(--color-text-secondary);font-family:var(--font-sans);font-size:11.5px">— Tech fingerprinting</span><br>
+    &nbsp;├── <span style="color:#185FA5">vulnerabilities/</span><span style="color:var(--color-text-secondary);font-family:var(--font-sans);font-size:11.5px">— General vuln checks</span><br>
+    &nbsp;├── <span style="color:#185FA5">misconfiguration/</span><span style="color:var(--color-text-secondary);font-family:var(--font-sans);font-size:11.5px">— Security misconfigs</span><br>
+    &nbsp;├── <span style="color:#185FA5">default-logins/</span>&nbsp;<span style="color:var(--color-text-secondary);font-family:var(--font-sans);font-size:11.5px">— Default credentials checks</span><br>
+    &nbsp;├── <span style="color:#185FA5">dns/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--color-text-secondary);font-family:var(--font-sans);font-size:11.5px">— DNS-level checks</span><br>
+    &nbsp;├── <span style="color:#185FA5">network/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--color-text-secondary);font-family:var(--font-sans);font-size:11.5px">— TCP/raw network templates</span><br>
+    &nbsp;├── <span style="color:#185FA5">ssl/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--color-text-secondary);font-family:var(--font-sans);font-size:11.5px">— TLS/SSL checks</span><br>
+    &nbsp;└── <span style="color:#185FA5">workflows/</span>&nbsp;&nbsp;&nbsp;<span style="color:var(--color-text-secondary);font-family:var(--font-sans);font-size:11.5px">— Multi-step chained workflows</span>
+  </div>
+
+  <div class="h2"><i class="ti ti-tag" aria-hidden="true"></i> Useful template tags</div>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">Security</div>
+      <span class="badge b-tag">sqli</span><span class="badge b-tag">xss</span><span class="badge b-tag">rce</span><span class="badge b-tag">ssrf</span><span class="badge b-tag">lfi</span><span class="badge b-tag">xxe</span><span class="badge b-tag">ssti</span><span class="badge b-tag">idor</span><span class="badge b-tag">redirect</span>
+    </div>
+    <div class="card">
+      <div class="card-title">Exposure</div>
+      <span class="badge b-tag">exposure</span><span class="badge b-tag">config</span><span class="badge b-tag">backup</span><span class="badge b-tag">token</span><span class="badge b-tag">api</span><span class="badge b-tag">panel</span><span class="badge b-tag">login</span>
+    </div>
+    <div class="card">
+      <div class="card-title">CVE / Tech</div>
+      <span class="badge b-tag">cve</span><span class="badge b-tag">wordpress</span><span class="badge b-tag">apache</span><span class="badge b-tag">nginx</span><span class="badge b-tag">spring</span><span class="badge b-tag">log4j</span><span class="badge b-tag">kubernetes</span>
+    </div>
+  </div>
+
+  <div class="h2"><i class="ti ti-search" aria-hidden="true"></i> Template search & list commands</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-list-search" aria-hidden="true"></i> List & search</div>
+      <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-tl</span></div><div class="desc">List all available templates</div></div>
+      <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-tl</span> <span class="flag">-tags</span> <span class="val">cve,rce</span></div><div class="desc">List templates matching tags</div></div>
+      <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-tl</span> <span class="flag">-severity</span> <span class="val">critical</span></div><div class="desc">List critical-severity templates</div></div>
+      <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-tl</span> <span class="flag">-author</span> <span class="val">pdteam</span></div><div class="desc">List templates by specific author</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-test-pipe" aria-hidden="true"></i> Test & debug templates</div>
+      <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-validate</span> <span class="flag">-t</span> <span class="val">my-template.yaml</span></div><div class="desc">Validate template syntax</div></div>
+      <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-u</span> <span class="val">target</span> <span class="flag">-t</span> <span class="val">my.yaml</span> <span class="flag">-debug</span></div><div class="desc">Full request/response debug</div></div>
+      <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-u</span> <span class="val">target</span> <span class="flag">-t</span> <span class="val">my.yaml</span> <span class="flag">-v</span></div><div class="desc">Verbose template execution</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- WORKFLOWS -->
+<div id="workflows" class="section">
+  <div class="h2"><i class="ti ti-git-branch" aria-hidden="true"></i> Common scan workflows</div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title"><i class="ti ti-shield-check" aria-hidden="true"></i> Bug bounty quick-start</div>
+    <div class="cmd-block"><div class="cmd">subfinder <span class="flag">-d</span> <span class="val">target.com</span> | httpx | nuclei <span class="flag">-t</span> <span class="val">exposures/</span> <span class="flag">-t</span> <span class="val">cves/</span> <span class="flag">-severity</span> <span class="val">critical,high</span> <span class="flag">-o</span> <span class="val">results.txt</span></div><div class="desc">Enumerate subdomains → probe live hosts → scan exposures and critical CVEs</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title"><i class="ti ti-lock-search" aria-hidden="true"></i> CVE scanning</div>
+    <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-l</span> <span class="val">hosts.txt</span> <span class="flag">-t</span> <span class="val">cves/2024/</span> <span class="flag">-c</span> <span class="val">50</span> <span class="flag">-rl</span> <span class="val">100</span> <span class="flag">-o</span> <span class="val">cve-results.json</span> <span class="flag">-json</span></div><div class="desc">Scan all hosts for 2024 CVEs at controlled rate, JSON output</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title"><i class="ti ti-key" aria-hidden="true"></i> Default credential audit</div>
+    <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-l</span> <span class="val">targets.txt</span> <span class="flag">-t</span> <span class="val">default-logins/</span> <span class="flag">-severity</span> <span class="val">critical,high,medium</span></div><div class="desc">Check admin panels for default credentials across common software</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title"><i class="ti ti-cloud-search" aria-hidden="true"></i> Cloud misconfiguration scan</div>
+    <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-l</span> <span class="val">targets.txt</span> <span class="flag">-tags</span> <span class="val">aws,gcp,azure,kubernetes,docker</span> <span class="flag">-o</span> <span class="val">cloud-misconfigs.txt</span></div><div class="desc">Find exposed cloud infrastructure and container misconfigs</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title"><i class="ti ti-certificate" aria-hidden="true"></i> SSL/TLS audit</div>
+    <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-l</span> <span class="val">hosts.txt</span> <span class="flag">-t</span> <span class="val">ssl/</span> <span class="flag">-t</span> <span class="val">tls/</span> <span class="flag">-p</span> <span class="val">443</span></div><div class="desc">Check for weak ciphers, expired certs, HSTS issues, misconfigs</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title"><i class="ti ti-brand-wordpress" aria-hidden="true"></i> WordPress audit</div>
+    <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-u</span> <span class="val">https://wp-site.com</span> <span class="flag">-tags</span> <span class="val">wordpress</span> <span class="flag">-t</span> <span class="val">exposures/cms/wordpress/</span></div><div class="desc">Full WordPress-specific template set: plugins, themes, core vulns</div></div>
+  </div>
+
+  <div class="h2"><i class="ti ti-sitemap" aria-hidden="true"></i> Workflow YAML (chained templates)</div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-file-code" aria-hidden="true"></i> Example workflow file</div>
+    <div class="cmd-block"><div class="cmd" style="white-space:pre;font-size:11.5px;line-height:1.7"><span style="color:#1D9E75">id:</span> tech-detect-exploit
+<span style="color:#1D9E75">info:</span>
+  <span style="color:#1D9E75">name:</span> Detect then exploit
+  <span style="color:#1D9E75">author:</span> me
+<span style="color:#1D9E75">workflows:</span>
+  - <span style="color:#1D9E75">template:</span> <span class="val">technologies/apache-detect.yaml</span>
+    <span style="color:#1D9E75">matchers:</span>
+    - <span style="color:#1D9E75">name:</span> apache
+      <span style="color:#1D9E75">subtemplates:</span>
+      - <span style="color:#1D9E75">tags:</span> apache,rce</div></div>
+    <div class="desc" style="margin-top:8px">Run exploitation templates only if fingerprinting template matches — reduces noise significantly</div>
+  </div>
+</div>
+
+<!-- YAML REF -->
+<div id="yaml" class="section">
+  <div class="h2"><i class="ti ti-file-code" aria-hidden="true"></i> Template skeleton</div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="cmd-block"><div class="cmd" style="white-space:pre;font-size:11.5px;line-height:1.75"><span style="color:#1D9E75">id:</span> example-template-id
+
+<span style="color:#1D9E75">info:</span>
+  <span style="color:#1D9E75">name:</span> Example Vuln Check
+  <span style="color:#1D9E75">author:</span> yourhandle
+  <span style="color:#1D9E75">severity:</span> <span class="val">high</span>       <span class="comment"># critical | high | medium | low | info</span>
+  <span style="color:#1D9E75">description:</span> |
+    Brief description of what this detects.
+  <span style="color:#1D9E75">tags:</span> <span class="val">cve,rce,apache</span>
+  <span style="color:#1D9E75">reference:</span>
+    - <span class="val">https://nvd.nist.gov/vuln/detail/CVE-XXXX</span>
+  <span style="color:#1D9E75">metadata:</span>
+    <span style="color:#1D9E75">cvss-score:</span> <span class="val">9.8</span>
+    <span style="color:#1D9E75">cve-id:</span> <span class="val">CVE-XXXX-XXXX</span>
+
+<span style="color:#1D9E75">requests:</span>
+  - <span style="color:#1D9E75">method:</span> <span class="val">GET</span>
+    <span style="color:#1D9E75">path:</span>
+      - <span class="val">"{{BaseURL}}/vulnerable/endpoint"</span>
+    <span style="color:#1D9E75">headers:</span>
+      User-Agent: <span class="val">nuclei-scanner</span>
+    <span style="color:#1D9E75">matchers-condition:</span> <span class="val">and</span>
+    <span style="color:#1D9E75">matchers:</span>
+      - <span style="color:#1D9E75">type:</span> <span class="val">word</span>
+        <span style="color:#1D9E75">words:</span>
+          - <span class="val">"vulnerable_string"</span>
+        <span style="color:#1D9E75">part:</span> <span class="val">body</span>
+      - <span style="color:#1D9E75">type:</span> <span class="val">status</span>
+        <span style="color:#1D9E75">status:</span>
+          - <span class="val">200</span></div></div>
+  </div>
+
+  <div class="h2"><i class="ti ti-variable" aria-hidden="true"></i> Built-in template variables</div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="table-wrap">
+      <table>
+        <tr><th>Variable</th><th>Resolves to</th></tr>
+        <tr><td>{{BaseURL}}</td><td>Full base URL (https://host:port)</td></tr>
+        <tr class="highlight-row"><td>{{RootURL}}</td><td>Root URL without path</td></tr>
+        <tr><td>{{Hostname}}</td><td>Hostname only (host:port)</td></tr>
+        <tr class="highlight-row"><td>{{Host}}</td><td>IP or hostname without port</td></tr>
+        <tr><td>{{Port}}</td><td>Port number</td></tr>
+        <tr class="highlight-row"><td>{{Path}}</td><td>Current URL path</td></tr>
+        <tr><td>{{Scheme}}</td><td>http or https</td></tr>
+        <tr class="highlight-row"><td>{{username}}</td><td>Value from vars or wordlist (custom)</td></tr>
+        <tr><td>{{rand_int(1,9999)}}</td><td>Random integer in range</td></tr>
+        <tr class="highlight-row"><td>{{rand_str(8)}}</td><td>Random string of length 8</td></tr>
+        <tr><td>{{to_lower("STRING")}}</td><td>Lowercased string helper</td></tr>
+        <tr class="highlight-row"><td>{{base64("payload")}}</td><td>Base64-encoded value</td></tr>
+        <tr><td>{{url_encode("str")}}</td><td>URL-encoded value</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="h2"><i class="ti ti-filter" aria-hidden="true"></i> Matcher types</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">Matcher types</div>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Type</th><th>Matches on</th></tr>
+          <tr><td>word</td><td>String present in part</td></tr>
+          <tr class="highlight-row"><td>regex</td><td>Regex match on part</td></tr>
+          <tr><td>status</td><td>HTTP status code(s)</td></tr>
+          <tr class="highlight-row"><td>size</td><td>Response body size</td></tr>
+          <tr><td>binary</td><td>Binary hex in body</td></tr>
+          <tr class="highlight-row"><td>dsl</td><td>Custom Go expression</td></tr>
+          <tr><td>xpath</td><td>XPath on HTML body</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Matcher parts</div>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Part</th><th>Where it looks</th></tr>
+          <tr><td>body</td><td>Response body</td></tr>
+          <tr class="highlight-row"><td>header</td><td>Response headers</td></tr>
+          <tr><td>all</td><td>Full response (headers+body)</td></tr>
+          <tr class="highlight-row"><td>interactsh_protocol</td><td>OOB interaction type</td></tr>
+          <tr><td>raw</td><td>Raw HTTP response</td></tr>
+          <tr class="highlight-row"><td>request</td><td>Outgoing request</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="h2"><i class="ti ti-arrow-bar-to-right" aria-hidden="true"></i> Extractors</div>
+  <div class="card">
+    <div class="cmd-block"><div class="cmd" style="white-space:pre;font-size:11.5px;line-height:1.7"><span style="color:#1D9E75">extractors:</span>
+  - <span style="color:#1D9E75">type:</span> <span class="val">regex</span>
+    <span style="color:#1D9E75">name:</span> version
+    <span style="color:#1D9E75">part:</span> <span class="val">body</span>
+    <span style="color:#1D9E75">regex:</span>
+      - <span class="val">"Version: ([0-9.]+)"</span>
+    <span style="color:#1D9E75">group:</span> <span class="val">1</span>     <span class="comment"># capture group index</span>
+
+  - <span style="color:#1D9E75">type:</span> <span class="val">kval</span>    <span class="comment"># extract key:value from headers/cookies</span>
+    <span style="color:#1D9E75">kval:</span>
+      - <span class="val">Set-Cookie</span>
+
+  - <span style="color:#1D9E75">type:</span> <span class="val">json</span>   <span class="comment"># JSON path extractor (jq-style)</span>
+    <span style="color:#1D9E75">json:</span>
+      - <span class="val">".token"</span></div></div>
+  </div>
+</div>
+
+<!-- OUTPUT -->
+<div id="output" class="section">
+  <div class="h2"><i class="ti ti-file-export" aria-hidden="true"></i> Output flags</div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="table-wrap">
+      <table>
+        <tr><th>Flag</th><th>Description</th></tr>
+        <tr><td>-o &lt;file&gt;</td><td>Write results to output file</td></tr>
+        <tr class="highlight-row"><td>-json / -j</td><td>JSON Lines output format (.jsonl)</td></tr>
+        <tr><td>-jsonl</td><td>JSON Lines (same as -json)</td></tr>
+        <tr class="highlight-row"><td>-json-req-resp / -jr</td><td>Include full request+response in JSON</td></tr>
+        <tr><td>-output-limit / -ol</td><td>Stop writing after N results</td></tr>
+        <tr class="highlight-row"><td>-markdown-export / -me</td><td>Export findings as Markdown report</td></tr>
+        <tr><td>-sarif-export / -se</td><td>Export in SARIF format (for GitHub/VS Code)</td></tr>
+        <tr class="highlight-row"><td>-no-meta</td><td>Exclude match metadata from output</td></tr>
+        <tr><td>-timestamp / -ts</td><td>Add timestamp to each result</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="h2"><i class="ti ti-code" aria-hidden="true"></i> JSON output fields</div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="cmd-block"><div class="cmd" style="white-space:pre;font-size:11.5px;line-height:1.7">{
+  <span style="color:#1D9E75">"template-id"</span>: <span class="val">"CVE-2021-44228"</span>,
+  <span style="color:#1D9E75">"info"</span>: {
+    <span style="color:#1D9E75">"name"</span>: <span class="val">"Log4j RCE"</span>,
+    <span style="color:#1D9E75">"severity"</span>: <span class="val">"critical"</span>,
+    <span style="color:#1D9E75">"tags"</span>: [<span class="val">"cve","rce","log4j"</span>]
+  },
+  <span style="color:#1D9E75">"host"</span>: <span class="val">"https://target.com"</span>,
+  <span style="color:#1D9E75">"matched-at"</span>: <span class="val">"https://target.com/api/auth"</span>,
+  <span style="color:#1D9E75">"timestamp"</span>: <span class="val">"2024-01-15T10:30:00Z"</span>,
+  <span style="color:#1D9E75">"extracted-results"</span>: [<span class="val">"10.0.0.1"</span>],
+  <span style="color:#1D9E75">"curl-command"</span>: <span class="val">"curl -X GET ..."</span>
+}</div></div>
+  </div>
+
+  <div class="h2"><i class="ti ti-filter" aria-hidden="true"></i> Post-processing JSON output</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-terminal" aria-hidden="true"></i> jq recipes</div>
+      <div class="cmd-block"><div class="cmd">cat <span class="val">results.json</span> | jq <span class="val">'.info.severity'</span></div><div class="desc">Extract severity from each finding</div></div>
+      <div class="cmd-block"><div class="cmd">cat <span class="val">out.json</span> | jq <span class="val">-r 'select(.info.severity=="critical") | .host'</span></div><div class="desc">Get hosts with critical findings only</div></div>
+      <div class="cmd-block"><div class="cmd">cat <span class="val">out.json</span> | jq <span class="val">-r '[.host,.matched-at,.["template-id"]] | @csv'</span></div><div class="desc">Convert to CSV for reporting</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-brand-github" aria-hidden="true"></i> Integration tips</div>
+      <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-sarif-export</span> <span class="val">results.sarif</span></div><div class="desc">Import into GitHub Code Scanning, VS Code SARIF viewer</div></div>
+      <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-markdown-export</span> <span class="val">report/</span></div><div class="desc">Generate per-template Markdown docs in directory</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADVANCED -->
+<div id="advanced" class="section">
+  <div class="h2"><i class="ti ti-radar" aria-hidden="true"></i> OOB / Interactsh</div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-u</span> <span class="val">target</span> <span class="flag">-interactsh-url</span> <span class="val">https://interactsh.yourserver.com</span></div><div class="desc">Use self-hosted interactsh for blind OOB detection</div></div>
+    <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-u</span> <span class="val">target</span> <span class="flag">-ni</span></div><div class="desc">-ni disables interactsh (skip OOB templates entirely)</div></div>
+    <div class="tip" style="margin-top:8px"><i class="ti ti-info-circle" aria-hidden="true"></i> Interactsh is used automatically for templates with <code>oob</code> tag. Set up your own server with <code>interactsh-server</code> for private engagements.</div>
+  </div>
+
+  <div class="h2"><i class="ti ti-cpu" aria-hidden="true"></i> Code protocol templates</div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="cmd-block"><div class="cmd" style="white-space:pre;font-size:11.5px;line-height:1.7"><span style="color:#1D9E75">code:</span>
+  - <span style="color:#1D9E75">engine:</span>
+      - <span class="val">python3</span>
+      - <span class="val">python</span>
+    <span style="color:#1D9E75">source:</span> |
+      import sys
+      print("custom logic here")
+    <span style="color:#1D9E75">matchers:</span>
+      - <span style="color:#1D9E75">type:</span> <span class="val">word</span>
+        <span style="color:#1D9E75">words:</span>
+          - <span class="val">"custom logic here"</span></div></div>
+    <div class="desc" style="margin-top:6px">Run arbitrary Python/Bash scripts as nuclei templates. Requires <code>-code</code> flag to enable.</div>
+    <div class="cmd-block" style="margin-top:8px"><div class="cmd">nuclei <span class="flag">-u</span> <span class="val">target</span> <span class="flag">-t</span> <span class="val">my-code.yaml</span> <span class="flag">-code</span></div></div>
+  </div>
+
+  <div class="h2"><i class="ti ti-cloud" aria-hidden="true"></i> Cloud / DAST mode</div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-u</span> <span class="val">target</span> <span class="flag">-dast</span></div><div class="desc">Enable DAST mode — dynamically discover and test injection points</div></div>
+    <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-l</span> <span class="val">hosts.txt</span> <span class="flag">-cloud-list</span></div><div class="desc">List available ProjectDiscovery cloud templates</div></div>
+  </div>
+
+  <div class="h2"><i class="ti ti-adjustments-alt" aria-hidden="true"></i> Scan tuning cheatsheet</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-speedboat" aria-hidden="true"></i> Fast / aggressive</div>
+      <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-l</span> <span class="val">t.txt</span> <span class="flag">-c</span> <span class="val">100</span> <span class="flag">-bs</span> <span class="val">50</span> <span class="flag">-rl</span> <span class="val">500</span> <span class="flag">-timeout</span> <span class="val">3</span></div><div class="desc">High concurrency, high rate, low timeout — for internal networks</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-feather" aria-hidden="true"></i> Slow / stealth</div>
+      <div class="cmd-block"><div class="cmd">nuclei <span class="flag">-l</span> <span class="val">t.txt</span> <span class="flag">-c</span> <span class="val">5</span> <span class="flag">-rl</span> <span class="val">10</span> <span class="flag">-rlm</span> <span class="val">200</span> <span class="flag">-timeout</span> <span class="val">15</span></div><div class="desc">Low rate, high timeout — for evasion or fragile targets</div></div>
+    </div>
+  </div>
+
+  <div class="h2"><i class="ti ti-plug" aria-hidden="true"></i> Integration pipelines</div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-arrow-right-circle" aria-hidden="true"></i> Full recon → scan pipeline</div>
+    <div class="cmd-block"><div class="cmd" style="white-space:pre;font-size:11.5px;line-height:1.7">subfinder -d <span class="val">target.com</span> -silent \
+  | dnsx -silent \
+  | httpx -silent -threads 100 \
+  | nuclei \
+    -t <span class="val">cves/ exposures/ vulnerabilities/</span> \
+    -severity <span class="val">critical,high,medium</span> \
+    -c <span class="val">30</span> -rl <span class="val">150</span> \
+    -o <span class="val">findings.json</span> -json \
+    -stats</div></div>
+    <div class="desc" style="margin-top:6px">Production-ready pipeline: subdomain enum → DNS resolve → HTTP probe → nuclei scan with results saved as JSON</div>
+  </div>
+  <div class="tip" style="margin-top:12px"><i class="ti ti-bulb" aria-hidden="true"></i> Use <code>-resume</code> to continue interrupted scans. Nuclei auto-creates a <code>resume.cfg</code> file when you hit Ctrl+C.</div>
+</div>
+</div>
+
+<script>
+function show(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('visible'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('visible');
+  const labels={basics:'Basics',flags:'Flags',templates:'Templates',workflows:'Workflows',yaml:'YAML Ref',output:'Output',advanced:'Advanced'};
+  document.querySelectorAll('.nav-btn').forEach(b=>{if(b.textContent.trim().includes(labels[id]||''))b.classList.add('active')});
+}
+document.querySelectorAll('.nav-btn').forEach((btn,i)=>{
+  const sections=['basics','flags','templates','workflows','yaml','output','advanced'];
+  btn.onclick=()=>show(sections[i]);
+});
+</script>

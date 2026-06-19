@@ -1,0 +1,189 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-mono,monospace)}
+.wrap{padding:1.5rem 0;max-width:100%}
+.section-title{font-size:13px;font-weight:500;letter-spacing:.08em;color:var(--color-text-secondary);text-transform:uppercase;margin:2rem 0 .75rem;font-family:var(--font-sans)}
+.search-bar{display:flex;align-items:center;gap:10px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:10px 14px;margin-bottom:1.5rem}
+.search-bar input{background:none;border:none;outline:none;width:100%;font-size:14px;color:var(--color-text-primary);font-family:var(--font-sans)}
+.search-bar i{color:var(--color-text-secondary);font-size:18px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.5rem}
+.tab{padding:6px 14px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);font-size:13px;font-family:var(--font-sans);cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary);transition:all .15s}
+.tab.active{background:var(--color-background-info);border-color:var(--color-border-info);color:var(--color-text-info);font-weight:500}
+.cmd-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:.75rem;transition:border-color .15s}
+.cmd-card:hover{border-color:var(--color-border-secondary)}
+.cmd-header{display:flex;align-items:center;gap:10px;margin-bottom:.6rem}
+.cmd-badge{font-size:11px;font-weight:500;padding:2px 8px;border-radius:4px;font-family:var(--font-sans);white-space:nowrap}
+.badge-get{background:#E6F1FB;color:#0C447C}
+.badge-post{background:#E1F5EE;color:#085041}
+.badge-json{background:#EEEDFE;color:#3C3489}
+.badge-xml{background:#FAEEDA;color:#633806}
+.badge-output{background:#EAF3DE;color:#27500A}
+.badge-recon{background:#FBEAF0;color:#72243E}
+.badge-perf{background:#FAECE7;color:#712B13}
+.badge-auth{background:#FCEBEB;color:#791F1F}
+.badge-passive{background:#E1F5EE;color:#085041}
+.cmd-title{font-size:14px;font-weight:500;color:var(--color-text-primary);font-family:var(--font-sans)}
+.cmd-desc{font-size:13px;color:var(--color-text-secondary);margin-bottom:.75rem;font-family:var(--font-sans);line-height:1.5}
+.cmd-code{background:var(--color-background-tertiary);border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:.6rem .9rem;font-size:12.5px;color:var(--color-text-primary);font-family:var(--font-mono);overflow-x:auto;white-space:pre;line-height:1.6}
+.copy-btn{margin-top:.5rem;font-size:12px;padding:4px 10px;border-radius:4px;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer;font-family:var(--font-sans);display:flex;align-items:center;gap:5px;transition:all .15s}
+.copy-btn:hover{background:var(--color-background-secondary)}
+.tip-box{background:var(--color-background-info);border:0.5px solid var(--color-border-info);border-radius:var(--border-radius-md);padding:.75rem 1rem;margin:.5rem 0 1rem;font-size:13px;color:var(--color-text-info);font-family:var(--font-sans);display:flex;gap:8px;align-items:flex-start;line-height:1.5}
+.no-results{text-align:center;padding:3rem;color:var(--color-text-secondary);font-family:var(--font-sans);font-size:14px}
+.workflow-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:1.5rem}
+.wf-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem;border:0.5px solid var(--color-border-tertiary)}
+.wf-step{font-size:11px;font-weight:500;color:var(--color-text-secondary);font-family:var(--font-sans);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em}
+.wf-code{font-size:12px;font-family:var(--font-mono);color:var(--color-text-primary);line-height:1.5}
+.wf-title{font-size:13px;font-weight:500;color:var(--color-text-primary);font-family:var(--font-sans);margin-bottom:.4rem}
+</style>
+
+<div class="wrap">
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden">Arjun HTTP Parameter Discovery — Complete command reference cheat sheet</h2>
+
+<div class="search-bar">
+  <i class="ti ti-search" aria-hidden="true"></i>
+  <input type="text" id="searchInput" placeholder="Search commands, flags, or keywords..." oninput="filterCards()">
+</div>
+
+<div class="tabs" id="tabRow"></div>
+
+<div id="cardContainer"></div>
+</div>
+
+<script>
+const ALL = "All";
+const data = [
+  {cat:"Installation", badge:"", title:"Install via pipx (recommended)", desc:"Install Arjun globally using pipx. Requires Python 3.4+.", code:`pipx install arjun\n# or via pip\npip install arjun`},
+  {cat:"Installation", badge:"", title:"Install from source (GitHub)", desc:"Clone the repo for the latest development version.", code:`git clone https://github.com/s0md3v/Arjun\ncd Arjun\npip install -r requirements.txt\npython3 arjun.py --help`},
+  {cat:"Installation", badge:"", title:"Verify installation", desc:"Check help menu and confirm the tool is working.", code:`arjun --help\narjun -h`},
+
+  {cat:"Basic Scan", badge:"get", title:"Scan a single URL (GET)", desc:"Most basic usage — scans GET parameters against Arjun's 25,890-name wordlist.", code:`arjun -u https://api.example.com/endpoint`},
+  {cat:"Basic Scan", badge:"post", title:"Scan with POST method", desc:"Discover POST body parameters instead of URL query parameters.", code:`arjun -u https://api.example.com/login -m POST`},
+  {cat:"Basic Scan", badge:"json", title:"Scan JSON endpoint", desc:"Send parameters inside a JSON body — ideal for REST APIs.", code:`arjun -u https://api.example.com/endpoint -m JSON`},
+  {cat:"Basic Scan", badge:"xml", title:"Scan XML endpoint", desc:"Send parameters inside an XML body — useful for SOAP APIs.", code:`arjun -u https://api.example.com/endpoint -m XML`},
+
+  {cat:"Input / Import", badge:"", title:"Import from text file", desc:"Feed Arjun a newline-separated list of target URLs from a .txt file.", code:`arjun -i targets.txt`},
+  {cat:"Input / Import", badge:"", title:"Import from Burp Suite export", desc:"Use exported items from Burp Suite proxy history. Uncheck 'base64' when exporting.", code:`arjun -i burp_export.xml`},
+  {cat:"Input / Import", badge:"", title:"Import raw HTTP request file", desc:"Arjun auto-detects the file type so just pass the path.", code:`arjun -i raw_request.txt`},
+
+  {cat:"Output / Export", badge:"output", title:"Save results to JSON", desc:"Export discovered parameters to a structured JSON file for downstream use.", code:`arjun -u https://api.example.com/endpoint -oJ result.json`},
+  {cat:"Output / Export", badge:"output", title:"Save results to text file", desc:"Export as a plain text file.", code:`arjun -u https://api.example.com/endpoint -oT result.txt`},
+  {cat:"Output / Export", badge:"output", title:"Send results to Burp Suite proxy", desc:"Pipe discovered parameters directly to Burp for further testing.", code:`arjun -u https://api.example.com/endpoint -oB 127.0.0.1:8080`},
+  {cat:"Output / Export", badge:"output", title:"Quiet mode (suppress output)", desc:"Reduce noise — only print discovered parameters, nothing else.", code:`arjun -u https://api.example.com/endpoint -q`},
+
+  {cat:"Performance", badge:"perf", title:"Set thread count", desc:"Arjun uses 2 threads by default. Increase for faster scanning on stable networks.", code:`arjun -u https://api.example.com/endpoint -t 10`},
+  {cat:"Performance", badge:"perf", title:"Set delay between requests", desc:"Delay requests by N seconds. Automatically sets threads to 1.", code:`arjun -u https://api.example.com/endpoint -d 2`},
+  {cat:"Performance", badge:"perf", title:"Set request timeout", desc:"Default timeout is 15s. Lower it to skip slow endpoints quickly.", code:`arjun -u https://api.example.com/endpoint -T 10`},
+  {cat:"Performance", badge:"perf", title:"Control chunk size", desc:"Number of params sent per request. Lower if server enforces URL length limits.", code:`arjun -u https://api.example.com/endpoint -c 250`},
+  {cat:"Performance", badge:"perf", title:"Stable mode (evade rate limits)", desc:"Sets threads to 1 and adds random 6–12s delays to avoid WAF/rate-limit blocks.", code:`arjun -u https://api.example.com/endpoint --stable`},
+  {cat:"Performance", badge:"perf", title:"Set explicit rate limit", desc:"Control maximum requests per second manually.", code:`arjun -u https://api.example.com/endpoint --ratelimit 2`},
+
+  {cat:"Headers / Auth", badge:"auth", title:"Add custom HTTP headers", desc:"Pass custom headers separated by \\n — useful for cookies, JWT tokens, API keys.", code:`arjun -u https://api.example.com/endpoint \\\n  --headers "Authorization: Bearer TOKEN\nCookie: session=abc123"`},
+  {cat:"Headers / Auth", badge:"auth", title:"Open header editor (interactive)", desc:"Opens nano (or default editor) for multi-line header input.", code:`arjun -u https://api.example.com/endpoint --headers`},
+  {cat:"Headers / Auth", badge:"auth", title:"Include persistent data (API key)", desc:"Send a fixed param or JSON key-value with every request — e.g. for API key auth.", code:`arjun -u https://api.example.com/endpoint --include 'api_key=xxxx'\n# JSON form:\narjun -u https://api.example.com/endpoint --include '{"api_key":"xxxx"}'`},
+  {cat:"Headers / Auth", badge:"auth", title:"Include multiple persistent params", desc:"Use & separator for query-string format, or a JSON object.", code:`arjun -u https://api.example.com/endpoint \\\n  --include 'token=abc&version=2'`},
+
+  {cat:"Advanced / Injection", badge:"json", title:"Custom JSON injection point", desc:"Tell Arjun exactly where to inject inside a nested JSON structure using $arjun$.", code:`arjun -u https://api.example.com/endpoint -m JSON \\\n  --include='{"root":{"a":"b",$arjun$}}'`},
+  {cat:"Advanced / Injection", badge:"xml", title:"Custom XML injection point", desc:"Specify where to inject inside XML body using the $arjun$ placeholder.", code:`arjun -u https://api.example.com/endpoint -m XML \\\n  --include='<?xml><root>$arjun$</root>'`},
+  {cat:"Advanced / Injection", badge:"", title:"Disable redirect following", desc:"Prevents Arjun from following HTTP redirects. Use carefully — may miss params.", code:`arjun -u https://api.example.com/redirects_to_api2 --disable-redirects`},
+  {cat:"Advanced / Injection", badge:"", title:"Custom parameter casing", desc:"Apply naming conventions like snake_case, camelCase, etc. via --casing flag.", code:`arjun -u https://api.example.com/endpoint --casing camelCase\n# Options: foo_bar | fooBar | FooBar | foo-bar | FOOBAR`},
+
+  {cat:"Wordlists", badge:"", title:"Use built-in wordlists", desc:"Arjun ships with three built-in wordlists: small, medium, and large.", code:`arjun -u https://api.example.com/endpoint -w small\narjun -u https://api.example.com/endpoint -w medium\narjun -u https://api.example.com/endpoint -w large`},
+  {cat:"Wordlists", badge:"", title:"Use custom wordlist", desc:"Point to your own wordlist file for domain-specific or targeted fuzzing.", code:`arjun -u https://api.example.com/endpoint -w /path/to/wordlist.txt`},
+
+  {cat:"Passive Recon", badge:"passive", title:"Collect from passive sources", desc:"Pulls parameter names from CommonCrawl, WaybackMachine, and OTX for a domain.", code:`arjun -u https://api.example.com/endpoint --passive example.com`},
+  {cat:"Passive Recon", badge:"passive", title:"Use URL's own domain (passive)", desc:"Auto-extracts the domain from the -u target. Only works for single targets.", code:`arjun -u https://api.example.com/endpoint --passive -`},
+];
+
+const cats = [ALL, ...new Set(data.map(d=>d.cat))];
+let activeCat = ALL;
+let searchVal = "";
+
+function badgeClass(b){
+  const map={get:"badge-get",post:"badge-post",json:"badge-json",xml:"badge-xml",output:"badge-output",recon:"badge-recon",perf:"badge-perf",auth:"badge-auth",passive:"badge-passive"};
+  return map[b]||"";
+}
+function badgeLabel(b){
+  const map={get:"GET",post:"POST",json:"JSON",xml:"XML",output:"OUTPUT",recon:"RECON",perf:"PERF",auth:"AUTH",passive:"PASSIVE"};
+  return map[b]||"";
+}
+
+function renderTabs(){
+  const el=document.getElementById("tabRow");
+  el.innerHTML=cats.map(c=>`<button class="tab${c===activeCat?' active':''}" onclick="setTab('${c}')">${c}</button>`).join("");
+}
+
+function setTab(c){activeCat=c;render();}
+
+function copyCode(btn,code){
+  navigator.clipboard.writeText(code).then(()=>{
+    btn.innerHTML='<i class="ti ti-check" aria-hidden="true"></i> Copied';
+    setTimeout(()=>{btn.innerHTML='<i class="ti ti-copy" aria-hidden="true"></i> Copy';},1500);
+  });
+}
+
+function filterCards(){
+  searchVal=document.getElementById("searchInput").value.toLowerCase();
+  render();
+}
+
+function render(){
+  renderTabs();
+  const container=document.getElementById("cardContainer");
+  const filtered=data.filter(d=>{
+    const matchCat=activeCat===ALL||d.cat===activeCat;
+    const matchSearch=!searchVal||(d.title+d.desc+d.code+d.cat).toLowerCase().includes(searchVal);
+    return matchCat&&matchSearch;
+  });
+
+  if(filtered.length===0){
+    container.innerHTML=`<div class="no-results"><i class="ti ti-zoom-cancel" style="font-size:32px;display:block;margin-bottom:.75rem" aria-hidden="true"></i>No commands match your search.</div>`;
+    return;
+  }
+
+  let grouped={};
+  if(activeCat===ALL){
+    filtered.forEach(d=>{
+      if(!grouped[d.cat])grouped[d.cat]=[];
+      grouped[d.cat].push(d);
+    });
+  } else {
+    grouped[activeCat]=filtered;
+  }
+
+  let html="";
+
+  if(activeCat===ALL){
+    html+=`<div class="tip-box"><i class="ti ti-info-circle" style="font-size:18px;flex-shrink:0;margin-top:1px" aria-hidden="true"></i><span><strong style="font-weight:500">Arjun</strong> discovers hidden HTTP parameters using a 25,890-name wordlist in under 10 seconds, making only 50–60 requests. Use it before manual testing or tool-chaining (SQLMap, Burp).</span></div>`;
+    html+=`<div class="section-title">Common bug bounty workflow</div>`;
+    html+=`<div class="workflow-grid">
+      <div class="wf-card"><div class="wf-step">Step 1</div><div class="wf-title">Discover params</div><div class="wf-code">arjun -u TARGET -oJ out.json</div></div>
+      <div class="wf-card"><div class="wf-step">Step 2</div><div class="wf-title">Proxy to Burp</div><div class="wf-code">arjun -u TARGET -oB 127.0.0.1:8080</div></div>
+      <div class="wf-card"><div class="wf-step">Step 3</div><div class="wf-title">Passive recon</div><div class="wf-code">arjun -u TARGET --passive -</div></div>
+      <div class="wf-card"><div class="wf-step">Step 4</div><div class="wf-title">Fuzz with SQLMap</div><div class="wf-code">sqlmap -u "TARGET?param=1"</div></div>
+    </div>`;
+  }
+
+  Object.entries(grouped).forEach(([cat,items])=>{
+    if(activeCat===ALL) html+=`<div class="section-title">${cat}</div>`;
+    items.forEach(d=>{
+      const bClass=badgeClass(d.badge);
+      const bLabel=badgeLabel(d.badge);
+      const escapedCode=d.code.replace(/`/g,"\\`").replace(/\$/g,"\\$");
+      html+=`<div class="cmd-card">
+        <div class="cmd-header">
+          ${bClass?`<span class="cmd-badge ${bClass}">${bLabel}</span>`:""}
+          <span class="cmd-title">${d.title}</span>
+        </div>
+        <div class="cmd-desc">${d.desc}</div>
+        <div class="cmd-code">${d.code.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</div>
+        <button class="copy-btn" onclick="copyCode(this,\`${escapedCode}\`)"><i class="ti ti-copy" aria-hidden="true"></i> Copy</button>
+      </div>`;
+    });
+  });
+
+  container.innerHTML=html;
+}
+
+render();
+</script>

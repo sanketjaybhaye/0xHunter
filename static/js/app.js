@@ -4394,7 +4394,7 @@ const massiveTools = [
     tags: ['Recon & Discovery', 'Subdomains', 'ASN'],
     books: 'The Hacker Playbook 3',
     videos: 'https://www.youtube.com/watch?v=mXoQ_6B7U',
-    cheatSheetHtml: `<iframe src="/api/files/ff2b661536454b13a58f06dbbd0e64eb_amass_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
+    cheatSheetHtml: `<iframe src="/static/cheat_sheets/amass_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
     cheatSheet: `amass enum -active -d target.com -src -ip -brute
 amass intel -asn 13374 -whois -d target.com
 amass track -d target.com (track changes over time)`
@@ -4413,7 +4413,7 @@ amass track -d target.com (track changes over time)`
     desc: 'Fast port scanner with reliability focus.',
     cmd: 'naabu -host target.com -top-ports 1000 -o ports.txt',
     tags: ['Recon & Discovery', 'Port Scanning'],
-    cheatSheetHtml: `<iframe src="/api/files/4d1b82fa7c3a44d1bc89e37fcfa5fa8a_naabu_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
+    cheatSheetHtml: `<iframe src="/static/cheat_sheets/naabu_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
     cheatSheet: `-p - : Scan all 65535 ports
 -p 80,443,8080 : Scan specific ports
 -c 50 : Concurrent workers
@@ -4424,7 +4424,7 @@ amass track -d target.com (track changes over time)`
     desc: 'The industry standard network mapper.',
     cmd: 'nmap -sC -sV -p- -T4 target.com',
     tags: ['Recon & Discovery', 'Port Scanning'],
-    cheatSheetHtml: `<iframe src="/api/files/a412081991b34ab59e2b86ec4fe5fa31_nmap_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
+    cheatSheetHtml: `<iframe src="/static/cheat_sheets/nmap_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
     cheatSheet: `-sC : Default NSE scripts
 -sV : Service version detection
 -p- : All 65535 ports
@@ -4437,7 +4437,7 @@ amass track -d target.com (track changes over time)`
     desc: 'Mass IP port scanner. Scans the entire Internet in under 6 minutes.',
     cmd: 'masscan -p1-65535 10.0.0.0/8 --rate=10000',
     tags: ['Recon & Discovery', 'Port Scanning'],
-    cheatSheetHtml: `<iframe src="/api/files/a7d89bf16c8e44208e75cfca4db8e121_masscan_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
+    cheatSheetHtml: `<iframe src="/static/cheat_sheets/masscan_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
     cheatSheet: `--rate=10000 : Max packets per second (tune for your connection)
 -p80,443,8080 : Specify ports
 --router-mac : Specify MAC address to bypass routing issues`
@@ -4550,7 +4550,7 @@ cat urls.txt | grep -vE '\\.(jpg|jpeg|gif|css|tif|tiff|png|ttf|woff|woff2|ico)$'
     desc: 'Fast web fuzzer written in Go.',
     cmd: 'ffuf -w wordlist.txt -u https://target.com/FUZZ',
     tags: ['Fuzzing', 'Web Directories'],
-    cheatSheetHtml: `<iframe src="/api/files/290d2e08fbb247279922bdf03fc872f0_ffuf_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
+    cheatSheetHtml: `<iframe src="/static/cheat_sheets/ffuf_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
     cheatSheet: `-mc 200,301,302 : Match specific status codes
 -fs 4242 : Filter by specific response size
 -H "Authorization: Bearer X" : Add custom header
@@ -4652,7 +4652,7 @@ trufflehog github --org=targetorg --only-verified
     desc: 'Automatic SQL injection and database takeover tool.',
     cmd: 'sqlmap -u "http://target.com/vuln?id=1" --batch',
     tags: ['Scanning', 'SQLi'],
-    cheatSheetHtml: `<iframe src="/api/files/b375eb4afe1b4115ac69bd8686669e12_sqlmap_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
+    cheatSheetHtml: `<iframe src="/static/cheat_sheets/sqlmap_cs.html" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:550px; border:none; background: transparent; margin-top: 8px;"></iframe>`,
     cheatSheet: `--dbs : Enumerate databases
 --tables -D db_name : Enumerate tables for database
 --dump -T users -D db_name : Dump table contents

@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sherlock — Master Hacker Cheat Sheet</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;600;700&display=swap');
+
+  :root {
+    --bg:       #0a0c10;
+    --surface:  #111318;
+    --card:     #161a22;
+    --border:   #1e2330;
+    --accent:   #00e5ff;
+    --accent2:  #7c3aed;
+    --warn:     #f59e0b;
+    --danger:   #ef4444;
+    --success:  #10b981;
+    --muted:    #4a5568;
+    --text:     #e2e8f0;
+    --text-dim: #94a3b8;
+    --mono:     'Share Tech Mono', monospace;
+    --sans:     'Inter', sans-serif;
+    --display:  'Space Grotesk', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ─── SCANLINE OVERLAY ─────────────────────────────── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg,
+      transparent 0px, transparent 2px,
+      rgba(0,229,255,0.015) 2px, rgba(0,229,255,0.015) 4px);
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  /* ─── HERO ─────────────────────────────────────────── */
+  .hero {
+    background: linear-gradient(135deg, #0a0c10 0%, #0d111a 50%, #0a0e14 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 32px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 320px; height: 320px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,229,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    opacity: 0.8;
+  }
+
+  .hero h1 {
+    font-family: var(--display);
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+
+  .hero h1 span { color: var(--accent); }
+
+  .hero-sub {
+    color: var(--text-dim);
+    font-size: 14px;
+    max-width: 560px;
+    margin-bottom: 24px;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .stat-val {
+    font-family: var(--mono);
+    font-size: 22px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ─── LAYOUT ────────────────────────────────────────── */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  @media (max-width: 768px) {
+    .container { grid-template-columns: 1fr; }
+    .full-width { grid-column: 1; }
+  }
+
+  .full-width { grid-column: 1 / -1; }
+
+  /* ─── SECTION ───────────────────────────────────────── */
+  .section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,229,255,0.03);
+  }
+
+  .section-icon {
+    font-size: 16px;
+    width: 28px;
+    height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,229,255,0.08);
+    border-radius: 6px;
+    border: 1px solid rgba(0,229,255,0.15);
+  }
+
+  .section-title {
+    font-family: var(--display);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .section-body { padding: 16px 18px; }
+
+  /* ─── CMD BLOCKS ────────────────────────────────────── */
+  .cmd-group { margin-bottom: 18px; }
+  .cmd-group:last-child { margin-bottom: 0; }
+
+  .cmd-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+
+  .cmd {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: #c9d8f0;
+    margin-bottom: 6px;
+    word-break: break-all;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+
+  .cmd:hover {
+    border-left-color: #fff;
+    background: #13171f;
+  }
+
+  .cmd .kw  { color: var(--accent); }
+  .cmd .flag{ color: var(--warn); }
+  .cmd .val { color: #86efac; }
+  .cmd .cmt { color: var(--muted); font-style: italic; }
+
+  .cmd-note {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+    padding-left: 4px;
+    border-left: 2px solid var(--border);
+    padding: 2px 8px;
+  }
+
+  /* ─── FLAG TABLE ────────────────────────────────────── */
+  .flag-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .flag-table th {
+    text-align: left;
+    padding: 8px 10px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .flag-table td {
+    padding: 7px 10px;
+    vertical-align: top;
+    border-bottom: 1px solid rgba(30,35,48,0.6);
+  }
+
+  .flag-table tr:last-child td { border-bottom: none; }
+
+  .flag-table tr:hover td { background: rgba(0,229,255,0.03); }
+
+  .fl {
+    font-family: var(--mono);
+    color: var(--warn);
+    white-space: nowrap;
+    font-size: 12px;
+  }
+
+  .fl-desc { color: var(--text); }
+  .fl-ex   { color: #86efac; font-family: var(--mono); font-size: 11px; }
+
+  /* ─── BADGES ────────────────────────────────────────── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 99px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 4px;
+  }
+
+  .badge-cyan   { background: rgba(0,229,255,0.1); color: var(--accent); border: 1px solid rgba(0,229,255,0.25); }
+  .badge-green  { background: rgba(16,185,129,0.1); color: var(--success); border: 1px solid rgba(16,185,129,0.25); }
+  .badge-yellow { background: rgba(245,158,11,0.1); color: var(--warn); border: 1px solid rgba(245,158,11,0.25); }
+  .badge-red    { background: rgba(239,68,68,0.1); color: var(--danger); border: 1px solid rgba(239,68,68,0.25); }
+  .badge-purple { background: rgba(124,58,237,0.1); color: #a78bfa; border: 1px solid rgba(124,58,237,0.25); }
+
+  /* ─── WORKFLOW ──────────────────────────────────────── */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .flow-step {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(30,35,48,0.6);
+  }
+
+  .flow-step:last-child { border-bottom: none; }
+
+  .step-num {
+    flex-shrink: 0;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: rgba(0,229,255,0.1);
+    border: 1px solid rgba(0,229,255,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .step-content { flex: 1; }
+
+  .step-title {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .step-desc {
+    font-size: 11.5px;
+    color: var(--text-dim);
+  }
+
+  .step-cmd {
+    margin-top: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #c9d8f0;
+  }
+
+  /* ─── OUTPUT FORMAT TABLE ───────────────────────────── */
+  .format-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .format-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+
+  .format-card:hover { border-color: rgba(0,229,255,0.3); }
+
+  .format-ext {
+    font-family: var(--mono);
+    font-size: 16px;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .format-flag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--warn);
+    margin-bottom: 6px;
+  }
+
+  .format-note {
+    font-size: 10.5px;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+
+  /* ─── TIP BOX ───────────────────────────────────────── */
+  .tip {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: rgba(0,229,255,0.04);
+    border: 1px solid rgba(0,229,255,0.15);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    font-size: 12px;
+  }
+
+  .tip:last-child { margin-bottom: 0; }
+
+  .tip-icon { flex-shrink: 0; font-size: 14px; }
+
+  .tip-body { flex: 1; }
+  .tip-title { font-weight: 600; color: var(--accent); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+  .tip-text  { color: var(--text-dim); line-height: 1.5; }
+  .tip-text code { font-family: var(--mono); color: var(--warn); font-size: 11px; }
+
+  .tip.warn { background: rgba(245,158,11,0.05); border-color: rgba(245,158,11,0.2); }
+  .tip.warn .tip-title { color: var(--warn); }
+
+  .tip.danger { background: rgba(239,68,68,0.05); border-color: rgba(239,68,68,0.2); }
+  .tip.danger .tip-title { color: var(--danger); }
+
+  .tip.success { background: rgba(16,185,129,0.05); border-color: rgba(16,185,129,0.2); }
+  .tip.success .tip-title { color: var(--success); }
+
+  /* ─── COMBOS ────────────────────────────────────────── */
+  .combo {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+
+  .combo-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .combo-cmd {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #c9d8f0;
+    line-height: 1.7;
+  }
+
+  .combo-cmd .kw   { color: var(--accent); }
+  .combo-cmd .flag { color: var(--warn); }
+  .combo-cmd .val  { color: #86efac; }
+
+  /* ─── OPSEC GRID ────────────────────────────────────── */
+  .opsec-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .opsec-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+
+  .opsec-do   { border-left: 3px solid var(--success); }
+  .opsec-dont { border-left: 3px solid var(--danger); }
+
+  .opsec-heading {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .opsec-do   .opsec-heading { color: var(--success); }
+  .opsec-dont .opsec-heading { color: var(--danger); }
+
+  .opsec-list {
+    list-style: none;
+    font-size: 11.5px;
+    color: var(--text-dim);
+  }
+
+  .opsec-list li {
+    padding: 3px 0;
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+  }
+
+  .opsec-list li::before {
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .opsec-do   .opsec-list li::before { content: '✓'; color: var(--success); }
+  .opsec-dont .opsec-list li::before { content: '✗'; color: var(--danger); }
+
+  /* ─── PLATFORM CLOUD ────────────────────────────────── */
+  .platform-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .platform-tag {
+    font-size: 11px;
+    font-family: var(--mono);
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    transition: all 0.15s;
+  }
+
+  .platform-tag:hover {
+    border-color: rgba(0,229,255,0.3);
+    color: var(--accent);
+  }
+
+  .platform-tag.hot {
+    border-color: rgba(124,58,237,0.4);
+    color: #a78bfa;
+    background: rgba(124,58,237,0.07);
+  }
+
+  /* ─── FOOTER ────────────────────────────────────────── */
+  footer {
+    text-align: center;
+    padding: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 11px;
+    font-family: var(--mono);
+  }
+
+  footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">🔍 OSINT · Username Enumeration · Reconnaissance</div>
+  <h1>Sherlock<br><span>Master Cheat Sheet</span></h1>
+  <p class="hero-sub">The definitive command reference for hunting usernames across 400+ social networks. Built for ethical hackers, OSINT analysts &amp; pentesters.</p>
+  <div class="hero-stats">
+    <div class="stat"><span class="stat-val">400+</span><span class="stat-label">Platforms</span></div>
+    <div class="stat"><span class="stat-val">~2s</span><span class="stat-label">Avg scan time</span></div>
+    <div class="stat"><span class="stat-val">Open</span><span class="stat-label">Source (MIT)</span></div>
+    <div class="stat"><span class="stat-val">Python</span><span class="stat-label">3.7+</span></div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ── INSTALLATION ── -->
+  <div class="section full-width">
+    <div class="section-header">
+      <div class="section-icon">⚙️</div>
+      <span class="section-title">Installation</span>
+      <span class="badge badge-green">Setup</span>
+    </div>
+    <div class="section-body">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;flex-wrap:wrap;">
+
+        <div>
+          <div class="cmd-label">Method 1 — Kali / Debian (Recommended)</div>
+          <div class="cmd"><span class="kw">sudo apt install</span> sherlock</div>
+          <div class="cmd"><span class="kw">sherlock</span> <span class="flag">--help</span></div>
+          <div class="cmd-note">Pre-packaged for Kali Linux 2022.1+</div>
+        </div>
+
+        <div>
+          <div class="cmd-label">Method 2 — pip (Cross-platform)</div>
+          <div class="cmd"><span class="kw">pip3 install</span> sherlock-project</div>
+          <div class="cmd"><span class="kw">sherlock</span> username</div>
+          <div class="cmd-note">Installs latest PyPI release globally</div>
+        </div>
+
+        <div>
+          <div class="cmd-label">Method 3 — Git clone (Latest)</div>
+          <div class="cmd"><span class="kw">git clone</span> https://github.com/sherlock-project/sherlock.git</div>
+          <div class="cmd"><span class="kw">cd</span> sherlock && <span class="kw">pip3 install</span> -r requirements.txt</div>
+          <div class="cmd"><span class="kw">python3 sherlock</span> username</div>
+          <div class="cmd-note">Always pulls latest version from source</div>
+        </div>
+
+      </div>
+
+      <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="tip success">
+          <div class="tip-icon">✅</div>
+          <div class="tip-body">
+            <div class="tip-title">Verify install</div>
+            <div class="tip-text">Run <code>sherlock --version</code> to confirm installation. Check GitHub repo after install for latest supported sites count.</div>
+          </div>
+        </div>
+        <div class="tip warn">
+          <div class="tip-icon">⬆️</div>
+          <div class="tip-body">
+            <div class="tip-title">Keep updated</div>
+            <div class="tip-text">Run <code>cd sherlock && git pull origin main</code> weekly — sites are added/removed frequently by the community.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CORE COMMANDS ── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">⚡</div>
+      <span class="section-title">Core Commands</span>
+      <span class="badge badge-cyan">Essential</span>
+    </div>
+    <div class="section-body">
+
+      <div class="cmd-group">
+        <div class="cmd-label">Basic Searches</div>
+        <div class="cmd"><span class="kw">sherlock</span> <span class="val">username</span></div>
+        <div class="cmd-note">Search one username across all 400+ sites</div>
+        <div class="cmd"><span class="kw">sherlock</span> <span class="val">user1 user2 user3</span></div>
+        <div class="cmd-note">Search multiple usernames in a single run</div>
+        <div class="cmd"><span class="kw">sherlock</span> <span class="flag">--input-file</span> <span class="val">users.txt</span></div>
+        <div class="cmd-note">Load username list from file (one per line)</div>
+      </div>
+
+      <div class="cmd-group">
+        <div class="cmd-label">Site Filtering</div>
+        <div class="cmd"><span class="kw">sherlock</span> <span class="flag">--site</span> <span class="val">github</span> <span class="val">username</span></div>
+        <div class="cmd-note">Target a single specific site only</div>
+        <div class="cmd"><span class="kw">sherlock</span> <span class="flag">--site</span> <span class="val">github</span> <span class="flag">--site</span> <span class="val">twitter</span> <span class="val">username</span></div>
+        <div class="cmd-note">Target multiple specific sites</div>
+      </div>
+
+      <div class="cmd-group">
+        <div class="cmd-label">Timeout Control</div>
+        <div class="cmd"><span class="kw">sherlock</span> <span class="flag">--timeout</span> <span class="val">10</span> <span class="val">username</span></div>
+        <div class="cmd-note">Set per-site timeout in seconds (default: 60)</div>
+        <div class="cmd"><span class="kw">sherlock</span> <span class="flag">--timeout</span> <span class="val">1</span> <span class="val">username</span></div>
+        <div class="cmd-note">Speed run — fast, may miss slow-responding sites</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── OUTPUT OPTIONS ── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">📤</div>
+      <span class="section-title">Output &amp; Export</span>
+      <span class="badge badge-purple">Reporting</span>
+    </div>
+    <div class="section-body">
+
+      <div class="cmd-group">
+        <div class="cmd-label">Save Results</div>
+        <div class="cmd"><span class="kw">sherlock</span> <span class="val">username</span> <span class="flag">--output</span> <span class="val">results.txt</span></div>
+        <div class="cmd-note">Save found URLs to a plain text file</div>
+        <div class="cmd"><span class="kw">sherlock</span> <span class="val">username</span> <span class="flag">--csv</span></div>
+        <div class="cmd-note">Export results as CSV (username.csv)</div>
+        <div class="cmd"><span class="kw">sherlock</span> <span class="val">username</span> <span class="flag">--json</span> <span class="val">results.json</span></div>
+        <div class="cmd-note">Export results as structured JSON</div>
+        <div class="cmd"><span class="kw">sherlock</span> <span class="val">username</span> <span class="flag">--xlsx</span></div>
+        <div class="cmd-note">Export results as Excel spreadsheet</div>
+        <div class="cmd"><span class="kw">sherlock</span> <span class="val">username</span> <span class="flag">--folderoutput</span> <span class="val">./results/</span></div>
+        <div class="cmd-note">Save all outputs to a specified directory</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div class="format-grid">
+          <div class="format-card">
+            <div class="format-ext">.txt</div>
+            <div class="format-flag">--output</div>
+            <div class="format-note">Plain URL list. Best for piping to other tools</div>
+          </div>
+          <div class="format-card">
+            <div class="format-ext">.csv</div>
+            <div class="format-flag">--csv</div>
+            <div class="format-note">Spreadsheet-ready. Use with Excel / LibreOffice</div>
+          </div>
+          <div class="format-card">
+            <div class="format-ext">.json</div>
+            <div class="format-flag">--json</div>
+            <div class="format-note">Machine-readable. Ideal for scripting / APIs</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── ALL FLAGS REFERENCE ── -->
+  <div class="section full-width">
+    <div class="section-header">
+      <div class="section-icon">🚩</div>
+      <span class="section-title">Complete Flag Reference</span>
+      <span class="badge badge-yellow">Reference</span>
+    </div>
+    <div class="section-body">
+      <table class="flag-table">
+        <thead>
+          <tr>
+            <th>Flag</th>
+            <th>Description</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="fl">--help, -h</span></td>
+            <td class="fl-desc">Show help menu and exit</td>
+            <td><span class="fl-ex">sherlock --help</span></td>
+          </tr>
+          <tr>
+            <td><span class="fl">--version</span></td>
+            <td class="fl-desc">Display version number</td>
+            <td><span class="fl-ex">sherlock --version</span></td>
+          </tr>
+          <tr>
+            <td><span class="fl">--verbose, -v</span></td>
+            <td class="fl-desc">Verbose output — displays all site checks including NOT FOUND</td>
+            <td><span class="fl-ex">sherlock -v target</span></td>
+          </tr>
+          <tr>
+            <td><span class="fl">--print-all</span></td>
+            <td class="fl-desc">Print all sites — found and not found</td>
+            <td><span class="fl-ex">sherlock --print-all user</span></td>
+          </tr>
+          <tr>
+            <td><span class="fl">--print-found</span></td>
+            <td class="fl-desc">Print only confirmed found accounts (reduces noise)</td>
+            <td><span class="fl-ex">sherlock --print-found user</span></td>
+          </tr>
+          <tr>
+            <td><span class="fl">--no-color</span></td>
+            <td class="fl-desc">Disable terminal color output (useful for logs/piping)</td>
+            <td><span class="fl-ex">sherlock --no-color user</span></td>
+          </tr>
+          <tr>
+            <td><span class="fl">--timeout N</span></td>
+            <td class="fl-desc">Per-site request timeout in seconds (default: 60)</td>
+            <td><span class="fl-ex">sherlock --timeout 10 user</span></td>
+          </tr>
+          <tr>
+            <td><span class="fl">--site SITE</span></td>
+            <td class="fl-desc">Limit search to specific site(s). Repeatable.</td>
+            <td><span class="fl-ex">sherlock --site reddit user</span></td>
+          </tr>
+          <tr>
+            <td><span class="fl">--proxy URL</span></td>
+            <td class="fl-desc">Route all traffic through a proxy (HTTP/SOCKS)</td>
+            <td><span class="fl-ex">sherlock --proxy http://127.0.0.1:8080 user</span></td>
+          </tr>
+          <tr>
+            <td><span class="fl">--tor</span></td>
+            <td class="fl-desc">Use Tor network via local SOCKS5 proxy on port 9050</td>
+            <td><span class="fl-ex">sherlock --tor user</span></td>
+          </tr>
+          <tr>
+            <td><span class="fl">--unique-tor</span></td>
+            <td class="fl-desc">Get a new Tor circuit between each site request</td>
+            <td><span class="fl-ex">sherlock --unique-tor user</span></td>
+          </tr>
+          <tr>
+            <td><span class="fl">--csv</span></td>
+            <td class="fl-desc">Save results as CSV file</td>
+            <td><span class="fl-ex">sherlock --csv user</span></td>
+          </tr>
+          <tr>
+            <td><span class="fl">--json FILE</span></td>
+            <td class="fl-desc">Save results as JSON file</td>
+            <td><span class="fl-ex">sherlock --json out.json user</span></td>
+          </tr>
+          <tr>
+            <td><span class="fl">--xlsx</span></td>
+            <td class="fl-desc">Save results as Excel spreadsheet</td>
+            <td><span class="fl-ex">sherlock --xlsx user</span></td>
+          </tr>
+          <tr>
+            <td><span class="fl">--output FILE</span></td>
+            <td class="fl-desc">Specify output filename for text results</td>
+            <td><span class="fl-ex">sherlock --output john.txt john</span></td>
+          </tr>
+          <tr>
+            <td><span class="fl">--folderoutput DIR</span></td>
+            <td class="fl-desc">Write output files to a specific directory</td>
+            <td><span class="fl-ex">sherlock --folderoutput ./case1/ user</span></td>
+          </tr>
+          <tr>
+            <td><span class="fl">--input-file FILE</span></td>
+            <td class="fl-desc">Read usernames from a file (one per line)</td>
+            <td><span class="fl-ex">sherlock --input-file names.txt</span></td>
+          </tr>
+          <tr>
+            <td><span class="fl">--nsfw</span></td>
+            <td class="fl-desc">Include NSFW / adult platform results (disabled by default)</td>
+            <td><span class="fl-ex">sherlock --nsfw user</span></td>
+          </tr>
+          <tr>
+            <td><span class="fl">--local</span></td>
+            <td class="fl-desc">Use locally cached site data (no network fetch for site list)</td>
+            <td><span class="fl-ex">sherlock --local user</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── ADVANCED COMBOS ── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🔥</div>
+      <span class="section-title">Power Combos</span>
+      <span class="badge badge-red">Advanced</span>
+    </div>
+    <div class="section-body">
+
+      <div class="combo">
+        <div class="combo-title">💀 Silent + Fast Recon</div>
+        <div class="combo-cmd">
+          <span class="kw">sherlock</span> <span class="flag">--timeout</span> <span class="val">5</span> <span class="flag">--print-found</span> <span class="flag">--no-color</span> <span class="val">target</span>
+        </div>
+      </div>
+
+      <div class="combo">
+        <div class="combo-title">🌐 Tor-Routed Anonymous Scan</div>
+        <div class="combo-cmd">
+          <span class="kw">sherlock</span> <span class="flag">--tor</span> <span class="flag">--unique-tor</span> <span class="flag">--timeout</span> <span class="val">60</span> <span class="val">target</span>
+        </div>
+      </div>
+
+      <div class="combo">
+        <div class="combo-title">📁 Bulk Username Hunt + Full Export</div>
+        <div class="combo-cmd">
+          <span class="kw">sherlock</span> <span class="flag">--input-file</span> <span class="val">users.txt</span> <span class="flag">--csv</span> <span class="flag">--json</span> <span class="val">results.json</span> <span class="flag">--folderoutput</span> <span class="val">./case/</span>
+        </div>
+      </div>
+
+      <div class="combo">
+        <div class="combo-title">🎯 Targeted Social Platform Hunt</div>
+        <div class="combo-cmd">
+          <span class="kw">sherlock</span> <span class="flag">--site</span> <span class="val">instagram</span> <span class="flag">--site</span> <span class="val">twitter</span> <span class="flag">--site</span> <span class="val">reddit</span> <span class="flag">--site</span> <span class="val">tiktok</span> <span class="val">target</span>
+        </div>
+      </div>
+
+      <div class="combo">
+        <div class="combo-title">🕵️ Proxy-Chained Covert Scan</div>
+        <div class="combo-cmd">
+          <span class="kw">sherlock</span> <span class="flag">--proxy</span> <span class="val">socks5://127.0.0.1:9050</span> <span class="flag">--print-found</span> <span class="flag">--timeout</span> <span class="val">30</span> <span class="val">target</span>
+        </div>
+      </div>
+
+      <div class="combo">
+        <div class="combo-title">📊 Log-Friendly Pipeline Output</div>
+        <div class="combo-cmd">
+          <span class="kw">sherlock</span> <span class="flag">--no-color</span> <span class="flag">--print-found</span> <span class="val">target</span> <span class="kw">| tee</span> <span class="val">scan.log</span>
+        </div>
+      </div>
+
+      <div class="combo">
+        <div class="combo-title">🔞 Include Adult Platforms</div>
+        <div class="combo-cmd">
+          <span class="kw">sherlock</span> <span class="flag">--nsfw</span> <span class="flag">--print-found</span> <span class="val">target</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── RECON WORKFLOW ── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🗺️</div>
+      <span class="section-title">OSINT Recon Workflow</span>
+      <span class="badge badge-purple">Methodology</span>
+    </div>
+    <div class="section-body">
+      <div class="flow">
+
+        <div class="flow-step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Gather usernames &amp; aliases</div>
+            <div class="step-desc">Collect all known usernames, handles, and email prefixes. Check social profiles, forum posts, WHOIS data.</div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Run quick broad scan</div>
+            <div class="step-desc">Start with a fast print-found scan to identify active platforms.</div>
+            <div class="step-cmd">sherlock --timeout 10 --print-found username</div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Verify results manually</div>
+            <div class="step-desc">Visit each returned URL. Sherlock has low false positives but verify profile matches the target's identity.</div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <div class="step-title">Export &amp; document findings</div>
+            <div class="step-desc">Save structured output for reporting or further correlation with other OSINT tools.</div>
+            <div class="step-cmd">sherlock --csv --json results.json --folderoutput ./case/ username</div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <div class="step-title">Pivot on discovered accounts</div>
+            <div class="step-desc">Use found profiles to gather email, bio info, friend lists, timestamps. Feed into Maltego, Recon-ng, theHarvester.</div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="step-num">6</div>
+          <div class="step-content">
+            <div class="step-title">Run username variations</div>
+            <div class="step-desc">Try common permutations: underscores, dots, numbers appended.</div>
+            <div class="step-cmd">sherlock user_name username1 xusername username_official</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── NOTABLE PLATFORMS ── -->
+  <div class="section full-width">
+    <div class="section-header">
+      <div class="section-icon">🌐</div>
+      <span class="section-title">Key Platforms Covered (400+ Total)</span>
+      <span class="badge badge-cyan">Coverage</span>
+    </div>
+    <div class="section-body">
+      <p style="font-size:12px;color:var(--text-dim);margin-bottom:12px;">Highlighted platforms are highest-value for OSINT investigators. Use <code style="font-family:var(--mono);color:var(--warn);font-size:11px;">--site</code> to target specific ones.</p>
+      <div class="platform-cloud">
+        <span class="platform-tag hot">GitHub</span>
+        <span class="platform-tag hot">Twitter/X</span>
+        <span class="platform-tag hot">Instagram</span>
+        <span class="platform-tag hot">Reddit</span>
+        <span class="platform-tag hot">TikTok</span>
+        <span class="platform-tag hot">LinkedIn</span>
+        <span class="platform-tag hot">YouTube</span>
+        <span class="platform-tag hot">Telegram</span>
+        <span class="platform-tag">Facebook</span>
+        <span class="platform-tag">Pinterest</span>
+        <span class="platform-tag">Twitch</span>
+        <span class="platform-tag">Discord</span>
+        <span class="platform-tag">Steam</span>
+        <span class="platform-tag">Roblox</span>
+        <span class="platform-tag">NameMC</span>
+        <span class="platform-tag">GitLab</span>
+        <span class="platform-tag">Bitbucket</span>
+        <span class="platform-tag">Codecademy</span>
+        <span class="platform-tag">HackerNews</span>
+        <span class="platform-tag">Medium</span>
+        <span class="platform-tag">DeviantArt</span>
+        <span class="platform-tag">Flickr</span>
+        <span class="platform-tag">Tumblr</span>
+        <span class="platform-tag">Vimeo</span>
+        <span class="platform-tag">SoundCloud</span>
+        <span class="platform-tag">Spotify</span>
+        <span class="platform-tag">Patreon</span>
+        <span class="platform-tag">Ko-fi</span>
+        <span class="platform-tag">OnlyFans</span>
+        <span class="platform-tag">HackerEarth</span>
+        <span class="platform-tag">HackerRank</span>
+        <span class="platform-tag">LeetCode</span>
+        <span class="platform-tag">Behance</span>
+        <span class="platform-tag">Dribbble</span>
+        <span class="platform-tag">Product Hunt</span>
+        <span class="platform-tag">Keybase</span>
+        <span class="platform-tag">Last.fm</span>
+        <span class="platform-tag">MySpace</span>
+        <span class="platform-tag">Periscope</span>
+        <span class="platform-tag">Quora</span>
+        <span class="platform-tag">Replit</span>
+        <span class="platform-tag">Fiverr</span>
+        <span class="platform-tag">Freelancer</span>
+        <span class="platform-tag">VK</span>
+        <span class="platform-tag">Snapchat</span>
+        <span class="platform-tag">Imgur</span>
+        <span class="platform-tag">DockerHub</span>
+        <span class="platform-tag">npm</span>
+        <span class="platform-tag">PyPI</span>
+        <span class="platform-tag">RubyGems</span>
+        <span class="platform-tag">Gravatar</span>
+        <span class="platform-tag">About.me</span>
+        <span class="platform-tag">Linktree</span>
+        <span class="platform-tag">Blogspot</span>
+        <span class="platform-tag">WordPress</span>
+        <span class="platform-tag">Substack</span>
+        <span class="platform-tag">Mastodon</span>
+        <span class="platform-tag">Bluesky</span>
+        <span class="platform-tag" style="color:var(--muted);border-style:dashed;">+350 more...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── OPSEC ── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🛡️</div>
+      <span class="section-title">OpSec &amp; Anonymity</span>
+      <span class="badge badge-red">Critical</span>
+    </div>
+    <div class="section-body">
+      <div class="opsec-grid">
+        <div class="opsec-item opsec-do">
+          <div class="opsec-heading">DO</div>
+          <ul class="opsec-list">
+            <li>Route scans through Tor or VPN</li>
+            <li>Use <code style="font-family:var(--mono);font-size:11px;">--unique-tor</code> for max anonymity</li>
+            <li>Scan from a dedicated OSINT VM</li>
+            <li>Use --timeout to control rate</li>
+            <li>Verify found profiles manually</li>
+            <li>Get written authorization first</li>
+            <li>Document methodology for reports</li>
+            <li>Use disposable research accounts</li>
+          </ul>
+        </div>
+        <div class="opsec-item opsec-dont">
+          <div class="opsec-heading">DON'T</div>
+          <ul class="opsec-list">
+            <li>Scan targets without authorization</li>
+            <li>Run from your personal IP address</li>
+            <li>Trust results without verification</li>
+            <li>Ignore false positives</li>
+            <li>Store raw results unencrypted</li>
+            <li>Use against private individuals illegally</li>
+            <li>Violate platform terms of service</li>
+            <li>Share target data without consent</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div class="tip">
+          <div class="tip-icon">🔒</div>
+          <div class="tip-body">
+            <div class="tip-title">Tor Setup</div>
+            <div class="tip-text">Start Tor before using <code>--tor</code>: run <code>sudo service tor start</code> on Kali or <code>brew services start tor</code> on macOS. Sherlock auto-connects to SOCKS5 on port 9050.</div>
+          </div>
+        </div>
+        <div class="tip warn">
+          <div class="tip-icon">⚠️</div>
+          <div class="tip-body">
+            <div class="tip-title">Rate Limiting</div>
+            <div class="tip-text">Aggressive scanning can trigger rate limits. Use <code>--timeout 30</code> or higher and consider adding sleep between bulk runs.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PRO TIPS ── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">💡</div>
+      <span class="section-title">Pro Tips &amp; Tricks</span>
+      <span class="badge badge-yellow">Intel</span>
+    </div>
+    <div class="section-body">
+
+      <div class="tip">
+        <div class="tip-icon">🎯</div>
+        <div class="tip-body">
+          <div class="tip-title">Username Variations</div>
+          <div class="tip-text">People use patterns. Try <code>john</code>, <code>john_doe</code>, <code>johndoe</code>, <code>j.doe</code>, <code>john.doe99</code>, <code>xjohn</code>, <code>johnreal</code>. Create a wordlist with <code>username-anarchy</code>.</div>
+        </div>
+      </div>
+
+      <div class="tip">
+        <div class="tip-icon">🔗</div>
+        <div class="tip-body">
+          <div class="tip-title">Chain with Other Tools</div>
+          <div class="tip-text">Pipe Sherlock output into <code>theHarvester</code>, <code>Maltego</code>, or <code>Recon-ng</code>. Use found profile links for cross-referencing emails and locations.</div>
+        </div>
+      </div>
+
+      <div class="tip">
+        <div class="tip-icon">📋</div>
+        <div class="tip-body">
+          <div class="tip-title">JSON for Automation</div>
+          <div class="tip-text">Use <code>--json</code> output to feed results into Python scripts for automated link scraping or correlation with breach databases.</div>
+        </div>
+      </div>
+
+      <div class="tip">
+        <div class="tip-icon">🐍</div>
+        <div class="tip-body">
+          <div class="tip-title">Python API Usage</div>
+          <div class="tip-text">Import Sherlock directly: <code>from sherlock_project.sherlock import sherlock</code> for custom automation workflows or integration into your own tools.</div>
+        </div>
+      </div>
+
+      <div class="tip warn">
+        <div class="tip-icon">⚡</div>
+        <div class="tip-body">
+          <div class="tip-title">False Positives</div>
+          <div class="tip-text">Some sites return 200 OK for any username. Always open the returned URLs and verify the profile content matches your target before documenting.</div>
+        </div>
+      </div>
+
+      <div class="tip success">
+        <div class="tip-icon">📂</div>
+        <div class="tip-body">
+          <div class="tip-title">Organized Case Management</div>
+          <div class="tip-text">Use <code>--folderoutput ./cases/target_name/</code> to keep each investigation in its own directory. Combine with date stamps: <code>./cases/johnsmith_2026-06-14/</code></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── RELATED TOOLS ── -->
+  <div class="section full-width">
+    <div class="section-header">
+      <div class="section-icon">🧰</div>
+      <span class="section-title">Related OSINT Tools to Chain With</span>
+      <span class="badge badge-purple">Ecosystem</span>
+    </div>
+    <div class="section-body">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+
+        <div class="combo">
+          <div class="combo-title">🔍 Email to Username</div>
+          <div class="combo-cmd"><span class="kw">holehe</span> <span class="val">email@target.com</span></div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Checks if email is registered on 120+ sites</div>
+        </div>
+
+        <div class="combo">
+          <div class="combo-title">📧 Email Harvesting</div>
+          <div class="combo-cmd"><span class="kw">theHarvester</span> <span class="flag">-d</span> <span class="val">target.com</span> <span class="flag">-b</span> <span class="val">all</span></div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Harvest emails, subdomains, hosts</div>
+        </div>
+
+        <div class="combo">
+          <div class="combo-title">🕸️ Visual Link Maps</div>
+          <div class="combo-cmd"><span class="kw">maltego</span></div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Graph relationships between entities</div>
+        </div>
+
+        <div class="combo">
+          <div class="combo-title">📸 Reverse Image Search</div>
+          <div class="combo-cmd"><span class="kw">pimeyes.com</span> / <span class="kw">tineye.com</span></div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Match profile photos across the web</div>
+        </div>
+
+        <div class="combo">
+          <div class="combo-title">🔎 Username Lookup Alt</div>
+          <div class="combo-cmd"><span class="kw">whatsmyname</span> <span class="flag">-u</span> <span class="val">username</span></div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Alternative to Sherlock, different site list</div>
+        </div>
+
+        <div class="combo">
+          <div class="combo-title">🌐 Web Recon</div>
+          <div class="combo-cmd"><span class="kw">recon-ng</span></div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Modular recon framework with OSINT modules</div>
+        </div>
+
+        <div class="combo">
+          <div class="combo-title">📱 Social Analyzer</div>
+          <div class="combo-cmd"><span class="kw">social-analyzer</span> <span class="flag">--username</span> <span class="val">target</span></div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">API &amp; CLI username analyzer</div>
+        </div>
+
+        <div class="combo">
+          <div class="combo-title">💾 Breach Data</div>
+          <div class="combo-cmd"><span class="kw">h8mail</span> <span class="flag">-t</span> <span class="val">target@email.com</span></div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Cross-reference breached credentials</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LEGAL NOTICE ── -->
+  <div class="section full-width">
+    <div class="section-header">
+      <div class="section-icon">⚖️</div>
+      <span class="section-title">Legal &amp; Ethical Notice</span>
+      <span class="badge badge-red">Important</span>
+    </div>
+    <div class="section-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+        <div class="tip danger">
+          <div class="tip-icon">🚨</div>
+          <div class="tip-body">
+            <div class="tip-title">Authorization Required</div>
+            <div class="tip-text">Only use Sherlock on targets you own, have explicit written permission to investigate, or for your own OSINT research profile. Unauthorized use may violate CFAA, GDPR, and local privacy laws.</div>
+          </div>
+        </div>
+        <div class="tip warn">
+          <div class="tip-icon">📜</div>
+          <div class="tip-body">
+            <div class="tip-title">Platform ToS</div>
+            <div class="tip-text">Automated querying may violate terms of service for many platforms. Use Sherlock responsibly. In professional engagements, document authorization before scanning.</div>
+          </div>
+        </div>
+        <div class="tip success">
+          <div class="tip-icon">✅</div>
+          <div class="tip-body">
+            <div class="tip-title">Legitimate Use Cases</div>
+            <div class="tip-text">Authorized penetration tests · Bug bounty reconnaissance · Digital forensics investigations · Checking your own online footprint · Academic OSINT research.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div style="margin-bottom:6px;">
+    <span style="color:var(--accent)">SHERLOCK</span> — Open Source OSINT Username Hunter
+    &nbsp;|&nbsp;
+    <a href="https://github.com/sherlock-project/sherlock" target="_blank">github.com/sherlock-project/sherlock</a>
+  </div>
+  <div>
+    ⚠️ For authorized, ethical OSINT use only. Generated June 2026.
+  </div>
+</footer>
+
+</body>
+</html>

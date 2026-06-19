@@ -1,0 +1,293 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.wrap{padding:1rem 0}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
+.tab{padding:6px 14px;font-size:13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;background:transparent;color:var(--color-text-secondary);transition:all .15s}
+.tab.active{background:var(--color-background-info);color:var(--color-text-info);border-color:transparent;font-weight:500}
+.section{display:none}
+.section.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px 16px}
+.card h3{font-size:13px;font-weight:500;color:var(--color-text-secondary);margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em}
+.row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.row:last-child{border-bottom:none}
+.cmd{font-family:var(--font-mono);font-size:12px;color:var(--color-text-primary);background:var(--color-background-secondary);padding:2px 7px;border-radius:4px;white-space:nowrap;cursor:pointer;transition:background .1s;flex-shrink:0}
+.cmd:hover{background:var(--color-background-info);color:var(--color-text-info)}
+.desc{font-size:12px;color:var(--color-text-secondary);line-height:1.5;text-align:right}
+.badge{display:inline-block;font-size:10px;padding:1px 7px;border-radius:10px;font-weight:500;margin-left:4px;vertical-align:middle}
+.b-red{background:var(--color-background-danger);color:var(--color-text-danger)}
+.b-grn{background:var(--color-background-success);color:var(--color-text-success)}
+.b-amb{background:var(--color-background-warning);color:var(--color-text-warning)}
+.b-blu{background:var(--color-background-info);color:var(--color-text-info)}
+.tip{font-size:12px;color:var(--color-text-secondary);background:var(--color-background-secondary);border-left:3px solid var(--color-border-info);padding:8px 12px;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;margin-top:10px;line-height:1.6}
+.tip b{font-weight:500;color:var(--color-text-primary)}
+.copied{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--color-text-primary);color:var(--color-background-primary);font-size:12px;padding:6px 14px;border-radius:20px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:99}
+.search-bar{width:100%;padding:8px 12px;font-size:13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);margin-bottom:12px}
+.search-bar:focus{outline:none;border-color:var(--color-border-primary)}
+.no-res{font-size:13px;color:var(--color-text-tertiary);padding:20px 0;text-align:center}
+</style>
+<h2 class="sr-only">Nmap cheat sheet — organized by category with copyable commands</h2>
+<div class="wrap">
+<input class="search-bar" type="text" placeholder="Search commands or descriptions..." id="search" oninput="doSearch(this.value)">
+<div class="tabs" id="tabs">
+  <button class="tab active" onclick="switchTab('scan',this)">Scan types</button>
+  <button class="tab" onclick="switchTab('host',this)">Host discovery</button>
+  <button class="tab" onclick="switchTab('ports',this)">Port spec</button>
+  <button class="tab" onclick="switchTab('detect',this)">Detection</button>
+  <button class="tab" onclick="switchTab('scripts',this)">Scripts (NSE)</button>
+  <button class="tab" onclick="switchTab('output',this)">Output</button>
+  <button class="tab" onclick="switchTab('timing',this)">Timing & evasion</button>
+  <button class="tab" onclick="switchTab('combos',this)">Quick combos</button>
+</div>
+
+<div id="scan" class="section active">
+<div class="grid">
+<div class="card">
+  <h3>TCP scan types</h3>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sS &lt;target&gt;</span><span class="desc">SYN stealth scan <span class="badge b-grn">default</span></span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sT &lt;target&gt;</span><span class="desc">TCP connect scan (no root)</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sA &lt;target&gt;</span><span class="desc">ACK scan — map firewall rules</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sW &lt;target&gt;</span><span class="desc">Window scan</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sM &lt;target&gt;</span><span class="desc">Maimon scan (FIN/ACK)</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sN &lt;target&gt;</span><span class="desc">Null scan — no flags set</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sF &lt;target&gt;</span><span class="desc">FIN scan</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sX &lt;target&gt;</span><span class="desc">Xmas scan (FIN+PSH+URG)</span></div>
+</div>
+<div class="card">
+  <h3>Other protocols</h3>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sU &lt;target&gt;</span><span class="desc">UDP scan <span class="badge b-amb">slow</span></span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sI zombie &lt;target&gt;</span><span class="desc">Idle/zombie scan (blind)</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sO &lt;target&gt;</span><span class="desc">IP protocol scan</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -b ftp &lt;target&gt;</span><span class="desc">FTP bounce scan</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --scanflags URGACKPSH &lt;target&gt;</span><span class="desc">Custom TCP flags</span></div>
+  <div class="tip"><b>Tip:</b> <code>-sS</code> requires root/sudo. Use <code>-sT</code> without privileges — slower but equally effective for open port detection.</div>
+</div>
+</div>
+</div>
+
+<div id="host" class="section">
+<div class="grid">
+<div class="card">
+  <h3>Discovery methods</h3>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sn &lt;target&gt;</span><span class="desc">Ping scan — hosts only, no ports</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -Pn &lt;target&gt;</span><span class="desc">Skip ping — treat all hosts as up <span class="badge b-red">no ping</span></span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -PS80,443 &lt;target&gt;</span><span class="desc">TCP SYN ping on specific ports</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -PA80 &lt;target&gt;</span><span class="desc">TCP ACK ping</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -PU53 &lt;target&gt;</span><span class="desc">UDP ping on port 53</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -PE &lt;target&gt;</span><span class="desc">ICMP echo ping</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -PP &lt;target&gt;</span><span class="desc">ICMP timestamp ping</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -PM &lt;target&gt;</span><span class="desc">ICMP netmask ping</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -PO &lt;target&gt;</span><span class="desc">IP protocol ping</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --disable-arp-ping &lt;target&gt;</span><span class="desc">Disable ARP discovery</span></div>
+</div>
+<div class="card">
+  <h3>Target specification</h3>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap 192.168.1.0/24</span><span class="desc">CIDR notation</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap 192.168.1.1-50</span><span class="desc">Range of IPs</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap 192.168.1.1,2,5</span><span class="desc">Individual IPs (comma list)</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -iL targets.txt</span><span class="desc">Read targets from file</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --exclude 192.168.1.5</span><span class="desc">Exclude a host</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --excludefile excl.txt</span><span class="desc">Exclude hosts from file</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -iR 100</span><span class="desc">Scan 100 random internet hosts</span></div>
+</div>
+</div>
+</div>
+
+<div id="ports" class="section">
+<div class="grid">
+<div class="card">
+  <h3>Port selection</h3>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -p 22 &lt;target&gt;</span><span class="desc">Single port</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -p 22,80,443 &lt;target&gt;</span><span class="desc">Multiple ports</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -p 1-1024 &lt;target&gt;</span><span class="desc">Port range</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -p- &lt;target&gt;</span><span class="desc">All 65535 ports <span class="badge b-amb">slow</span></span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -p U:53,T:80 &lt;target&gt;</span><span class="desc">Mix UDP/TCP ports</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -p http,ftp &lt;target&gt;</span><span class="desc">By service name</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --top-ports 100 &lt;target&gt;</span><span class="desc">Top 100 most common ports</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -F &lt;target&gt;</span><span class="desc">Fast scan — top 100 ports</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -r &lt;target&gt;</span><span class="desc">Scan ports sequentially</span></div>
+</div>
+<div class="card">
+  <h3>Port states</h3>
+  <div class="row"><span style="font-size:12px;padding:2px 8px;border-radius:4px" class="badge b-grn">open</span><span class="desc">Service actively accepting connections</span></div>
+  <div class="row"><span style="font-size:12px;padding:2px 8px;border-radius:4px" class="badge b-red">closed</span><span class="desc">Accessible but no service listening</span></div>
+  <div class="row"><span style="font-size:12px;padding:2px 8px;border-radius:4px" class="badge b-amb">filtered</span><span class="desc">Firewall blocking probe packets</span></div>
+  <div class="row"><span style="font-size:12px;padding:2px 8px;border-radius:4px" class="badge b-blu">unfiltered</span><span class="desc">Accessible but state unknown (ACK scan)</span></div>
+  <div class="row"><span style="font-size:12px;padding:2px 8px;border-radius:4px;background:var(--color-background-secondary);color:var(--color-text-secondary)">open|filtered</span><span class="desc">Could not determine state</span></div>
+  <div class="tip"><b>Pro tip:</b> Combine <code>-p-</code> with <code>-T4 --min-rate 5000</code> for full port scans that are faster than the default.</div>
+</div>
+</div>
+</div>
+
+<div id="detect" class="section">
+<div class="grid">
+<div class="card">
+  <h3>Service & version</h3>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sV &lt;target&gt;</span><span class="desc">Version detection</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sV --version-intensity 9 &lt;target&gt;</span><span class="desc">Max intensity probing</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sV --version-light &lt;target&gt;</span><span class="desc">Faster, lighter version scan</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sV --version-all &lt;target&gt;</span><span class="desc">Try every probe</span></div>
+</div>
+<div class="card">
+  <h3>OS detection</h3>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -O &lt;target&gt;</span><span class="desc">OS detection <span class="badge b-red">root required</span></span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -O --osscan-limit &lt;target&gt;</span><span class="desc">Only try if open+closed ports found</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -O --osscan-guess &lt;target&gt;</span><span class="desc">Aggressive OS guessing</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -A &lt;target&gt;</span><span class="desc">All: OS + version + scripts + traceroute</span></div>
+</div>
+<div class="card">
+  <h3>Traceroute & misc</h3>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --traceroute &lt;target&gt;</span><span class="desc">Trace packet path to host</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -6 &lt;target&gt;</span><span class="desc">IPv6 scanning</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --reason &lt;target&gt;</span><span class="desc">Show reason for port state</span></div>
+</div>
+</div>
+</div>
+
+<div id="scripts" class="section">
+<div class="grid">
+<div class="card">
+  <h3>NSE basics</h3>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sC &lt;target&gt;</span><span class="desc">Default safe scripts <span class="badge b-grn">safe</span></span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --script=default &lt;target&gt;</span><span class="desc">Same as -sC</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --script=banner &lt;target&gt;</span><span class="desc">Grab service banners</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --script=vuln &lt;target&gt;</span><span class="desc">Check known vulns <span class="badge b-red">intrusive</span></span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --script=safe &lt;target&gt;</span><span class="desc">All safe category scripts</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --script=auth &lt;target&gt;</span><span class="desc">Auth bypass checks</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --script=brute &lt;target&gt;</span><span class="desc">Brute force credentials <span class="badge b-red">intrusive</span></span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --script=exploit &lt;target&gt;</span><span class="desc">Exploit vulnerabilities <span class="badge b-red">dangerous</span></span></div>
+</div>
+<div class="card">
+  <h3>Common script combos</h3>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --script=http-title &lt;target&gt;</span><span class="desc">Web page titles</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --script=ssl-cert -p 443 &lt;target&gt;</span><span class="desc">SSL/TLS certificate info</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --script=smb-vuln* &lt;target&gt;</span><span class="desc">All SMB vuln checks</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --script=ftp-anon -p 21 &lt;target&gt;</span><span class="desc">FTP anonymous login check</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --script=dns-brute &lt;target&gt;</span><span class="desc">DNS subdomain brute-force</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --script=http-enum &lt;target&gt;</span><span class="desc">Enumerate web directories</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">--script-args user=admin,pass=pw</span><span class="desc">Pass args to scripts</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --script-updatedb</span><span class="desc">Update NSE script database</span></div>
+</div>
+</div>
+</div>
+
+<div id="output" class="section">
+<div class="grid">
+<div class="card">
+  <h3>Output formats</h3>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -oN out.txt &lt;target&gt;</span><span class="desc">Normal (human-readable)</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -oX out.xml &lt;target&gt;</span><span class="desc">XML (parseable)</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -oG out.gnmap &lt;target&gt;</span><span class="desc">Grepable output</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -oA out &lt;target&gt;</span><span class="desc">All three formats at once <span class="badge b-grn">best practice</span></span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -oS out.txt &lt;target&gt;</span><span class="desc">ScRipT kIdDiE (don't use)</span></div>
+</div>
+<div class="card">
+  <h3>Verbosity & debugging</h3>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -v &lt;target&gt;</span><span class="desc">Verbose output</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -vv &lt;target&gt;</span><span class="desc">Very verbose</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -d &lt;target&gt;</span><span class="desc">Debug level 1</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -d9 &lt;target&gt;</span><span class="desc">Max debug level</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --open &lt;target&gt;</span><span class="desc">Show only open ports</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --packet-trace &lt;target&gt;</span><span class="desc">Show all packets sent/received</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --resume scan.gnmap</span><span class="desc">Resume an interrupted scan</span></div>
+</div>
+</div>
+</div>
+
+<div id="timing" class="section">
+<div class="grid">
+<div class="card">
+  <h3>Timing templates</h3>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -T0 &lt;target&gt;</span><span class="desc">Paranoid — IDS evasion, very slow</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -T1 &lt;target&gt;</span><span class="desc">Sneaky — IDS evasion</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -T2 &lt;target&gt;</span><span class="desc">Polite — reduce bandwidth</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -T3 &lt;target&gt;</span><span class="desc">Normal <span class="badge b-grn">default</span></span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -T4 &lt;target&gt;</span><span class="desc">Aggressive — faster <span class="badge b-blu">CTF/lab</span></span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -T5 &lt;target&gt;</span><span class="desc">Insane — very fast, may miss ports <span class="badge b-red">noisy</span></span></div>
+</div>
+<div class="card">
+  <h3>Firewall & IDS evasion</h3>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -f &lt;target&gt;</span><span class="desc">Fragment packets (8-byte frags)</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --mtu 16 &lt;target&gt;</span><span class="desc">Set custom MTU (must be ×8)</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -D RND:5 &lt;target&gt;</span><span class="desc">5 random decoy IPs</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -D 10.0.0.1,ME &lt;target&gt;</span><span class="desc">Specific decoys + your IP</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -S &lt;spoof-ip&gt; &lt;target&gt;</span><span class="desc">Spoof source IP</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -e eth0 &lt;target&gt;</span><span class="desc">Specify network interface</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --source-port 53 &lt;target&gt;</span><span class="desc">Use port 53 as source (firewall bypass)</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --data-length 25 &lt;target&gt;</span><span class="desc">Append random data to packets</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --randomize-hosts &lt;target&gt;</span><span class="desc">Randomize scan order</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --proxies socks4://proxy:port &lt;target&gt;</span><span class="desc">Route through proxy chain</span></div>
+  <div class="tip"><b>Note:</b> Evasion techniques are for authorized testing only. Use on your own systems or with explicit written permission.</div>
+</div>
+</div>
+</div>
+
+<div id="combos" class="section">
+<div class="grid">
+<div class="card" style="grid-column:1/-1">
+  <h3>Power combos — ready to use</h3>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sC -sV -oA scan 10.10.10.1</span><span class="desc">CTF/HTB initial recon <span class="badge b-blu">most common</span></span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -p- --min-rate 5000 -T4 10.10.10.1</span><span class="desc">Fast full-port scan</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sC -sV -p 22,80,443 -oN targeted.txt 10.10.10.1</span><span class="desc">Deep scan on known open ports</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sU -sS -p U:53,161,T:80,443 10.10.10.1</span><span class="desc">Combined TCP+UDP on key ports</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sn 192.168.1.0/24</span><span class="desc">Discover live hosts on LAN</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -A -T4 --script=vuln 10.10.10.1</span><span class="desc">Aggressive vuln scan <span class="badge b-red">noisy</span></span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --script=smb-vuln-ms17-010 -p 445 10.10.10.1</span><span class="desc">Check for EternalBlue / MS17-010</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -sV --script=ssl-enum-ciphers -p 443 10.10.10.1</span><span class="desc">Enumerate TLS ciphers</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap -Pn -sT -p 80,8080,8443,8888 10.10.10.1</span><span class="desc">Scan common web ports through strict firewall</span></div>
+  <div class="row"><span class="cmd" onclick="copy(this)">nmap --script http-methods --script-args http-methods.url-path='/api' -p 80 10.10.10.1</span><span class="desc">Check allowed HTTP methods on API</span></div>
+  <div class="tip" style="margin-top:14px"><b>Recommended workflow:</b> 1) Quick ping sweep → 2) Full port scan → 3) Service detection on open ports → 4) Targeted scripts. Save every scan with <code>-oA</code> so you can grep results later.</div>
+</div>
+</div>
+</div>
+
+</div>
+<div class="copied" id="toast">Copied!</div>
+<script>
+function switchTab(id, el) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  el.classList.add('active');
+}
+function copy(el) {
+  const text = el.textContent.trim();
+  navigator.clipboard.writeText(text).catch(()=>{});
+  const t = document.getElementById('toast');
+  t.style.opacity='1';
+  setTimeout(()=>t.style.opacity='0',1400);
+}
+function doSearch(q) {
+  const val = q.trim().toLowerCase();
+  if (!val) {
+    document.getElementById('tabs').style.display='flex';
+    document.querySelectorAll('.section').forEach(s=>{
+      s.style.display='';
+      s.querySelectorAll('.row').forEach(r=>r.style.display='');
+    });
+    const active = document.querySelector('.tab.active');
+    if(active) {
+      const id = active.getAttribute('onclick').match(/'([^']+)'/)[1];
+      document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+    return;
+  }
+  document.getElementById('tabs').style.display='none';
+  document.querySelectorAll('.section').forEach(s=>{
+    s.classList.add('active');
+    s.style.display='block';
+    let any = false;
+    s.querySelectorAll('.row').forEach(r=>{
+      const txt = r.textContent.toLowerCase();
+      const show = txt.includes(val);
+      r.style.display = show ? '' : 'none';
+      if(show) any = true;
+    });
+    s.style.display = any ? 'block' : 'none';
+  });
+}
+</script>

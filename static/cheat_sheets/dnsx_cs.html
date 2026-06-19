@@ -1,0 +1,662 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#1e2530;--bg4:#252d3a;
+  --green:#39d353;--cyan:#58d7f7;--amber:#ffa657;--red:#ff7b72;--purple:#d2a8ff;--blue:#79c0ff;--pink:#f778ba;
+  --border:#30363d;--text:#e6edf3;--muted:#8b949e;--mono:'JetBrains Mono','Fira Code',monospace
+}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13px;padding:0}
+.shell-header{background:#0d1117;border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px}
+.dot{width:12px;height:12px;border-radius:50%;display:inline-block}
+.dot-r{background:#ff5f57}.dot-y{background:#febc2e}.dot-g{background:#28c840}
+.shell-title{color:var(--muted);font-size:11px;flex:1;text-align:center}
+.tabs{display:flex;gap:2px;padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.tab{padding:5px 12px;border-radius:4px;cursor:pointer;font-size:11px;color:var(--muted);border:1px solid transparent;transition:all .15s}
+.tab.active{color:var(--green);border-color:var(--green);background:rgba(57,211,83,.08)}
+.tab:hover:not(.active){color:var(--text);background:var(--bg3)}
+.content{padding:12px;display:none}
+.content.active{display:block}
+.section-title{color:var(--cyan);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin:14px 0 8px;border-left:3px solid var(--cyan);padding-left:8px}
+.cmd-block{background:var(--bg3);border:1px solid var(--border);border-radius:6px;margin:6px 0;overflow:hidden}
+.cmd-header{background:var(--bg4);padding:5px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.cmd-label{color:var(--amber);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.cmd-tag{font-size:9px;padding:2px 6px;border-radius:3px;font-weight:700;text-transform:uppercase}
+.tag-recon{background:rgba(88,215,247,.15);color:var(--cyan);border:1px solid rgba(88,215,247,.3)}
+.tag-brute{background:rgba(255,166,87,.15);color:var(--amber);border:1px solid rgba(255,166,87,.3)}
+.tag-filter{background:rgba(210,168,255,.15);color:var(--purple);border:1px solid rgba(210,168,255,.3)}
+.tag-chain{background:rgba(255,123,114,.15);color:var(--red);border:1px solid rgba(255,123,114,.3)}
+.tag-stealth{background:rgba(247,120,186,.15);color:var(--pink);border:1px solid rgba(247,120,186,.3)}
+.cmd-body{padding:8px 12px}
+.cmd-line{display:flex;align-items:flex-start;gap:6px;margin:3px 0}
+.prompt{color:var(--green);flex-shrink:0}
+.cmd-text{color:var(--text);word-break:break-all;line-height:1.6}
+.flag{color:var(--cyan)}
+.val{color:var(--amber)}
+.pipe{color:var(--purple)}
+.comment{color:var(--muted);font-size:11px}
+.cmd-desc{color:var(--muted);font-size:11px;padding:4px 12px 8px;line-height:1.5}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.flag-table{width:100%;border-collapse:collapse;margin:6px 0}
+.flag-table tr{border-bottom:1px solid var(--border)}
+.flag-table tr:last-child{border:none}
+.flag-table td{padding:5px 8px;font-size:12px;line-height:1.5}
+.flag-table td:first-child{color:var(--cyan);white-space:nowrap;width:38%;font-weight:600}
+.flag-table td:last-child{color:var(--muted)}
+.mini-table{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin:6px 0}
+.rt-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:700;margin:2px}
+.rt-a{background:rgba(57,211,83,.12);color:var(--green);border:1px solid rgba(57,211,83,.3)}
+.rt-aaaa{background:rgba(88,215,247,.12);color:var(--cyan);border:1px solid rgba(88,215,247,.3)}
+.rt-mx{background:rgba(255,166,87,.12);color:var(--amber);border:1px solid rgba(255,166,87,.3)}
+.rt-txt{background:rgba(210,168,255,.12);color:var(--purple);border:1px solid rgba(210,168,255,.3)}
+.rt-ns{background:rgba(255,123,114,.12);color:var(--red);border:1px solid rgba(255,123,114,.3)}
+.rt-cname{background:rgba(247,120,186,.12);color:var(--pink);border:1px solid rgba(247,120,186,.3)}
+.rt-soa{background:rgba(121,192,255,.12);color:var(--blue);border:1px solid rgba(121,192,255,.3)}
+.rt-ptr{background:rgba(255,255,255,.08);color:#ccc;border:1px solid rgba(255,255,255,.2)}
+.tip-box{background:rgba(57,211,83,.06);border:1px solid rgba(57,211,83,.2);border-radius:6px;padding:8px 12px;margin:8px 0}
+.tip-box .tip-label{color:var(--green);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.tip-box .tip-text{color:var(--muted);font-size:11px;line-height:1.6}
+.warn-box{background:rgba(255,166,87,.06);border:1px solid rgba(255,166,87,.2);border-radius:6px;padding:8px 12px;margin:8px 0}
+.warn-box .warn-label{color:var(--amber);font-size:10px;font-weight:700;text-transform:uppercase;margin-bottom:4px}
+.warn-box .warn-text{color:var(--muted);font-size:11px;line-height:1.6}
+.pipeline-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:6px 0}
+.pipe-tool{background:var(--bg4);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:11px;color:var(--text)}
+.pipe-arrow{color:var(--purple);font-size:14px}
+.footer{background:var(--bg2);border-top:1px solid var(--border);padding:8px 14px;display:flex;justify-content:space-between;align-items:center}
+.footer-note{color:var(--muted);font-size:10px}
+.copy-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:4px;cursor:pointer;font-family:var(--mono);font-size:10px;transition:all .15s}
+.copy-btn:hover{border-color:var(--green);color:var(--green)}
+.search-bar{padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.search-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:6px 10px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none}
+.search-input:focus{border-color:var(--cyan)}
+.search-input::placeholder{color:var(--muted)}
+.hidden{display:none}
+@media(max-width:600px){.grid2,.grid3{grid-template-columns:1fr}}
+</style>
+
+<div class="shell-header">
+  <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+  <span class="shell-title">dnsx — DNS Toolkit Master Cheatsheet v2.x · projectdiscovery</span>
+</div>
+
+<div class="tabs" id="tabs">
+  <div class="tab active" data-tab="basics">Basics</div>
+  <div class="tab" data-tab="records">Record Types</div>
+  <div class="tab" data-tab="brute">Subdomain Brute</div>
+  <div class="tab" data-tab="filters">Filters & Output</div>
+  <div class="tab" data-tab="resolvers">Resolvers</div>
+  <div class="tab" data-tab="chains">Tool Chains</div>
+  <div class="tab" data-tab="tips">OPSEC & Tips</div>
+</div>
+
+<div class="search-bar">
+  <input class="search-input" id="search" placeholder="/ search commands..." autocomplete="off">
+</div>
+
+<div id="all-content">
+
+<div class="content active" id="tab-basics">
+  <div class="section-title">Installation</div>
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Install</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">go install github.com/projectdiscovery/dnsx/cmd/dnsx@latest</span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-version</span></span></div>
+    </div>
+  </div>
+
+  <div class="section-title">Core Flags Quick Reference</div>
+  <div class="mini-table">
+    <table class="flag-table">
+      <tr><td>-l, -list &lt;file&gt;</td><td>Input file with domains (one per line)</td></tr>
+      <tr><td>-d, -domain &lt;domain&gt;</td><td>Single domain to query</td></tr>
+      <tr><td>-r, -resolver &lt;file|ip&gt;</td><td>Custom resolver(s) or file of resolvers</td></tr>
+      <tr><td>-t, -threads &lt;n&gt;</td><td>Concurrent threads (default: 100)</td></tr>
+      <tr><td>-rl, -rate-limit &lt;n&gt;</td><td>DNS queries per second (per resolver)</td></tr>
+      <tr><td>-retries &lt;n&gt;</td><td>Retry count for failed queries (default: 2)</td></tr>
+      <tr><td>-timeout &lt;n&gt;</td><td>DNS query timeout in seconds (default: 5)</td></tr>
+      <tr><td>-o, -output &lt;file&gt;</td><td>Output file to write results</td></tr>
+      <tr><td>-json, -j</td><td>Output in JSON format (enriched)</td></tr>
+      <tr><td>-silent</td><td>Suppress all output except results</td></tr>
+      <tr><td>-v, -verbose</td><td>Verbose mode (show errors, retries)</td></tr>
+      <tr><td>-stats</td><td>Display stats at the end of run</td></tr>
+      <tr><td>-resp</td><td>Show resolved value in output</td></tr>
+      <tr><td>-resp-only</td><td>Print only resolved values (no domain)</td></tr>
+    </table>
+  </div>
+
+  <div class="section-title">Fundamental Commands</div>
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Resolve single domain</span><span class="cmd-tag tag-recon">recon</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-d</span> <span class="val">example.com</span></span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-d</span> <span class="val">example.com</span> <span class="flag">-resp</span></span></div>
+    </div>
+    <div class="cmd-desc">-resp prints: domain [resolved_IP]. Essential for verification.</div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Resolve from file</span><span class="cmd-tag tag-recon">recon</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-resp</span> <span class="flag">-o</span> <span class="val">live.txt</span></span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">cat domains.txt <span class="pipe">|</span> dnsx <span class="flag">-resp</span></span></div>
+    </div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">JSON enriched output</span><span class="cmd-tag tag-recon">recon</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-json</span> <span class="flag">-o</span> <span class="val">results.json</span></span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-json</span> <span class="pipe">|</span> jq <span class="val">'.host,.a[]'</span></span></div>
+    </div>
+    <div class="cmd-desc">JSON mode includes: host, resolver, a, aaaa, cname, ns, mx, soa, txt, ptr, timestamp, status_code.</div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Performance tuning</span><span class="cmd-tag tag-recon">recon</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-t</span> <span class="val">500</span> <span class="flag">-rl</span> <span class="val">3000</span> <span class="flag">-retries</span> <span class="val">3</span></span></div>
+    </div>
+    <div class="cmd-desc">High-speed: 500 threads, 3000 DNS req/sec. Lower -rl for stealth.</div>
+  </div>
+</div>
+
+<div class="content" id="tab-records">
+  <div class="section-title">Record Type Flags</div>
+  <div style="padding:6px 0">
+    <span class="rt-badge rt-a">-a &nbsp; A</span>
+    <span class="rt-badge rt-aaaa">-aaaa &nbsp; AAAA</span>
+    <span class="rt-badge rt-mx">-mx &nbsp; MX</span>
+    <span class="rt-badge rt-txt">-txt &nbsp; TXT</span>
+    <span class="rt-badge rt-ns">-ns &nbsp; NS</span>
+    <span class="rt-badge rt-cname">-cname &nbsp; CNAME</span>
+    <span class="rt-badge rt-soa">-soa &nbsp; SOA</span>
+    <span class="rt-badge rt-ptr">-ptr &nbsp; PTR</span>
+    <span class="rt-badge rt-a" style="background:rgba(255,255,255,.06);color:#ccc;border-color:rgba(255,255,255,.2)">-axfr &nbsp; AXFR</span>
+  </div>
+
+  <div class="section-title">Query Specific Records</div>
+  <div class="grid2">
+    <div class="cmd-block">
+      <div class="cmd-header"><span class="cmd-label">A Records</span><span class="cmd-tag tag-recon">recon</span></div>
+      <div class="cmd-body">
+        <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-a</span> <span class="flag">-resp</span></span></div>
+      </div>
+      <div class="cmd-desc">IPv4 addresses. Default record type.</div>
+    </div>
+    <div class="cmd-block">
+      <div class="cmd-header"><span class="cmd-label">AAAA Records</span><span class="cmd-tag tag-recon">recon</span></div>
+      <div class="cmd-body">
+        <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-aaaa</span> <span class="flag">-resp</span></span></div>
+      </div>
+      <div class="cmd-desc">IPv6 addresses. Good for IPv6-only infra.</div>
+    </div>
+    <div class="cmd-block">
+      <div class="cmd-header"><span class="cmd-label">MX Records</span><span class="cmd-tag tag-recon">recon</span></div>
+      <div class="cmd-body">
+        <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-mx</span> <span class="flag">-resp</span></span></div>
+      </div>
+      <div class="cmd-desc">Mail server enumeration. Phishing prep.</div>
+    </div>
+    <div class="cmd-block">
+      <div class="cmd-header"><span class="cmd-label">TXT Records</span><span class="cmd-tag tag-recon">recon</span></div>
+      <div class="cmd-body">
+        <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-txt</span> <span class="flag">-resp</span></span></div>
+      </div>
+      <div class="cmd-desc">SPF, DKIM, DMARC, verification tokens.</div>
+    </div>
+    <div class="cmd-block">
+      <div class="cmd-header"><span class="cmd-label">NS Records</span><span class="cmd-tag tag-recon">recon</span></div>
+      <div class="cmd-body">
+        <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-ns</span> <span class="flag">-resp</span></span></div>
+      </div>
+      <div class="cmd-desc">Nameservers. Find zone delegation.</div>
+    </div>
+    <div class="cmd-block">
+      <div class="cmd-header"><span class="cmd-label">CNAME Records</span><span class="cmd-tag tag-recon">recon</span></div>
+      <div class="cmd-body">
+        <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">subdomains.txt</span> <span class="flag">-cname</span> <span class="flag">-resp</span></span></div>
+      </div>
+      <div class="cmd-desc">Aliases. Critical for subdomain takeover.</div>
+    </div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">SOA Records — Zone Authority</span><span class="cmd-tag tag-recon">recon</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-soa</span> <span class="flag">-resp</span></span></div>
+    </div>
+    <div class="cmd-desc">Returns: primary NS, admin email, serial, refresh, retry, expire, TTL. Admin email often leaks internal addresses.</div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Reverse DNS — PTR</span><span class="cmd-tag tag-recon">recon</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">echo <span class="val">93.184.216.34</span> <span class="pipe">|</span> dnsx <span class="flag">-ptr</span> <span class="flag">-resp</span></span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">cat <span class="val">ips.txt</span> <span class="pipe">|</span> dnsx <span class="flag">-ptr</span> <span class="flag">-resp</span></span></div>
+    </div>
+    <div class="cmd-desc">IP → hostname. Great for discovering internal naming schemes from ASN sweeps.</div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Zone Transfer — AXFR</span><span class="cmd-tag tag-chain">critical</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-d</span> <span class="val">example.com</span> <span class="flag">-axfr</span> <span class="flag">-resp</span></span></div>
+    </div>
+    <div class="cmd-desc">Attempts AXFR zone transfer. Dumps ALL records if misconfigured. Always try — still common in internal networks and legacy infra.</div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Query ALL record types at once</span><span class="cmd-tag tag-recon">recon</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-a</span> <span class="flag">-aaaa</span> <span class="flag">-mx</span> <span class="flag">-ns</span> <span class="flag">-txt</span> <span class="flag">-cname</span> <span class="flag">-soa</span> <span class="flag">-resp</span> <span class="flag">-json</span> <span class="flag">-o</span> <span class="val">full_dns.json</span></span></div>
+    </div>
+    <div class="cmd-desc">Full DNS fingerprint of a target. Pipe to jq for parsing.</div>
+  </div>
+
+  <div class="tip-box">
+    <div class="tip-label">TXT Record Intel</div>
+    <div class="tip-text">TXT records leak: cloud providers (v=spf1 include:_spf.google.com), email security posture (v=DMARC1;p=none = no enforcement), third-party SaaS (Zendesk, Salesforce, etc.), and sometimes internal secrets like verification keys.</div>
+  </div>
+</div>
+
+<div class="content" id="tab-brute">
+  <div class="section-title">Subdomain Brute-Forcing with -w</div>
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Basic wordlist bruteforce</span><span class="cmd-tag tag-brute">brute</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-d</span> <span class="val">example.com</span> <span class="flag">-w</span> <span class="val">subdomains.txt</span></span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-d</span> <span class="val">example.com</span> <span class="flag">-w</span> <span class="val">subdomains.txt</span> <span class="flag">-resp</span> <span class="flag">-o</span> <span class="val">found.txt</span></span></div>
+    </div>
+    <div class="cmd-desc">Prepends each wordlist entry to domain. Generates and resolves sub.example.com for each word.</div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Multi-domain bruteforce</span><span class="cmd-tag tag-brute">brute</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-w</span> <span class="val">subdomains.txt</span> <span class="flag">-t</span> <span class="val">200</span> <span class="flag">-o</span> <span class="val">found.txt</span></span></div>
+    </div>
+    <div class="cmd-desc">Bruteforce each domain in list. Scales across multiple TLDs or root domains.</div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Recursion: go deeper</span><span class="cmd-tag tag-brute">brute</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-d</span> <span class="val">example.com</span> <span class="flag">-w</span> <span class="val">sub.txt</span> <span class="flag">-resp</span> <span class="pipe">|</span> awk <span class="val">'{print $1}'</span> <span class="pipe">|</span> dnsx <span class="flag">-w</span> <span class="val">sub.txt</span> <span class="flag">-resp</span></span></div>
+    </div>
+    <div class="cmd-desc">Two-level deep brute: finds dev.api.example.com, stg.auth.example.com etc. Chain more pipes for deeper recursion.</div>
+  </div>
+
+  <div class="section-title">Recommended Wordlists</div>
+  <div class="mini-table">
+    <table class="flag-table">
+      <tr><td>all.txt (assetnote)</td><td>9.5M entries — most comprehensive, slow</td></tr>
+      <tr><td>bitquark-subdomains-top1M</td><td>1M common subdomains — good balance</td></tr>
+      <tr><td>n0kovo_subdomains</td><td>3.8M curated entries — high quality</td></tr>
+      <tr><td>dns-Jhaddix.txt</td><td>Old but classic, 1.9M entries</td></tr>
+      <tr><td>commonspeak2</td><td>~1.7M entries from CTF scans</td></tr>
+      <tr><td>best-dns-wordlist.txt</td><td>Assetnote 10M — heaviest gun</td></tr>
+    </table>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Download wordlists on the fly</span><span class="cmd-tag tag-brute">brute</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">curl <span class="flag">-s</span> https://wordlists-cdn.assetnote.io/data/manual/best-dns-wordlist.txt <span class="pipe">|</span> dnsx <span class="flag">-d</span> <span class="val">example.com</span> <span class="flag">-resp</span></span></div>
+    </div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Wildcard detection &amp; bypass</span><span class="cmd-tag tag-brute">brute</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text"><span class="comment"># dnsx auto-detects and filters wildcard responses</span></span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-d</span> <span class="val">example.com</span> <span class="flag">-w</span> <span class="val">subdomains.txt</span> <span class="flag">-wt</span> <span class="val">5</span></span></div>
+    </div>
+    <div class="cmd-desc">-wt sets wildcard threshold: number of random probes used to detect wildcard DNS (default: 5). Increase if you see false positives.</div>
+  </div>
+
+  <div class="warn-box">
+    <div class="warn-label">Wildcard Domains</div>
+    <div class="warn-text">If *.example.com resolves, dnsx will still output results. Always cross-verify with HTTP probing (httpx) — many wildcard IPs return 404 or NXDOMAIN at app layer.</div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Permutation-based discovery</span><span class="cmd-tag tag-brute">brute</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">alterx <span class="flag">-l</span> <span class="val">subs.txt</span> <span class="pipe">|</span> dnsx <span class="flag">-resp</span> <span class="flag">-o</span> <span class="val">perm_live.txt</span></span></div>
+    </div>
+    <div class="cmd-desc">alterx (ProjectDiscovery) generates permutations (dev-api, api-prod, etc.) then dnsx resolves them. High signal-to-noise ratio.</div>
+  </div>
+</div>
+
+<div class="content" id="tab-filters">
+  <div class="section-title">Response-Based Filters</div>
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Filter by status code</span><span class="cmd-tag tag-filter">filter</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-rc</span> <span class="val">NOERROR</span></span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-rc</span> <span class="val">NXDOMAIN</span> <span class="flag">-resp</span></span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-rc</span> <span class="val">SERVFAIL,REFUSED</span></span></div>
+    </div>
+    <div class="cmd-desc">Status codes: NOERROR, NXDOMAIN, SERVFAIL, REFUSED, FORMERR, NOTIMPL. NXDOMAIN = dangling domains (takeover candidates!).</div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Filter by response (exclude IPs/patterns)</span><span class="cmd-tag tag-filter">filter</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-a</span> <span class="flag">-resp</span> <span class="pipe">|</span> grep <span class="flag">-v</span> <span class="val">'10\.'</span> <span class="pipe">|</span> grep <span class="flag">-v</span> <span class="val">'192\.168'</span></span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-a</span> <span class="flag">-resp</span> <span class="pipe">|</span> grep <span class="flag">-v</span> <span class="val">'^10\.\|^172\.\|^192\.168'</span></span></div>
+    </div>
+    <div class="cmd-desc">Strip RFC1918 private IPs. Useful when targeting only external-facing assets.</div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Output only IPs / resp-only</span><span class="cmd-tag tag-filter">filter</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-a</span> <span class="flag">-resp-only</span> <span class="pipe">|</span> sort <span class="flag">-u</span> <span class="pipe">&gt;</span> <span class="val">ips.txt</span></span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-cname</span> <span class="flag">-resp-only</span> <span class="pipe">|</span> sort <span class="flag">-u</span></span></div>
+    </div>
+    <div class="cmd-desc">-resp-only prints only the DNS answer (no hostname). Perfect for feeding into nmap, masscan, httpx.</div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Match / Filter by IP regex</span><span class="cmd-tag tag-filter">filter</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-a</span> <span class="flag">-resp</span> <span class="pipe">|</span> grep <span class="val">'1\.2\.3\.'</span></span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-a</span> <span class="flag">-json</span> <span class="pipe">|</span> jq <span class="val">'select(.a[]? | startswith("1.2.3."))'</span></span></div>
+    </div>
+    <div class="cmd-desc">Find all subdomains resolving to a specific IP range or CDN block. Great for mapping shared infra.</div>
+  </div>
+
+  <div class="section-title">Subdomain Takeover Detection</div>
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Dangling CNAME finder</span><span class="cmd-tag tag-chain">critical</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">subs.txt</span> <span class="flag">-cname</span> <span class="flag">-resp</span> <span class="flag">-rc</span> <span class="val">NXDOMAIN</span></span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">subs.txt</span> <span class="flag">-cname</span> <span class="flag">-json</span> <span class="pipe">|</span> jq <span class="val">'select(.status_code=="NXDOMAIN") | .host,.cname[]'</span></span></div>
+    </div>
+    <div class="cmd-desc">CNAME points somewhere + NXDOMAIN = unclaimed third-party service. Check: GitHub Pages, Heroku, Shopify, Fastly, AWS S3, Surge.sh.</div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Extract specific fields with jq</span><span class="cmd-tag tag-filter">filter</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">d.txt</span> <span class="flag">-json</span> <span class="pipe">|</span> jq <span class="flag">-r</span> <span class="val">'[.host, (.a//[]|join(","))] | @tsv'</span></span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">d.txt</span> <span class="flag">-json</span> <span class="pipe">|</span> jq <span class="flag">-r</span> <span class="val">'select(.mx != null) | .host'</span></span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">d.txt</span> <span class="flag">-json</span> <span class="pipe">|</span> jq <span class="flag">-r</span> <span class="val">'.txt[]? // empty'</span></span></div>
+    </div>
+  </div>
+</div>
+
+<div class="content" id="tab-resolvers">
+  <div class="section-title">Resolver Configuration</div>
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Use custom resolvers</span><span class="cmd-tag tag-stealth">stealth</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-r</span> <span class="val">8.8.8.8,1.1.1.1,9.9.9.9</span></span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-r</span> <span class="val">resolvers.txt</span></span></div>
+    </div>
+    <div class="cmd-desc">Don't rely on system resolver for bulk ops. Custom resolvers prevent ISP interference and rate limiting.</div>
+  </div>
+
+  <div class="section-title">Public Resolver Cheatsheet</div>
+  <div class="mini-table">
+    <table class="flag-table">
+      <tr><td>8.8.8.8 / 8.8.4.4</td><td>Google DNS — fast, globally cached</td></tr>
+      <tr><td>1.1.1.1 / 1.0.0.1</td><td>Cloudflare — fastest (measured), privacy-first</td></tr>
+      <tr><td>9.9.9.9 / 149.112.112.112</td><td>Quad9 — blocks malicious domains (may filter)</td></tr>
+      <tr><td>208.67.222.222</td><td>OpenDNS — good global coverage</td></tr>
+      <tr><td>64.6.64.6</td><td>Verisign — stable, less filtered</td></tr>
+      <tr><td>185.228.168.9</td><td>CleanBrowsing — has filtering, avoid for recon</td></tr>
+    </table>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Get valid resolvers list (dnsvalidator)</span><span class="cmd-tag tag-stealth">stealth</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsvalidator <span class="flag">-tL</span> https://public-dns.info/nameservers.txt <span class="flag">-threads</span> <span class="val">100</span> <span class="flag">-o</span> <span class="val">resolvers.txt</span></span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-r</span> <span class="val">resolvers.txt</span> <span class="flag">-t</span> <span class="val">300</span></span></div>
+    </div>
+    <div class="cmd-desc">Validate 2000+ public resolvers first. Use ~500 good ones to massively distribute DNS traffic.</div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Resolver trust levels</span><span class="cmd-tag tag-stealth">stealth</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text"><span class="comment"># Trusted resolvers: use for auth confirmation (slow but accurate)</span></span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">candidates.txt</span> <span class="flag">-r</span> <span class="val">8.8.8.8,1.1.1.1</span> <span class="flag">-t</span> <span class="val">20</span></span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text"><span class="comment"># Untrusted public resolvers: use for bulk brute (fast but may be poisoned)</span></span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">wordlist_out.txt</span> <span class="flag">-r</span> <span class="val">resolvers.txt</span> <span class="flag">-t</span> <span class="val">500</span></span></div>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <div class="tip-label">Two-Pass Strategy</div>
+    <div class="tip-text">1) Brute with 500 threads + massive public resolver list (speed). 2) Re-resolve results with 8.8.8.8 + 1.1.1.1 only (accuracy). This removes false positives from poisoned public resolvers.</div>
+  </div>
+</div>
+
+<div class="content" id="tab-chains">
+  <div class="section-title">Powerful Tool Chains</div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Full recon pipeline</span><span class="cmd-tag tag-chain">chain</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">subfinder <span class="flag">-d</span> <span class="val">example.com</span> <span class="flag">-silent</span> <span class="pipe">|</span> dnsx <span class="flag">-resp</span> <span class="flag">-o</span> <span class="val">live_subs.txt</span></span></div>
+    </div>
+    <div class="cmd-desc">subfinder → passive enumeration. dnsx → resolve to live hosts only. Gold standard for bug bounty recon.</div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Recon → Portscan → Web probe</span><span class="cmd-tag tag-chain">chain</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">subfinder <span class="flag">-d</span> <span class="val">example.com</span> <span class="flag">-silent</span> <span class="pipe">|</span> \</span></div>
+      <div class="cmd-line"><span class="prompt"> </span><span class="cmd-text">dnsx <span class="flag">-resp</span> <span class="flag">-silent</span> <span class="pipe">|</span> \</span></div>
+      <div class="cmd-line"><span class="prompt"> </span><span class="cmd-text">httpx <span class="flag">-silent</span> <span class="flag">-status-code</span> <span class="flag">-title</span> <span class="flag">-tech-detect</span></span></div>
+    </div>
+    <div class="cmd-desc">Classic PD stack: subfinder finds → dnsx verifies live → httpx probes HTTP surface.</div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">ASN → IPs → PTR hostnames</span><span class="cmd-tag tag-chain">chain</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">asnmap <span class="flag">-org</span> <span class="val">"Target Corp"</span> <span class="flag">-silent</span> <span class="pipe">|</span> mapcidr <span class="flag">-silent</span> <span class="pipe">|</span> dnsx <span class="flag">-ptr</span> <span class="flag">-resp</span> <span class="flag">-resp-only</span></span></div>
+    </div>
+    <div class="cmd-desc">ASN lookup → CIDR expand → reverse DNS. Discovers internal hostnames from IP ranges. Great for infra mapping.</div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Subdomain takeover pipeline</span><span class="cmd-tag tag-chain">chain</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">subfinder <span class="flag">-d</span> <span class="val">target.com</span> <span class="flag">-silent</span> <span class="pipe">|</span> \</span></div>
+      <div class="cmd-line"><span class="prompt"> </span><span class="cmd-text">dnsx <span class="flag">-cname</span> <span class="flag">-json</span> <span class="flag">-silent</span> <span class="pipe">|</span> \</span></div>
+      <div class="cmd-line"><span class="prompt"> </span><span class="cmd-text">jq <span class="flag">-r</span> <span class="val">'select(.cname != null) | .host'</span> <span class="pipe">|</span> \</span></div>
+      <div class="cmd-line"><span class="prompt"> </span><span class="cmd-text">nuclei <span class="flag">-t</span> <span class="val">~/nuclei-templates/dns/</span></span></div>
+    </div>
+    <div class="cmd-desc">Find CNAMEs → run nuclei DNS takeover templates. Automated takeover detection pipeline.</div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Brute + permutations + verify</span><span class="cmd-tag tag-chain">chain</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">subfinder <span class="flag">-d</span> <span class="val">target.com</span> <span class="flag">-silent</span> <span class="pipe">|</span> \</span></div>
+      <div class="cmd-line"><span class="prompt"> </span><span class="cmd-text">alterx <span class="pipe">|</span> \</span></div>
+      <div class="cmd-line"><span class="prompt"> </span><span class="cmd-text">dnsx <span class="flag">-resp</span> <span class="flag">-o</span> <span class="val">perms_live.txt</span></span></div>
+    </div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">CVE/vuln discovery via IP mapping</span><span class="cmd-tag tag-chain">chain</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">subs.txt</span> <span class="flag">-a</span> <span class="flag">-resp-only</span> <span class="flag">-silent</span> <span class="pipe">|</span> sort <span class="flag">-u</span> <span class="pipe">|</span> naabu <span class="flag">-silent</span> <span class="pipe">|</span> nuclei <span class="flag">-silent</span></span></div>
+    </div>
+    <div class="cmd-desc">Resolve to IPs → port scan → vuln scan. Full attack surface coverage.</div>
+  </div>
+
+  <div class="section-title">Pipeline Visualization</div>
+  <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:12px;margin:6px 0">
+    <div class="pipeline-row">
+      <span class="pipe-tool">subfinder</span><span class="pipe-arrow">→</span>
+      <span class="pipe-tool" style="border-color:var(--green);color:var(--green)">dnsx -resp</span><span class="pipe-arrow">→</span>
+      <span class="pipe-tool">httpx</span><span class="pipe-arrow">→</span>
+      <span class="pipe-tool">nuclei</span>
+    </div>
+    <div class="comment" style="margin-top:4px">Passive enum → DNS verify → HTTP probe → Vuln scan</div>
+    <div class="pipeline-row" style="margin-top:10px">
+      <span class="pipe-tool">asnmap</span><span class="pipe-arrow">→</span>
+      <span class="pipe-tool">mapcidr</span><span class="pipe-arrow">→</span>
+      <span class="pipe-tool" style="border-color:var(--green);color:var(--green)">dnsx -ptr</span><span class="pipe-arrow">→</span>
+      <span class="pipe-tool">naabu</span>
+    </div>
+    <div class="comment" style="margin-top:4px">IP range → PTR hostnames → port scan</div>
+  </div>
+</div>
+
+<div class="content" id="tab-tips">
+  <div class="section-title">OPSEC Considerations</div>
+  <div class="warn-box">
+    <div class="warn-label">DNS Footprint Warning</div>
+    <div class="warn-text">High-speed DNS queries (500+ threads, thousands of qps) ARE detectable. DNS logs are standard on enterprise infra. Blue teams use tools like PassiveDNS, Zeek, and Elastic SIEM to correlate unusual DNS patterns.</div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Slow &amp; low profile query</span><span class="cmd-tag tag-stealth">stealth</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-t</span> <span class="val">5</span> <span class="flag">-rl</span> <span class="val">10</span> <span class="flag">-timeout</span> <span class="val">8</span> <span class="flag">-retries</span> <span class="val">1</span></span></div>
+    </div>
+    <div class="cmd-desc">5 threads, 10 req/sec. Slow but under radar. Use trusted resolvers (1.1.1.1, 8.8.8.8) — queries appear from those IPs, not yours.</div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Use DoH / DoT (via proxy)</span><span class="cmd-tag tag-stealth">stealth</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text"><span class="comment"># Route dnsx through DNS-over-HTTPS proxy</span></span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-r</span> <span class="val">127.0.0.1:5300</span></span></div>
+    </div>
+    <div class="cmd-desc">Run a local DoH proxy (cloudflared, dnscrypt-proxy) on :5300 and point dnsx at it. Encrypts DNS traffic over HTTPS/TLS to the upstream.</div>
+  </div>
+
+  <div class="section-title">Pro Tips</div>
+
+  <div class="grid2">
+    <div class="tip-box">
+      <div class="tip-label">Stats mode</div>
+      <div class="tip-text">Add -stats to any run. Shows: total requests, resolved, errors, rate. Essential for long brute runs to monitor progress.</div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-label">Silent pipeline</div>
+      <div class="tip-text">Add -silent to suppress status lines. Only resolved domains go to stdout — critical for clean piping to next tool.</div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-label">Resume runs</div>
+      <div class="tip-text">dnsx doesn't have built-in resume. Split wordlists with split -l 100000. Or use GNU parallel: parallel -j4 'dnsx -d target.com -w {}'.</div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-label">De-duplicate IPs</div>
+      <div class="tip-text">dnsx -resp-only | sort -u gives unique IPs. Feed to nmap -iL. Many subdomains share IPs — scan each IP once.</div>
+    </div>
+  </div>
+
+  <div class="section-title">Forensics & Investigation</div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">Find all domains on same IP (reverse)</span><span class="cmd-tag tag-recon">recon</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">echo <span class="val">1.2.3.4</span> <span class="pipe">|</span> dnsx <span class="flag">-ptr</span> <span class="flag">-resp</span></span></div>
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text"><span class="comment"># Combine with shodan or censys for co-hosted domains</span></span></div>
+    </div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">SOA admin email harvest</span><span class="cmd-tag tag-recon">recon</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-soa</span> <span class="flag">-json</span> <span class="pipe">|</span> jq <span class="flag">-r</span> <span class="val">'.soa.rname // empty'</span> <span class="pipe">|</span> sort <span class="flag">-u</span></span></div>
+    </div>
+    <div class="cmd-desc">SOA rname field = admin email (dots as separators). Convert first dot to @. Often leaks real admin contacts.</div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header"><span class="cmd-label">SPF record analysis</span><span class="cmd-tag tag-recon">recon</span></div>
+    <div class="cmd-body">
+      <div class="cmd-line"><span class="prompt">$</span><span class="cmd-text">dnsx <span class="flag">-l</span> <span class="val">domains.txt</span> <span class="flag">-txt</span> <span class="flag">-json</span> <span class="pipe">|</span> jq <span class="flag">-r</span> <span class="val">'.txt[]? | select(startswith("v=spf1"))'</span></span></div>
+    </div>
+    <div class="cmd-desc">Extract SPF records. Reveals: email providers, cloud services, IP allowlists, and third-party vendors used by target.</div>
+  </div>
+
+  <div class="section-title">JSON Schema Reference</div>
+  <div class="mini-table">
+    <table class="flag-table">
+      <tr><td>.host</td><td>Input hostname queried</td></tr>
+      <tr><td>.a[]</td><td>Array of IPv4 addresses</td></tr>
+      <tr><td>.aaaa[]</td><td>Array of IPv6 addresses</td></tr>
+      <tr><td>.cname[]</td><td>Array of CNAME targets</td></tr>
+      <tr><td>.mx[]</td><td>Array of MX records (priority host)</td></tr>
+      <tr><td>.ns[]</td><td>Array of nameservers</td></tr>
+      <tr><td>.txt[]</td><td>Array of TXT record strings</td></tr>
+      <tr><td>.soa.nsname</td><td>Primary nameserver</td></tr>
+      <tr><td>.soa.rname</td><td>Admin email (dot-encoded)</td></tr>
+      <tr><td>.status_code</td><td>DNS response code (NOERROR etc)</td></tr>
+      <tr><td>.resolver</td><td>Which resolver answered</td></tr>
+      <tr><td>.timestamp</td><td>ISO timestamp of query</td></tr>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">
+  <span class="footer-note">dnsx by ProjectDiscovery · github.com/projectdiscovery/dnsx</span>
+  <span class="footer-note" id="count-display">Loading...</span>
+</div>
+
+<script>
+const tabs = document.querySelectorAll('.tab');
+const contents = document.querySelectorAll('.content');
+const searchInput = document.getElementById('search');
+
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    const target = tab.dataset.tab;
+    tabs.forEach(t => t.classList.remove('active'));
+    contents.forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    const el = document.getElementById('tab-' + target);
+    if(el) el.classList.add('active');
+    searchInput.value = '';
+    restoreAll();
+  });
+});
+
+function restoreAll() {
+  document.querySelectorAll('.cmd-block').forEach(b => b.style.display = '');
+  document.querySelectorAll('.section-title').forEach(s => s.style.display = '');
+}
+
+searchInput.addEventListener('input', function() {
+  const q = this.value.toLowerCase().trim();
+  if(!q) { restoreAll(); updateCount(); return; }
+  
+  contents.forEach(c => c.classList.remove('active'));
+  document.getElementById('all-content').querySelectorAll('.content').forEach(c => c.style.display = 'block');
+  
+  let shown = 0;
+  document.querySelectorAll('.cmd-block').forEach(block => {
+    const text = block.textContent.toLowerCase();
+    if(text.includes(q)) { block.style.display = ''; shown++; }
+    else block.style.display = 'none';
+  });
+  document.querySelectorAll('.section-title').forEach(s => s.style.display = 'none');
+  document.getElementById('count-display').textContent = shown + ' results';
+});
+
+function updateCount() {
+  const active = document.querySelector('.content.active');
+  if(!active) return;
+  const total = active.querySelectorAll('.cmd-block').length;
+  document.getElementById('count-display').textContent = total + ' commands';
+}
+
+updateCount();
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => setTimeout(updateCount, 50)));
+</script>

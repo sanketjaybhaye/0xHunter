@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Masscan Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/theme.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  :root {
+    --color-background-primary: var(--bg2, #0d1220);
+    --color-background-secondary: var(--bg3, #131929);
+    --color-background-tertiary: var(--bg4, #1c2538);
+    --color-border-secondary: var(--border-light, rgba(255,255,255,0.12));
+    --color-border-tertiary: var(--border, rgba(255,255,255,0.07));
+    --color-text-primary: var(--text, #e2eaf6);
+    --color-text-secondary: var(--text2, #8b9ec5);
+    --color-text-tertiary: var(--text3, #566283);
+    --font-sans: var(--font, 'Inter', sans-serif);
+    --font-mono: var(--mono, monospace);
+    --border-radius-lg: var(--r2, 10px);
+    --border-radius-md: var(--r, 6px);
+  }
+  
+  body {
+    background: transparent;
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    padding: 0;
+    margin: 0;
+  }
+
+  .root {
+    padding: 1rem 0;
+    max-width: 100%;
+  }
+
+  .nav {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    padding-bottom: 1rem;
+  }
+
+  .nav-btn {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    border: 0.5px solid var(--color-border-secondary);
+    background: transparent;
+    color: var(--color-text-secondary);
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .nav-btn.active {
+    background: var(--accent, #38bdf8);
+    border-color: var(--accent, #38bdf8);
+    color: #080c14;
+    font-weight: 600;
+  }
+
+  .nav-btn:hover:not(.active) {
+    background: var(--color-background-secondary);
+    color: var(--color-text-primary);
+  }
+
+  .search-box {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: var(--border-radius-md);
+    border: 0.5px solid var(--color-border-secondary);
+    font-size: 13px;
+    font-family: var(--font-mono);
+    margin-bottom: 1rem;
+    background: var(--color-background-primary);
+    color: var(--color-text-primary);
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .search-box:focus {
+    border-color: var(--accent, #38bdf8);
+  }
+
+  .section {
+    display: none;
+  }
+
+  .section.visible {
+    display: block;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 12px;
+    margin-bottom: 1rem;
+  }
+
+  .card {
+    background: var(--color-background-primary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    padding: 1rem 1.1rem;
+  }
+
+  .card-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--accent, #38bdf8);
+    margin-bottom: .75rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .cmd-block {
+    background: var(--color-background-secondary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-md);
+    padding: .6rem .85rem;
+    margin-bottom: 8px;
+    transition: border-color 0.2s;
+  }
+
+  .cmd-block:hover {
+    border-color: var(--color-border-secondary);
+  }
+
+  .cmd {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--color-text-primary);
+    line-height: 1.5;
+    word-break: break-all;
+  }
+
+  .cmd .flag {
+    color: var(--orange, #fb923c);
+    font-weight: 500;
+  }
+
+  .cmd .val {
+    color: var(--green, #22d3a6);
+  }
+
+  .cmd .comment {
+    color: var(--color-text-tertiary);
+    font-style: italic;
+    font-size: 11.5px;
+  }
+
+  .desc {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    margin-top: 4px;
+    line-height: 1.45;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin: 2px;
+  }
+
+  .b-crit { background: rgba(248, 113, 113, 0.15); color: var(--red, #f87171); border: 0.5px solid rgba(248, 113, 113, 0.3); }
+  .b-high { background: rgba(251, 146, 60, 0.15); color: var(--orange, #fb923c); border: 0.5px solid rgba(251, 146, 60, 0.3); }
+  .b-med { background: rgba(251, 191, 36, 0.15); color: var(--yellow, #fbbf24); border: 0.5px solid rgba(251, 191, 36, 0.3); }
+  .b-low { background: rgba(34, 211, 166, 0.15); color: var(--green, #22d3a6); border: 0.5px solid rgba(34, 211, 166, 0.3); }
+  .b-info { background: rgba(56, 189, 248, 0.15); color: var(--accent, #38bdf8); border: 0.5px solid rgba(56, 189, 248, 0.3); }
+
+  .table-wrap {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+
+  th {
+    text-align: left;
+    font-weight: 500;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--color-text-secondary);
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    padding: 6px 10px;
+  }
+
+  td {
+    padding: 7px 10px;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  td:first-child {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--orange, #fb923c);
+    white-space: nowrap;
+  }
+
+  td:last-child {
+    color: var(--color-text-secondary);
+    font-size: 12px;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  .highlight-row td {
+    background: var(--color-background-secondary);
+  }
+
+  .h2 {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin: 1.2rem 0 .6rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-left: 3px solid var(--accent, #38bdf8);
+    padding-left: 8px;
+  }
+
+  .tip {
+    background: var(--green-dim, rgba(34, 211, 166, 0.08));
+    border-left: 3px solid var(--green, #22d3a6);
+    border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
+    padding: .6rem .9rem;
+    font-size: 12.5px;
+    color: var(--green, #22d3a6);
+    margin: .75rem 0;
+    line-height: 1.5;
+  }
+
+  .warn {
+    background: rgba(251, 146, 60, 0.08);
+    border-left: 3px solid var(--orange, #fb923c);
+    border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
+    padding: .6rem .9rem;
+    font-size: 12.5px;
+    color: var(--orange, #fb923c);
+    margin: .75rem 0;
+    line-height: 1.5;
+  }
+
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 0.5px solid var(--color-border-tertiary);
+    color: var(--color-text-tertiary);
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+
+<div class="root">
+  <input class="search-box" id="search" placeholder="Type to search commands..." autocomplete="off">
+  
+  <nav class="nav">
+    <button class="nav-btn active"><i class="ti ti-terminal-2"></i> Basics</button>
+    <button class="nav-btn"><i class="ti ti-adjustments"></i> Interfaces & Adapters</button>
+    <button class="nav-btn"><i class="ti ti-device-gamepad-2"></i> Ports & UDP</button>
+    <button class="nav-btn"><i class="ti ti-dashboard"></i> Speed & Sharding</button>
+    <button class="nav-btn"><i class="ti ti-speaker"></i> Banner Grabbing</button>
+    <button class="nav-btn"><i class="ti ti-arrow-merge"></i> Pipelines & Output</button>
+  </nav>
+
+  <!-- BASICS -->
+  <div id="basics" class="section visible">
+    <div class="h2"><i class="ti ti-download"></i> Installation & Compilation</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-download"></i> Binary Install</div>
+        <div class="cmd-block">
+          <div class="cmd">sudo apt install <span class="val">masscan</span></div>
+          <div class="desc">Quick install via apt on Debian/Ubuntu/Kali Linux</div>
+        </div>
+        <div class="cmd-block">
+          <div class="cmd">brew install <span class="val">masscan</span></div>
+          <div class="desc">macOS install via Homebrew</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-git-pull-request"></i> Build from Source</div>
+        <div class="cmd-block">
+          <div class="cmd">git clone https://github.com/robertdavidgraham/masscan<br>cd masscan && make <span class="flag">-j</span></div>
+          <div class="desc">Compile from source (creates faster binary optimized for your CPU; requires <code>clang</code> or <code>gcc</code> and <code>libpcap-dev</code>)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="h2"><i class="ti ti-bolt"></i> Fundamental Command Structures</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-target"></i> Basic Targets</div>
+        <div class="cmd-block">
+          <div class="cmd">sudo masscan <span class="val">192.168.1.0/24</span> <span class="flag">-p</span><span class="val">80,443,8080</span> <span class="flag">--rate</span> <span class="val">1000</span></div>
+          <div class="desc">Scan a subnet for three common web ports at 1,000 packets per second</div>
+        </div>
+        <div class="cmd-block">
+          <div class="cmd">sudo masscan <span class="flag">-iL</span> <span class="val">ranges.txt</span> <span class="flag">-p</span><span class="val">22,445</span> <span class="flag">--rate</span> <span class="val">5000</span></div>
+          <div class="desc">Scan multiple targets listed in a text file for SSH and SMB</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-alert-triangle"></i> Sudo & Kernel Requirements</div>
+        <div class="warn">
+          <strong>Requires root privileges:</strong> Masscan operates outside the operating system's standard TCP/IP network stack to send raw Ethernet frames directly. Therefore, it <strong>must</strong> be executed using <code>sudo</code> or as the <code>root</code> user.
+        </div>
+        <div class="tip">
+          <strong>Scan Speed Warn:</strong> Running masscan at rates higher than your network bandwidth can support will cause packet loss, leading to missed open ports. Always size rates to fit your connection.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTERFACES & ADAPTERS -->
+  <div id="interfaces" class="section">
+    <div class="h2"><i class="ti ti-adjustments"></i> Interface and Source Configurations</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-route"></i> Adapter Binding</div>
+        <div class="cmd-block">
+          <div class="cmd">sudo masscan <span class="val">10.0.0.0/8</span> <span class="flag">-p</span><span class="val">80</span> <span class="flag">-e</span> <span class="val">eth0</span></div>
+          <div class="desc">Direct scan explicitly through network adapter interface <code>eth0</code></div>
+        </div>
+        <div class="cmd-block">
+          <div class="cmd">sudo masscan <span class="val">10.0.0.0/8</span> <span class="flag">-p</span><span class="val">80</span> <span class="flag">--adapter-ip</span> <span class="val">10.0.0.50</span></div>
+          <div class="desc">Manually assign the source IP address used for outbound scan packets</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-shield"></i> MAC Address Overrides</div>
+        <div class="cmd-block">
+          <div class="cmd">sudo masscan <span class="val">10.0.0.0/8</span> <span class="flag">-p</span><span class="val">80</span> <span class="flag">--router-mac</span> <span class="val">00:11:22:33:44:55</span></div>
+          <div class="desc"><strong>Router MAC Override:</strong> Crucial when masscan fails to auto-detect the local gateway's MAC address (highly common on virtual networks, AWS, or OpenStack).</div>
+        </div>
+        <div class="cmd-block">
+          <div class="cmd">sudo masscan <span class="val">10.0.0.0/8</span> <span class="flag">-p</span><span class="val">80</span> <span class="flag">--adapter-mac</span> <span class="val">00:aa:bb:cc:dd:ee</span></div>
+          <div class="desc">Spoof your adapter's source MAC address for network evasion</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="h2"><i class="ti ti-shield-off"></i> Avoiding OS Kernel RST Packet Conflicts</div>
+    <div class="card">
+      <div class="tip">
+        <strong>The Reset Packet Conflict:</strong> Because masscan runs its own TCP stack, your local operating system doesn't know about connections initiated by masscan. When a target responds with a SYN-ACK, your local OS kernel sees it as unexpected and automatically responds with an <code>RST</code> (reset) packet, closing the connection. 
+        <br><br>
+        <strong>Professional Evasion Fix:</strong> 
+        <br>1. Force masscan to use a specific source port: <code>--adapter-port 40000</code>
+        <br>2. Add a local firewall rule to prevent the OS kernel from responding on that port:
+        <br>&nbsp;&nbsp;&nbsp;• <em>Linux:</em> <code>sudo iptables -A INPUT -p tcp --dport 40000 -j DROP</code>
+        <br>&nbsp;&nbsp;&nbsp;• <em>macOS:</em> Block port via <code>pf.conf</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- PORTS & UDP -->
+  <div id="ports" class="section">
+    <div class="h2"><i class="ti ti-device-gamepad-2"></i> Port Specification Syntax</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-selector"></i> TCP Ports</div>
+        <div class="cmd-block">
+          <div class="cmd">sudo masscan <span class="val">192.168.1.1</span> <span class="flag">-p</span><span class="val">80,443,22,8080</span></div>
+          <div class="desc">Scan a specific comma-separated list of TCP ports</div>
+        </div>
+        <div class="cmd-block">
+          <div class="cmd">sudo masscan <span class="val">192.168.1.1</span> <span class="flag">-p</span><span class="val">1-1000</span></div>
+          <div class="desc">Scan a contiguous range of ports (1 to 1000)</div>
+        </div>
+        <div class="cmd-block">
+          <div class="cmd">sudo masscan <span class="val">192.168.1.1</span> <span class="flag">-p</span><span class="val">0-65535</span></div>
+          <div class="desc"><strong>Full port scan:</strong> Scans all 65,536 ports (note: masscan starts at port 0, not 1)</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-activity"></i> UDP Port Scanning</div>
+        <div class="cmd-block">
+          <div class="cmd">sudo masscan <span class="val">192.168.1.1</span> <span class="flag">-pU:</span><span class="val">53,U:161,U:69</span></div>
+          <div class="desc"><strong>UDP Port Scanning:</strong> Prefix the port list with <code>U:</code> to scan UDP services (DNS, SNMP, TFTP).</div>
+        </div>
+        <div class="cmd-block">
+          <div class="cmd">sudo masscan <span class="val">192.168.1.1</span> <span class="flag">-p</span><span class="val">U:53,t:80</span></div>
+          <div class="desc">Scan UDP port 53 and TCP port 80 simultaneously</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPEED & SHARDING -->
+  <div id="performance" class="section">
+    <div class="h2"><i class="ti ti-dashboard"></i> Speed & Rate Limiting</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-brand-telegram"></i> Transmission Rates</div>
+        <div class="cmd-block">
+          <div class="cmd">sudo masscan <span class="val">10.0.0.0/8</span> <span class="flag">-p</span><span class="val">80</span> <span class="flag">--rate</span> <span class="val">100000</span></div>
+          <div class="desc"><strong>100,000 p/s:</strong> The rate at which the entire internet can be scanned for 1 port in under 6 minutes (requires a 1 Gbps fiber uplink).</div>
+        </div>
+        <div class="cmd-block">
+          <div class="cmd">sudo masscan <span class="val">192.168.1.0/24</span> <span class="flag">-p</span><span class="val">1-65535</span> <span class="flag">--rate</span> <span class="val">10000</span></div>
+          <div class="desc">Scan all ports for a local subnet at 10,000 p/s (takes about 1.5 minutes)</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-player-pause"></i> Pausing and Resuming Scans</div>
+        <div class="tip">
+          <strong>Auto-pausing:</strong> When you hit <code>Ctrl+C</code> during a masscan execution, it halts the scan and automatically writes its current progression state to a file named <code>paused.conf</code>.
+        </div>
+        <div class="cmd-block">
+          <div class="cmd">sudo masscan <span class="flag">--resume</span> <span class="val">paused.conf</span></div>
+          <div class="desc">Resume an interrupted scan exactly where it left off using the saved state configuration.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="h2"><i class="ti ti-rocket"></i> Sharding (Multi-Server Distributed Scans)</div>
+    <div class="card" style="margin-bottom:12px">
+      <div class="desc" style="margin-bottom:8px">
+        Sharding allows you to split a single massive scan across multiple separate servers/instances (e.g. scanning the internet from 3 different VPS instances). Each server scans its own unique, randomized chunk of the target scope.
+      </div>
+      <div class="cmd-block">
+        <div class="cmd">
+          <span class="comment"># Server 1:</span><br>
+          sudo masscan <span class="val">0.0.0.0/0</span> <span class="flag">-p</span><span class="val">443</span> <span class="flag">--rate</span> <span class="val">25000</span> <span class="flag">--shard</span> <span class="val">1/3</span> -oJ <span class="val">part1.json</span><br><br>
+          <span class="comment"># Server 2:</span><br>
+          sudo masscan <span class="val">0.0.0.0/0</span> <span class="flag">-p</span><span class="val">443</span> <span class="flag">--rate</span> <span class="val">25000</span> <span class="flag">--shard</span> <span class="val">2/3</span> -oJ <span class="val">part2.json</span><br><br>
+          <span class="comment"># Server 3:</span><br>
+          sudo masscan <span class="val">0.0.0.0/0</span> <span class="flag">-p</span><span class="val">443</span> <span class="flag">--rate</span> <span class="val">25000</span> <span class="flag">--shard</span> <span class="val">3/3</span> -oJ <span class="val">part3.json</span>
+        </div>
+      </div>
+      <div class="desc">Use <code>--shard n/m</code> where <code>n</code> is the current node index (starting at 1) and <code>m</code> is the total number of nodes.</div>
+    </div>
+
+    <div class="h2"><i class="ti ti-ban"></i> Exclude Filters</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-ban"></i> Exclude Ranges</div>
+        <div class="cmd-block">
+          <div class="cmd">sudo masscan <span class="val">0.0.0.0/0</span> <span class="flag">-p</span><span class="val">80</span> <span class="flag">--exclude</span> <span class="val">10.0.0.0/8,192.168.0.0/16</span></div>
+          <div class="desc">Scan all IP space but exclude private network ranges</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-file-text"></i> Exclude Blacklists</div>
+        <div class="cmd-block">
+          <div class="cmd">sudo masscan <span class="val">0.0.0.0/0</span> <span class="flag">-p</span><span class="val">80</span> <span class="flag">--excludefile</span> <span class="val">blacklist.txt</span></div>
+          <div class="desc">Exclude all IP ranges listed in a blacklist file (e.g. government subnets, DoD, specific ISPs)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BANNER GRABBING -->
+  <div id="banners" class="section">
+    <div class="h2"><i class="ti ti-speaker"></i> Service Banner Grabbing</div>
+    <div class="card" style="margin-bottom:12px">
+      <div class="cmd-block">
+        <div class="cmd">sudo masscan <span class="val">192.168.1.0/24</span> <span class="flag">-p</span><span class="val">80,443,22</span> <span class="flag">--banners</span> <span class="flag">--rate</span> <span class="val">500</span></div>
+        <div class="desc"><strong>Banner Grabbing:</strong> Instructs masscan to complete a full TCP handshake once a port is found open to extract banner data (SSH versions, HTTP server titles, SSL certificates, etc.). <em>Must use a low rate (e.g., &lt;1000 p/s) to avoid overwhelming the targets during connections.</em></div>
+      </div>
+    </div>
+
+    <div class="h2"><i class="ti ti-edit"></i> Connection Spoofing & Custom Headers</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-world"></i> Custom HTTP headers</div>
+        <div class="cmd-block">
+          <div class="cmd">sudo masscan <span class="val">targets</span> <span class="flag">-p</span><span class="val">80</span> <span class="flag">--banners</span> <span class="flag">--http-user-agent</span> <span class="val">"Mozilla/5.0 (Pentest)"</span></div>
+          <div class="desc">Inject a custom HTTP User-Agent string during HTTP banner retrieval</div>
+        </div>
+        <div class="cmd-block">
+          <div class="cmd">sudo masscan <span class="val">targets</span> <span class="flag">-p</span><span class="val">80</span> <span class="flag">--banners</span> <span class="flag">--http-payload</span> <span class="val">"GET /secret HTTP/1.0\r\n\r\n"</span></div>
+          <div class="desc">Send a custom HTTP payload string upon establishing a connection</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-server"></i> Other service configurations</div>
+        <div class="cmd-block">
+          <div class="cmd">sudo masscan <span class="val">targets</span> <span class="flag">-p</span><span class="val">443</span> <span class="flag">--banners</span> <span class="flag">--hello-ssl</span></div>
+          <div class="desc">Send an SSL Client Hello packet immediately upon TCP connection to pull certificate details</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PIPELINES & OUTPUT -->
+  <div id="pipelines" class="section">
+    <div class="h2"><i class="ti ti-arrow-merge"></i> Masscan Pipelines</div>
+    <div class="card" style="margin-bottom:12px">
+      <div class="cmd-block">
+        <div class="cmd">sudo masscan <span class="val">10.0.0.0/8</span> <span class="flag">-p</span><span class="val">80</span> <span class="flag">--rate</span> <span class="val">10000</span> <span class="flag">--open-only</span> <span class="flag">-oG</span> <span class="val">-</span> | awk <span class="val">'{print $2}'</span></div>
+        <div class="desc"><strong>Grep-friendly Open IPs:</strong> Output active IPs directly to stdout, parsing them immediately using awk to generate an IP list.</div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd">sudo masscan <span class="flag">-iL</span> <span class="val">targets.txt</span> <span class="flag">-p</span><span class="val">80,443</span> <span class="flag">--open-only</span> <span class="flag">-oJ</span> <span class="val">masscan.json</span></div>
+        <div class="desc">Output results to an enriched JSON file containing only active, open ports.</div>
+      </div>
+    </div>
+
+    <div class="h2"><i class="ti ti-file-export"></i> Output Formats & Conversion</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-file-text"></i> Command Line Formats</div>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Flag</th><th>Format</th><th>Description</th></tr>
+            <tr><td>-oX &lt;file&gt;</td><td>XML</td><td>Standard XML output (compatible with Nmap parsers)</td></tr>
+            <tr class="highlight-row"><td>-oJ &lt;file&gt;</td><td>JSON</td><td>Clean, readable JSON Lines format</td></tr>
+            <tr><td>-oG &lt;file&gt;</td><td>Grepable</td><td>Old-school Nmap-style grepable text</td></tr>
+            <tr class="highlight-row"><td>-oB &lt;file&gt;</td><td>Binary</td><td>Extremely fast binary format (recommended for massive runs)</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-arrows-left-right"></i> Binary scan reading and converting</div>
+        <div class="desc" style="margin-bottom:8px">
+          Binary outputs (`-oB`) are much smaller and write significantly faster to disk, preventing I/O bottlenecks. You can read or convert them later.
+        </div>
+        <div class="cmd-block">
+          <div class="cmd">masscan <span class="flag">--readscan</span> <span class="val">results.bin</span></div>
+          <div class="desc">Read binary scan file and dump contents directly to terminal stdout</div>
+        </div>
+        <div class="cmd-block">
+          <div class="cmd">masscan <span class="flag">--readscan</span> <span class="val">results.bin</span> <span class="flag">-oJ</span> <span class="val">results.json</span></div>
+          <div class="desc">Convert binary output to standard JSON Lines format</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>Masscan Cheat Sheet · github.com/robertdavidgraham/masscan</span>
+    <span id="count-display"></span>
+  </div>
+</div>
+
+<script>
+const navBtns = document.querySelectorAll('.nav-btn');
+const sections = document.querySelectorAll('.section');
+const searchInput = document.getElementById('search');
+
+function showSection(index) {
+  sections.forEach(s => s.classList.remove('visible'));
+  navBtns.forEach(b => b.classList.remove('active'));
+  
+  sections[index].classList.add('visible');
+  navBtns[index].classList.add('active');
+  searchInput.value = '';
+  restoreAll();
+  updateCount();
+}
+
+navBtns.forEach((btn, i) => {
+  btn.addEventListener('click', () => showSection(i));
+});
+
+function restoreAll() {
+  document.querySelectorAll('.cmd-block').forEach(b => b.style.display = '');
+  document.querySelectorAll('.section-title, .h2').forEach(s => s.style.display = '');
+  document.querySelectorAll('.grid').forEach(g => g.style.display = '');
+  document.querySelectorAll('.card').forEach(c => c.style.display = '');
+}
+
+searchInput.addEventListener('input', function() {
+  const q = this.value.toLowerCase().trim();
+  if(!q) { 
+    restoreAll(); 
+    updateCount(); 
+    return; 
+  }
+  
+  // Hide active sections but show all blocks in a single scrollable view during search
+  sections.forEach(s => s.classList.add('visible'));
+  
+  let shown = 0;
+  document.querySelectorAll('.cmd-block').forEach(block => {
+    const text = block.textContent.toLowerCase();
+    if(text.includes(q)) { 
+      block.style.display = ''; 
+      shown++; 
+    } else {
+      block.style.display = 'none'; 
+    }
+  });
+
+  // Hide headers, grids, cards if they contain no matching commands
+  document.querySelectorAll('.card').forEach(card => {
+    const visibleBlocks = card.querySelectorAll('.cmd-block[style=""]');
+    const totalBlocks = card.querySelectorAll('.cmd-block');
+    if (totalBlocks.length > 0 && visibleBlocks.length === 0) {
+      card.style.display = 'none';
+    } else {
+      card.style.display = '';
+    }
+  });
+
+  document.querySelectorAll('.grid').forEach(grid => {
+    const visibleCards = grid.querySelectorAll('.card[style=""]');
+    const totalCards = grid.querySelectorAll('.card');
+    if (totalCards.length > 0 && visibleCards.length === 0) {
+      grid.style.display = 'none';
+    } else {
+      grid.style.display = '';
+    }
+  });
+
+  document.querySelectorAll('.h2').forEach(h => h.style.display = 'none');
+  document.getElementById('count-display').textContent = shown + ' results';
+});
+
+function updateCount() {
+  const active = document.querySelector('.section.visible');
+  if(!active) return;
+  const total = active.querySelectorAll('.cmd-block').length;
+  document.getElementById('count-display').textContent = total + ' commands';
+}
+
+// Initial count
+updateCount();
+</script>
+</body>
+</html>

@@ -1,0 +1,306 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); color: var(--color-text-primary); }
+h2 { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-secondary); margin-bottom: 10px; }
+.search-bar { width: 100%; padding: 8px 12px 8px 36px; font-size: 14px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); outline: none; }
+.search-wrap { position: relative; margin-bottom: 20px; }
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 16px; color: var(--color-text-secondary); pointer-events: none; }
+.search-bar:focus { border-color: var(--color-border-primary); }
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 20px; }
+.tab { padding: 5px 12px; font-size: 13px; border: 0.5px solid var(--color-border-secondary); border-radius: 999px; background: transparent; color: var(--color-text-secondary); cursor: pointer; transition: all 0.15s; }
+.tab:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+.tab.active { background: #3C3489; color: #CECBF6; border-color: #534AB7; }
+.section { margin-bottom: 28px; }
+.section-header { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.section-icon { font-size: 15px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-size: 11px; font-weight: 500; color: var(--color-text-secondary); padding: 5px 10px; border-bottom: 0.5px solid var(--color-border-tertiary); letter-spacing: 0.05em; text-transform: uppercase; }
+td { padding: 7px 10px; border-bottom: 0.5px solid var(--color-border-tertiary); vertical-align: top; line-height: 1.4; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--color-background-secondary); }
+.flag { font-family: var(--font-mono); font-size: 12px; white-space: nowrap; color: #3C3489; background: #EEEDFE; padding: 2px 7px; border-radius: 4px; display: inline-block; }
+@media (prefers-color-scheme: dark) {
+  .flag { color: #AFA9EC; background: #26215C; }
+  .tab.active { background: #26215C; color: #CECBF6; border-color: #3C3489; }
+}
+.desc { color: var(--color-text-primary); font-size: 13px; }
+.default-badge { font-size: 11px; color: var(--color-text-secondary); margin-left: 6px; }
+.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; }
+.example-block { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 14px; margin-bottom: 10px; }
+.example-title { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 6px; }
+.example-cmd { font-family: var(--font-mono); font-size: 12px; color: var(--color-text-primary); white-space: pre-wrap; word-break: break-all; line-height: 1.6; }
+.copy-btn { float: right; font-size: 11px; padding: 2px 8px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: transparent; color: var(--color-text-secondary); cursor: pointer; }
+.copy-btn:hover { background: var(--color-background-primary); }
+.hidden { display: none; }
+.no-results { text-align: center; padding: 32px; color: var(--color-text-secondary); font-size: 14px; }
+.install-box { background: var(--color-background-secondary); border-left: 3px solid #534AB7; padding: 10px 14px; border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0; margin-bottom: 20px; font-family: var(--font-mono); font-size: 13px; }
+</style>
+
+<h2 class="sr-only" style="position:absolute;left:-9999px">Katana web crawler cheat sheet with searchable flags and examples</h2>
+
+<div style="padding: 1.25rem 0">
+<div style="display:flex; align-items:center; gap:10px; margin-bottom:16px">
+  <div style="width:32px;height:32px;background:#534AB7;border-radius:8px;display:flex;align-items:center;justify-content:center">
+    <i class="ti ti-spider" style="color:#CECBF6;font-size:18px" aria-hidden="true"></i>
+  </div>
+  <div>
+    <div style="font-size:16px;font-weight:500">Katana</div>
+    <div style="font-size:12px;color:var(--color-text-secondary)">ProjectDiscovery — next-gen web crawler</div>
+  </div>
+  <div style="margin-left:auto">
+    <span style="font-size:11px;padding:3px 10px;background:#EEEDFE;color:#3C3489;border-radius:999px;font-weight:500">v1.x</span>
+  </div>
+</div>
+
+<div class="install-box">go install github.com/projectdiscovery/katana/cmd/katana@latest</div>
+
+<div class="search-wrap">
+  <i class="ti ti-search search-icon" aria-hidden="true"></i>
+  <input class="search-bar" type="text" id="search" placeholder="Search flags, descriptions..." oninput="filterAll()">
+</div>
+
+<div class="tabs" id="tabs">
+  <button class="tab active" onclick="setTab('all', this)">All</button>
+  <button class="tab" onclick="setTab('input', this)">Input</button>
+  <button class="tab" onclick="setTab('config', this)">Config</button>
+  <button class="tab" onclick="setTab('headless', this)">Headless</button>
+  <button class="tab" onclick="setTab('passive', this)">Passive</button>
+  <button class="tab" onclick="setTab('scope', this)">Scope</button>
+  <button class="tab" onclick="setTab('filter', this)">Filters</button>
+  <button class="tab" onclick="setTab('rate', this)">Rate limit</button>
+  <button class="tab" onclick="setTab('output', this)">Output</button>
+  <button class="tab" onclick="setTab('examples', this)">Examples</button>
+</div>
+
+<div id="content"></div>
+</div>
+
+<script>
+const DATA = {
+  input: {
+    icon: "ti-link",
+    title: "Input",
+    rows: [
+      ["-u, -url", "Target URL to crawl", ""],
+      ["-list", "File or comma-separated list of target URLs", ""],
+      ["-resume", "Resume scan using resume.cfg", ""],
+      ["-e, -exclude", "Exclude hosts matching filter (cdn, private-ips, cidr, ip, regex)", ""],
+    ]
+  },
+  config: {
+    icon: "ti-adjustments",
+    title: "Crawler config",
+    rows: [
+      ["-d, -depth", "Maximum depth to crawl", "3"],
+      ["-jc, -js-crawl", "Parse and crawl endpoints in JS files", ""],
+      ["-jsl, -jsluice", "Use jsluice for JS parsing (memory intensive)", ""],
+      ["-ct, -crawl-duration", "Max duration (s, m, h, d)", ""],
+      ["-kf, -known-files", "Crawl known files: all, robotstxt, sitemapxml", ""],
+      ["-mrs, -max-response-size", "Max response size in bytes to read", ""],
+      ["-timeout", "Request timeout in seconds", "10"],
+      ["-aff, -automatic-form-fill", "Auto fill forms (experimental)", ""],
+      ["-fx, -form-extraction", "Extract form/input/textarea/select to jsonl", ""],
+      ["-retry", "Number of retries per request", "1"],
+      ["-proxy", "HTTP or SOCKS5 proxy (e.g. http://127.0.0.1:8080)", ""],
+      ["-H, -headers", "Custom headers in key:value format or file path", ""],
+      ["-config", "Path to katana config file", ""],
+      ["-fc, -form-config", "Path to custom form config file", ""],
+      ["-flc, -field-config", "Path to custom field config file", ""],
+      ["-s, -strategy", "Visit strategy: depth-first or breadth-first", "depth-first"],
+      ["-iqp, -ignore-query-params", "Ignore same path with different query params", ""],
+      ["-tlsi, -tls-impersonate", "Randomize TLS client hello (JA3)", ""],
+      ["-dr, -disable-redirects", "Disable following HTTP redirects", "false"],
+      ["-r, -resolvers", "Custom DNS resolvers (file or comma-separated)", ""],
+    ]
+  },
+  headless: {
+    icon: "ti-browser",
+    title: "Headless mode",
+    rows: [
+      ["-hl, -headless", "Enable headless browser crawling (experimental)", ""],
+      ["-sc, -system-chrome", "Use local installed Chrome instead of bundled one", ""],
+      ["-sb, -show-browser", "Show browser window during headless crawl", ""],
+      ["-ho, -headless-options", "Additional Chrome flags to pass", ""],
+      ["-nos, -no-sandbox", "Start Chrome with --no-sandbox", ""],
+      ["-cdd, -chrome-data-dir", "Path to store Chrome profile data", ""],
+      ["-scp, -system-chrome-path", "Path to specific Chrome binary", ""],
+      ["-noi, -no-incognito", "Disable incognito mode in headless Chrome", ""],
+      ["-cwu, -chrome-ws-url", "Connect to a running Chrome debugger WebSocket URL", ""],
+      ["-xhr, -xhr-extraction", "Extract XHR request URLs and methods to jsonl", ""],
+    ]
+  },
+  passive: {
+    icon: "ti-eye-off",
+    title: "Passive crawling",
+    rows: [
+      ["-ps, -passive", "Enable passive sources (no direct contact with target)", ""],
+      ["-pss, -passive-source", "Sources: waybackarchive, commoncrawl, alienvault", ""],
+    ]
+  },
+  scope: {
+    icon: "ti-target",
+    title: "Scope",
+    rows: [
+      ["-cs, -crawl-scope", "In-scope URL regex to follow", ""],
+      ["-cos, -crawl-out-scope", "Out-of-scope URL regex to exclude", ""],
+      ["-fs, -field-scope", "Scope field: dn, rdn, fqdn, or custom regex", "rdn"],
+      ["-ns, -no-scope", "Disable host-based default scope", ""],
+      ["-do, -display-out-scope", "Also display out-of-scope endpoints", ""],
+    ]
+  },
+  filter: {
+    icon: "ti-filter",
+    title: "Filters & matching",
+    rows: [
+      ["-mr, -match-regex", "Regex to match output URLs against", ""],
+      ["-fr, -filter-regex", "Regex to filter/exclude output URLs", ""],
+      ["-f, -field", "Field to display: url, path, fqdn, rdn, dn, proto, qurl, qpath", "url"],
+      ["-sf, -store-field", "Field to store: url, path, fqdn, rdn, dn, proto, qurl, qpath", ""],
+      ["-em, -extension-match", "Match only these file extensions (e.g. jsp,php)", ""],
+      ["-ef, -extension-filter", "Filter out these file extensions (e.g. png,css,js)", ""],
+      ["-mdc, -match-condition", "DSL expression to match responses (e.g. status_code==200)", ""],
+      ["-fdc, -filter-condition", "DSL expression to filter out responses", ""],
+    ]
+  },
+  rate: {
+    icon: "ti-gauge",
+    title: "Rate limiting & concurrency",
+    rows: [
+      ["-c, -concurrency", "Concurrent fetcher goroutines", "10"],
+      ["-p, -parallelism", "Concurrent input targets to process", "10"],
+      ["-rd, -delay", "Delay between requests in seconds", ""],
+      ["-rl, -rate-limit", "Max requests per second", "150"],
+      ["-rlm, -rate-limit-minute", "Max requests per minute", ""],
+    ]
+  },
+  output: {
+    icon: "ti-file-export",
+    title: "Output",
+    rows: [
+      ["-o, -output", "Write output to file", ""],
+      ["-sr, -store-response", "Store full HTTP request/response pairs", ""],
+      ["-srd, -store-response-dir", "Directory to store responses", ""],
+      ["-or, -omit-raw", "Omit raw request/response from jsonl", ""],
+      ["-ob, -omit-body", "Omit response body from jsonl", ""],
+      ["-j, -jsonl", "Output in JSON Lines format", ""],
+      ["-nc, -no-color", "Disable ANSI color codes", ""],
+      ["-silent", "Only print crawled URLs, no banner", ""],
+      ["-v, -verbose", "Verbose output", ""],
+      ["-debug", "Debug output", ""],
+      ["-version", "Print katana version", ""],
+      ["-up, -update", "Update katana to latest version", ""],
+      ["-duc, -disable-update-check", "Disable automatic update check", ""],
+      ["-health-check, -hc", "Run diagnostic check", ""],
+      ["-elog, -error-log", "Write request errors to file", ""],
+    ]
+  }
+};
+
+const EXAMPLES = [
+  { title: "Basic crawl", cmd: "katana -u https://example.com" },
+  { title: "Crawl from a list of URLs", cmd: "katana -list urls.txt" },
+  { title: "Headless mode (JS-heavy apps / SPAs)", cmd: "katana -u https://example.com -headless" },
+  { title: "Increase depth and enable JS parsing", cmd: "katana -u https://example.com -d 5 -jc" },
+  { title: "Passive recon (no direct contact)", cmd: "katana -u https://example.com -passive" },
+  { title: "Passive with subfinder pipeline", cmd: "subfinder -dL domains.txt | katana -passive" },
+  { title: "Breadth-first with rate limit", cmd: "katana -u https://example.com -s breadth-first -rl 50" },
+  { title: "Extract only query-parameter URLs", cmd: "katana -u https://example.com -f qurl -o qurls.txt" },
+  { title: "Extract query URLs from httpx output", cmd: "cut -d ' ' -f 1 httpx.txt | katana -f qurl -o qurl-httpx.txt" },
+  { title: "Scope to a specific domain regex", cmd: "katana -u https://example.com -cs '(example\\.com|staging\\.example\\.com)'" },
+  { title: "Exclude CDN and private IPs", cmd: "katana -u https://example.com -e cdn,private-ips" },
+  { title: "Filter to PHP and ASP endpoints only", cmd: "katana -u https://example.com -em php,asp,aspx" },
+  { title: "Store all HTTP responses to disk", cmd: "katana -u https://example.com -sr -srd ./responses" },
+  { title: "JSON Lines output with JS crawling", cmd: "katana -u https://example.com -jc -j -o results.jsonl" },
+  { title: "Route through Burp Suite proxy", cmd: "katana -u https://example.com -proxy http://127.0.0.1:8080" },
+  { title: "Custom headers (auth cookie)", cmd: "katana -u https://example.com -H 'Cookie: session=abc123'"},
+  { title: "Crawl with known files (sitemap + robots)", cmd: "katana -u https://example.com -kf all -d 3" },
+  { title: "Pipe into httpx for status checks", cmd: "katana -u https://example.com -silent | httpx -silent" },
+  { title: "Full recon pipeline with subfinder + httpx", cmd: "subfinder -d example.com -silent | httpx -silent | katana -jc -f qurl -o endpoints.txt" },
+  { title: "Headless with visible browser window", cmd: "katana -u https://example.com -headless -show-browser" },
+  { title: "Extract XHR endpoints (headless)", cmd: "katana -u https://example.com -headless -xhr-extraction" },
+  { title: "Extract forms to jsonl", cmd: "katana -u https://example.com -fx -j -o forms.jsonl" },
+  { title: "Match only 200 responses via DSL", cmd: "katana -u https://example.com -mdc 'status_code==200'" },
+  { title: "Resume an interrupted scan", cmd: "katana -u https://example.com -resume resume.cfg" },
+];
+
+let currentTab = 'all';
+
+function renderTable(key) {
+  const s = DATA[key];
+  const q = document.getElementById('search').value.toLowerCase();
+  const rows = s.rows.filter(r => !q || r[0].toLowerCase().includes(q) || r[1].toLowerCase().includes(q));
+  if (!rows.length) return '';
+  return `<div class="section" data-cat="${key}">
+    <div class="section-header"><i class="ti ${s.icon} section-icon" aria-hidden="true"></i>${s.title}</div>
+    <div class="card">
+    <table>
+      <tr><th style="width:36%">Flag</th><th>Description</th><th style="width:12%;text-align:right">Default</th></tr>
+      ${rows.map(r => `<tr>
+        <td><span class="flag">${r[0]}</span></td>
+        <td class="desc">${r[1]}</td>
+        <td style="text-align:right;color:var(--color-text-secondary);font-size:12px;font-family:var(--font-mono)">${r[2]}</td>
+      </tr>`).join('')}
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderExamples() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const filtered = EXAMPLES.filter(e => !q || e.title.toLowerCase().includes(q) || e.cmd.toLowerCase().includes(q));
+  if (!filtered.length) return '';
+  return `<div class="section" data-cat="examples">
+    <div class="section-header"><i class="ti ti-terminal section-icon" aria-hidden="true"></i>Examples</div>
+    ${filtered.map((e,i) => `<div class="example-block">
+      <div class="example-title">
+        <button class="copy-btn" onclick="copyCmd(${i})" id="copybtn-${i}"><i class="ti ti-copy" aria-hidden="true"></i> copy</button>
+        ${e.title}
+      </div>
+      <div class="example-cmd" id="cmd-${i}">${e.cmd}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function copyCmd(i) {
+  const text = document.getElementById('cmd-'+i).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copybtn-'+i);
+    btn.innerHTML = '<i class="ti ti-check" aria-hidden="true"></i> copied';
+    setTimeout(() => { btn.innerHTML = '<i class="ti ti-copy" aria-hidden="true"></i> copy'; }, 1400);
+  });
+}
+
+function setTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function filterAll() {
+  render();
+}
+
+function render() {
+  const content = document.getElementById('content');
+  let html = '';
+  const keys = Object.keys(DATA);
+  if (currentTab === 'all' || currentTab === 'examples') {
+    if (currentTab === 'all') {
+      keys.forEach(k => { html += renderTable(k); });
+      html += renderExamples();
+    } else {
+      html += renderExamples();
+    }
+  } else {
+    html += renderTable(currentTab);
+  }
+  if (!html.trim()) {
+    html = '<div class="no-results"><i class="ti ti-mood-empty" style="font-size:28px;display:block;margin-bottom:8px" aria-hidden="true"></i>No matches found</div>';
+  }
+  content.innerHTML = html;
+}
+
+render();
+</script>

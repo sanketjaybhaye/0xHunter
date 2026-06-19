@@ -1,0 +1,408 @@
+
+<style>
+  :root { --green: #639922; --green-light: #EAF3DE; --green-dark: #173404; --amber: #BA7517; --amber-light: #FAEEDA; --red: #A32D2D; --teal: #0F6E56; --teal-light: #E1F5EE; --gray: #5F5E5A; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-mono, monospace); background: transparent; color: var(--color-text-primary); }
+  .shell { padding: 1rem 0; }
+  .top-bar { display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); margin-bottom: 1.5rem; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .dot.r { background: #E24B4A; } .dot.y { background: #EF9F27; } .dot.g { background: #639922; }
+  .top-title { font-family: var(--font-mono); font-size: 13px; color: var(--color-text-secondary); margin-left: 4px; }
+  .prompt { color: var(--green); font-weight: 500; }
+  .cmd { color: var(--amber); }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  .tab { font-family: var(--font-mono); font-size: 12px; padding: 5px 14px; border: 0.5px solid var(--color-border-tertiary); border-radius: 20px; cursor: pointer; background: var(--color-background-secondary); color: var(--color-text-secondary); transition: all 0.15s; white-space: nowrap; }
+  .tab:hover { border-color: var(--color-border-secondary); color: var(--color-text-primary); }
+  .tab.active { background: #EAF3DE; border-color: #639922; color: #27500A; font-weight: 500; }
+  .section { display: none; }
+  .section.active { display: block; }
+  .card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .card-title { font-family: var(--font-sans); font-size: 13px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px; }
+  .badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+  .badge-green { background: #EAF3DE; color: #27500A; }
+  .badge-amber { background: #FAEEDA; color: #633806; }
+  .badge-red { background: #FCEBEB; color: #791F1F; }
+  .badge-teal { background: #E1F5EE; color: #085041; }
+  .badge-gray { background: #F1EFE8; color: #444441; }
+  .row { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .row:last-child { border-bottom: none; padding-bottom: 0; }
+  .flag { font-family: var(--font-mono); font-size: 13px; color: #185FA5; min-width: 140px; flex-shrink: 0; }
+  .desc { font-family: var(--font-sans); font-size: 13px; color: var(--color-text-secondary); line-height: 1.5; }
+  .desc code { font-family: var(--font-mono); font-size: 12px; color: var(--amber); background: var(--color-background-secondary); padding: 1px 5px; border-radius: 4px; }
+  .codeblock { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 14px; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.7; margin-bottom: 10px; overflow-x: auto; white-space: pre; color: var(--color-text-primary); }
+  .codeblock .g { color: #3B6D11; }
+  .codeblock .y { color: #854F0B; }
+  .codeblock .b { color: #185FA5; }
+  .codeblock .r { color: #A32D2D; }
+  .codeblock .m { color: #533AB7; }
+  .snippet-label { font-family: var(--font-sans); font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+  .tip { display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-radius: var(--border-radius-md); margin-bottom: 8px; }
+  .tip-warn { background: #FAEEDA; border-left: 3px solid #BA7517; }
+  .tip-info { background: #E6F1FB; border-left: 3px solid #185FA5; }
+  .tip-danger { background: #FCEBEB; border-left: 3px solid #E24B4A; }
+  .tip-success { background: #EAF3DE; border-left: 3px solid #639922; }
+  .tip i { font-size: 16px; margin-top: 1px; flex-shrink: 0; }
+  .tip-warn i { color: #BA7517; } .tip-info i { color: #185FA5; } .tip-danger i { color: #A32D2D; } .tip-success i { color: #27500A; }
+  .tip-text { font-family: var(--font-sans); font-size: 13px; line-height: 1.55; color: #222222; }
+  .copy-btn { font-family: var(--font-mono); font-size: 11px; padding: 3px 10px; border: 0.5px solid var(--color-border-secondary); border-radius: 4px; background: transparent; color: var(--color-text-secondary); cursor: pointer; float: right; margin-bottom: 4px; }
+  .copy-btn:hover { background: var(--color-background-secondary); }
+  .flow { display: flex; gap: 0; flex-wrap: wrap; align-items: center; margin: 8px 0; }
+  .flow-step { background: #E1F5EE; color: #085041; font-family: var(--font-mono); font-size: 12px; padding: 4px 12px; border-radius: 4px; white-space: nowrap; }
+  .flow-arrow { color: var(--color-text-secondary); padding: 0 6px; font-size: 14px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 520px) { .two-col, .grid2 { grid-template-columns: 1fr; } .flag { min-width: 110px; } }
+</style>
+
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">GoSpider master cheat sheet — all flags, use cases, and recon workflows</h2>
+
+<div class="shell">
+  <div class="top-bar">
+    <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+    <span class="top-title"><span class="prompt">hacker@recon</span>:<span style="color:#185FA5">~</span>$ <span class="cmd">gospider --help</span> &nbsp;|&nbsp; <span style="color:#639922">MASTER CHEAT SHEET</span></span>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="show('basics')">🕷 basics</div>
+    <div class="tab" onclick="show('flags')">⚙ all flags</div>
+    <div class="tab" onclick="show('output')">📤 output</div>
+    <div class="tab" onclick="show('filter')">🔍 filtering</div>
+    <div class="tab" onclick="show('workflows')">🔄 workflows</div>
+    <div class="tab" onclick="show('combos')">⚡ combos</div>
+    <div class="tab" onclick="show('tips')">💡 pro tips</div>
+  </div>
+
+  <!-- BASICS -->
+  <div id="basics" class="section active">
+    <div class="card">
+      <div class="card-title">what is gospider? <span class="badge badge-green">web crawler</span></div>
+      <div class="tip tip-info"><i class="ti ti-info-circle" aria-hidden="true"></i><div class="tip-text">GoSpider is a fast web spider written in Go. It crawls sites, discovers URLs, extracts JS endpoints, finds subdomains, and collects links from sources like Wayback Machine, CommonCrawl, and VirusTotal — essential for recon and bug bounty.</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">installation</div>
+      <div class="snippet-label">go install</div>
+      <div class="codeblock"><span class="g">go</span> install github.com/jaeles-project/gospider@latest</div>
+      <div class="snippet-label">from source</div>
+      <div class="codeblock"><span class="g">git clone</span> https://github.com/jaeles-project/gospider
+<span class="g">cd</span> gospider && <span class="g">go build</span> -o gospider .</div>
+    </div>
+    <div class="card">
+      <div class="card-title">quickstart examples</div>
+      <div class="snippet-label">single site, basic crawl</div>
+      <div class="codeblock"><span class="g">gospider</span> <span class="b">-s</span> https://target.com <span class="b">-d</span> 2</div>
+      <div class="snippet-label">crawl many sites from file</div>
+      <div class="codeblock"><span class="g">gospider</span> <span class="b">-S</span> sites.txt <span class="b">-t</span> 20 <span class="b">-c</span> 10</div>
+      <div class="snippet-label">save output to folder</div>
+      <div class="codeblock"><span class="g">gospider</span> <span class="b">-s</span> https://target.com <span class="b">-o</span> output/ <span class="b">-d</span> 3</div>
+      <div class="snippet-label">extract all URLs quietly</div>
+      <div class="codeblock"><span class="g">gospider</span> <span class="b">-s</span> https://target.com <span class="b">--no-redirect</span> <span class="b">-q</span> 2>/dev/null</div>
+    </div>
+  </div>
+
+  <!-- ALL FLAGS -->
+  <div id="flags" class="section">
+    <div class="card">
+      <div class="card-title">input <span class="badge badge-teal">required (one of)</span></div>
+      <div class="row"><div class="flag">-s, --site</div><div class="desc">Single target URL — <code>https://target.com</code></div></div>
+      <div class="row"><div class="flag">-S, --sites</div><div class="desc">File with one URL per line — <code>-S urls.txt</code></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">crawl control</div>
+      <div class="row"><div class="flag">-d, --depth</div><div class="desc">Max crawl depth (default: <code>1</code>). Use <code>2-3</code> for thorough crawl.</div></div>
+      <div class="row"><div class="flag">-c, --concurrent</div><div class="desc">Concurrent requests per site (default: <code>5</code>). Increase for speed.</div></div>
+      <div class="row"><div class="flag">-t, --threads</div><div class="desc">Number of parallel sites when using <code>-S</code> (default: <code>1</code>).</div></div>
+      <div class="row"><div class="flag">--delay</div><div class="desc">Delay between requests in ms — <code>--delay 200</code> for stealth.</div></div>
+      <div class="row"><div class="flag">--random-delay</div><div class="desc">Random delay added on top of <code>--delay</code>. Less predictable pattern.</div></div>
+      <div class="row"><div class="flag">--timeout</div><div class="desc">Per-request timeout in seconds (default: <code>10</code>).</div></div>
+      <div class="row"><div class="flag">--no-redirect</div><div class="desc">Disable following HTTP redirects.</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">http / auth</div>
+      <div class="row"><div class="flag">-H, --header</div><div class="desc">Set custom headers — <code>-H "Authorization: Bearer TOKEN"</code>. Repeatable.</div></div>
+      <div class="row"><div class="flag">--cookie</div><div class="desc">Send cookies — <code>--cookie "session=abc123"</code></div></div>
+      <div class="row"><div class="flag">-u, --user-agent</div><div class="desc">Custom User-Agent string. Alias <code>-u "Googlebot/2.1"</code></div></div>
+      <div class="row"><div class="flag">--proxy</div><div class="desc">HTTP proxy URL — <code>--proxy http://127.0.0.1:8080</code> (routes through Burp/MITM)</div></div>
+      <div class="row"><div class="flag">--blacklist</div><div class="desc">Regex of URL patterns to skip — <code>--blacklist "logout|delete"</code></div></div>
+      <div class="row"><div class="flag">-K, --disable-tls-checks</div><div class="desc">Ignore TLS/SSL certificate errors.</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">extra sources <span class="badge badge-amber">passive intel</span></div>
+      <div class="row"><div class="flag">--other-source</div><div class="desc">Pull URLs from Wayback, CommonCrawl, VirusTotal & OTX alongside crawling.</div></div>
+      <div class="row"><div class="flag">--include-subs</div><div class="desc">Include subdomains in crawl scope (use with <code>--other-source</code>).</div></div>
+      <div class="row"><div class="flag">--sitemap</div><div class="desc">Pull and parse <code>sitemap.xml</code> from target — fast endpoint discovery.</div></div>
+      <div class="row"><div class="flag">--robots</div><div class="desc">Parse <code>robots.txt</code> for disallowed paths — often reveals hidden dirs.</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">output / display</div>
+      <div class="row"><div class="flag">-o, --output</div><div class="desc">Directory to write output files (one file per site).</div></div>
+      <div class="row"><div class="flag">-q, --quiet</div><div class="desc">Suppress banner and progress noise; cleaner piping.</div></div>
+      <div class="row"><div class="flag">--json</div><div class="desc">Output in JSON format — great for piping to <code>jq</code>.</div></div>
+      <div class="row"><div class="flag">--no-color</div><div class="desc">Disable colored terminal output.</div></div>
+    </div>
+  </div>
+
+  <!-- OUTPUT -->
+  <div id="output" class="section">
+    <div class="card">
+      <div class="card-title">output format — raw</div>
+      <div class="codeblock"><span class="g">[url]</span>   https://target.com/login
+<span class="b">[form]</span>  https://target.com/search?q=
+<span class="m">[js]</span>    https://target.com/static/app.js
+<span class="y">[linkfinder]</span> /api/v1/user/profile
+<span class="r">[url]</span>   https://ext.otherdomain.com/cdn/lib.js</div>
+    </div>
+    <div class="card">
+      <div class="card-title">output format — json (<code>--json</code>)</div>
+      <div class="codeblock">{"input":"https://target.com","source":"https://target.com","type":"<span class="b">url</span>","output":"https://target.com/admin"}
+{"input":"https://target.com","source":"https://target.com","type":"<span class="m">js</span>","output":"https://target.com/app.js"}
+{"input":"https://target.com","source":"https://target.com/app.js","type":"<span class="y">linkfinder</span>","output":"/api/v1/token"}</div>
+    </div>
+    <div class="card">
+      <div class="card-title">output types / categories</div>
+      <div class="grid2">
+        <div class="tip tip-info"><i class="ti ti-link" aria-hidden="true"></i><div class="tip-text"><strong>url</strong> — discovered hyperlinks</div></div>
+        <div class="tip tip-info"><i class="ti ti-file-code" aria-hidden="true"></i><div class="tip-text"><strong>js</strong> — JS file URLs</div></div>
+        <div class="tip tip-warn"><i class="ti ti-code" aria-hidden="true"></i><div class="tip-text"><strong>linkfinder</strong> — paths extracted from JS</div></div>
+        <div class="tip tip-warn"><i class="ti ti-forms" aria-hidden="true"></i><div class="tip-text"><strong>form</strong> — HTML form actions</div></div>
+        <div class="tip tip-success"><i class="ti ti-rotate" aria-hidden="true"></i><div class="tip-text"><strong>robots/sitemap</strong> — passive paths</div></div>
+        <div class="tip tip-success"><i class="ti ti-world" aria-hidden="true"></i><div class="tip-text"><strong>wayback/cc</strong> — archived URLs</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">piping & grepping output</div>
+      <div class="snippet-label">extract only urls (no external)</div>
+      <div class="codeblock"><span class="g">gospider</span> -s https://target.com -q | grep <span class="y">"\[url\]"</span> | awk '{print $2}'</div>
+      <div class="snippet-label">extract js endpoints from linkfinder</div>
+      <div class="codeblock"><span class="g">gospider</span> -s https://target.com -q | grep <span class="y">"\[linkfinder\]"</span> | awk '{print $2}'</div>
+      <div class="snippet-label">get json + jq for all api paths</div>
+      <div class="codeblock"><span class="g">gospider</span> -s https://target.com --json -q | <span class="b">jq</span> -r '.output' | grep <span class="y">"/api/"</span></div>
+      <div class="snippet-label">extract unique domains discovered</div>
+      <div class="codeblock"><span class="g">gospider</span> -s https://target.com -q | grep -oP <span class="y">'https?://[^/"]+'</span> | sort -u</div>
+    </div>
+  </div>
+
+  <!-- FILTERING -->
+  <div id="filter" class="section">
+    <div class="card">
+      <div class="card-title">scope control — stay on target</div>
+      <div class="snippet-label">crawl only target domain (no externals by default)</div>
+      <div class="codeblock"><span class="g">gospider</span> -s https://target.com -d 2</div>
+      <div class="snippet-label">include all subdomains in scope</div>
+      <div class="codeblock"><span class="g">gospider</span> -s https://target.com --include-subs -d 2</div>
+      <div class="snippet-label">blacklist logout/delete endpoints (safety)</div>
+      <div class="codeblock"><span class="g">gospider</span> -s https://target.com --blacklist <span class="y">"logout|signout|delete|remove"</span></div>
+      <div class="snippet-label">blacklist static assets (faster)</div>
+      <div class="codeblock"><span class="g">gospider</span> -s https://target.com --blacklist <span class="y">"\.(png|jpg|gif|css|svg|ico|woff)$"</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">post-processing filters with grep / awk</div>
+      <div class="snippet-label">find API endpoints only</div>
+      <div class="codeblock"><span class="g">gospider</span> -s https://target.com -q | grep -iE <span class="y">"/api/|/v[0-9]/"</span></div>
+      <div class="snippet-label">find endpoints with parameters</div>
+      <div class="codeblock"><span class="g">gospider</span> -s https://target.com -q | grep <span class="y">"?"</span></div>
+      <div class="snippet-label">find all .js files</div>
+      <div class="codeblock"><span class="g">gospider</span> -s https://target.com -q | grep <span class="y">"\.js"</span> | awk '{print $2}' | sort -u</div>
+      <div class="snippet-label">find paths with id/token/key params</div>
+      <div class="codeblock"><span class="g">gospider</span> -s https://target.com -q | grep -iE <span class="y">"id=|token=|key=|secret=|auth="</span></div>
+      <div class="snippet-label">look for IDOR-prone endpoints</div>
+      <div class="codeblock"><span class="g">gospider</span> -s https://target.com -q | grep -oP <span class="y">'https?://[^\s]+'</span> | grep -E <span class="y">"[0-9]{3,}"</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">deduplicate & sort discovered URLs</div>
+      <div class="codeblock"><span class="g">gospider</span> -s https://target.com -q \
+  | grep -oP <span class="y">'https?://[^\s"&gt;]+'</span> \
+  | sort -u \
+  | tee urls.txt</div>
+    </div>
+  </div>
+
+  <!-- WORKFLOWS -->
+  <div id="workflows" class="section">
+    <div class="card">
+      <div class="card-title">recon pipeline <span class="badge badge-green">full workflow</span></div>
+      <div class="flow">
+        <div class="flow-step">subfinder/amass</div><div class="flow-arrow">→</div>
+        <div class="flow-step">gospider -S</div><div class="flow-arrow">→</div>
+        <div class="flow-step">grep &amp; filter</div><div class="flow-arrow">→</div>
+        <div class="flow-step">nuclei/ffuf/sqlmap</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">workflow 1 — subdomain + crawl everything</div>
+      <div class="codeblock"><span class="r"># 1. find subdomains</span>
+<span class="g">subfinder</span> -d target.com -silent | <span class="g">httpx</span> -silent > live.txt
+
+<span class="r"># 2. crawl all live hosts</span>
+<span class="g">gospider</span> <span class="b">-S</span> live.txt <span class="b">-t</span> 20 <span class="b">-c</span> 10 <span class="b">-d</span> 2 <span class="b">-o</span> crawl/ \
+  --other-source --include-subs -q
+
+<span class="r"># 3. extract unique URLs</span>
+<span class="g">cat</span> crawl/* | grep -oP <span class="y">'https?://[^\s"]+'</span> | sort -u > all_urls.txt</div>
+    </div>
+    <div class="card">
+      <div class="card-title">workflow 2 — authenticated crawl (logged-in user)</div>
+      <div class="codeblock"><span class="g">gospider</span> -s https://app.target.com/dashboard \
+  <span class="b">-H</span> <span class="y">"Cookie: session=YOUR_SESSION_COOKIE"</span> \
+  <span class="b">-H</span> <span class="y">"Authorization: Bearer YOUR_JWT"</span> \
+  <span class="b">-d</span> 3 <span class="b">-c</span> 5 \
+  --no-redirect -q | tee auth_urls.txt</div>
+    </div>
+    <div class="card">
+      <div class="card-title">workflow 3 — proxy through burp for manual testing</div>
+      <div class="codeblock"><span class="g">gospider</span> -s https://target.com \
+  <span class="b">--proxy</span> http://127.0.0.1:8080 \
+  <span class="b">-K</span> \
+  <span class="b">-d</span> 2 <span class="b">-c</span> 3 \
+  --delay 500 --random-delay 300</div>
+    </div>
+    <div class="card">
+      <div class="card-title">workflow 4 — js file hunting + secret extraction</div>
+      <div class="codeblock"><span class="r"># step 1: get all JS URLs</span>
+<span class="g">gospider</span> -s https://target.com -q \
+  | grep <span class="y">"\[js\]\|\[linkfinder\]"</span> \
+  | awk '{print $2}' | sort -u > js_urls.txt
+
+<span class="r"># step 2: download JS and scan for secrets</span>
+<span class="g">cat</span> js_urls.txt | while read url; do
+  <span class="g">curl</span> -sk "$url"
+done | <span class="g">grep</span> -iE <span class="y">"api_key|secret|password|token|private_key"</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">workflow 5 — passive only (no active crawl)</div>
+      <div class="codeblock"><span class="r"># pull from wayback, commoncrawl, virustotal only</span>
+<span class="g">gospider</span> -s https://target.com \
+  <span class="b">--other-source</span> \
+  <span class="b">--include-subs</span> \
+  <span class="b">-d</span> 0 \
+  -q | sort -u | tee passive_urls.txt</div>
+    </div>
+  </div>
+
+  <!-- COMBOS -->
+  <div id="combos" class="section">
+    <div class="card">
+      <div class="card-title">gospider → ffuf (param fuzzing)</div>
+      <div class="codeblock"><span class="g">gospider</span> -s https://target.com -q \
+  | grep "?" | awk '{print $2}' | sort -u \
+  | while read url; do
+    <span class="g">ffuf</span> -u "${url%=*}=FUZZ" -w /usr/share/seclists/Fuzzing/XSS/xss-payloads.txt -mc 200
+  done</div>
+    </div>
+    <div class="card">
+      <div class="card-title">gospider → nuclei (vuln scan on discovered URLs)</div>
+      <div class="codeblock"><span class="g">gospider</span> -s https://target.com -q \
+  | grep-oP <span class="y">'https?://[^\s"]+'</span> | sort -u \
+  | <span class="g">nuclei</span> -l - -t ~/nuclei-templates/ -severity medium,high,critical</div>
+    </div>
+    <div class="card">
+      <div class="card-title">gospider → sqlmap (auto sql injection)</div>
+      <div class="codeblock"><span class="g">gospider</span> -s https://target.com -q \
+  | grep "=" | awk '{print $2}' | sort -u > params.txt
+<span class="g">sqlmap</span> -m params.txt --batch --level 2 --risk 2</div>
+    </div>
+    <div class="card">
+      <div class="card-title">gospider → waybackurls (expand coverage)</div>
+      <div class="codeblock"><span class="r"># combine live crawl + wayback</span>
+<span class="g">gospider</span> -s https://target.com -q | awk '{print $2}' > live.txt
+<span class="g">waybackurls</span> target.com > wayback.txt
+<span class="g">cat</span> live.txt wayback.txt | sort -u | <span class="g">uro</span> > final.txt</div>
+    </div>
+    <div class="card">
+      <div class="card-title">gospider → gf (pattern matching)</div>
+      <div class="codeblock"><span class="r"># find XSS-prone parameters</span>
+<span class="g">gospider</span> -s https://target.com -q | awk '{print $2}' | <span class="g">gf</span> xss
+
+<span class="r"># find SSRF-prone parameters</span>
+<span class="g">gospider</span> -s https://target.com -q | awk '{print $2}' | <span class="g">gf</span> ssrf
+
+<span class="r"># find open redirect params</span>
+<span class="g">gospider</span> -s https://target.com -q | awk '{print $2}' | <span class="g">gf</span> redirect</div>
+    </div>
+    <div class="card">
+      <div class="card-title">gospider → hakrawler style mass recon</div>
+      <div class="codeblock"><span class="g">cat</span> targets.txt | while read domain; do
+  echo <span class="y">"[*] Crawling: $domain"</span>
+  <span class="g">gospider</span> -s "https://$domain" -d 2 -c 5 -q \
+    --other-source --sitemap --robots \
+    | awk '{print $2}' | sort -u \
+    >> "$domain-urls.txt"
+done</div>
+    </div>
+  </div>
+
+  <!-- PRO TIPS -->
+  <div id="tips" class="section">
+    <div class="card">
+      <div class="card-title">stealth & evasion</div>
+      <div class="tip tip-warn"><i class="ti ti-ghost" aria-hidden="true"></i><div class="tip-text">Use <code>--delay 1000 --random-delay 500</code> to blend into normal traffic and avoid WAF rate-limiting.</div></div>
+      <div class="tip tip-warn"><i class="ti ti-user-circle" aria-hidden="true"></i><div class="tip-text">Spoof User-Agent: <code>-u "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"</code></div></div>
+      <div class="tip tip-warn"><i class="ti ti-shield-off" aria-hidden="true"></i><div class="tip-text">Always use <code>-K</code> on internal/staging hosts with self-signed certs.</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">performance tuning</div>
+      <div class="tip tip-info"><i class="ti ti-rocket" aria-hidden="true"></i><div class="tip-text">For many hosts: <code>-t 50 -c 20</code> gives ~1000 concurrent requests. Combine with <code>-S biglist.txt</code>.</div></div>
+      <div class="tip tip-info"><i class="ti ti-clock" aria-hidden="true"></i><div class="tip-text">Lower <code>--timeout 5</code> to skip slow/dead hosts faster during bulk scans.</div></div>
+      <div class="tip tip-info"><i class="ti ti-filter" aria-hidden="true"></i><div class="tip-text">Use <code>--blacklist "\.(png|jpg|gif|svg|css|woff|ico)$"</code> to skip assets and speed up crawl by 30-50%.</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">secret hunting in JS</div>
+      <div class="tip tip-success"><i class="ti ti-key" aria-hidden="true"></i><div class="tip-text">Pipe <code>[js]</code> and <code>[linkfinder]</code> results to <strong>SecretFinder</strong> or <strong>trufflehog</strong> to auto-detect leaked API keys, AWS tokens, and private endpoints.</div></div>
+      <div class="tip tip-success"><i class="ti ti-file-search" aria-hidden="true"></i><div class="tip-text">JS endpoints from <code>[linkfinder]</code> are often undocumented API paths not visible from HTML — always test these for IDOR, missing auth, and info disclosure.</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">robots.txt & sitemap goldmine</div>
+      <div class="tip tip-danger"><i class="ti ti-bug" aria-hidden="true"></i><div class="tip-text">Always use <code>--robots --sitemap</code> — <code>robots.txt</code> Disallow entries frequently expose admin panels, backup directories, and internal tools.</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">common flag combos — cheat card</div>
+      <div class="two-col">
+        <div>
+          <div class="snippet-label">bug bounty recon</div>
+          <div class="codeblock"><span class="g">gospider</span> -s TARGET \
+  -d 3 -c 10 \
+  --other-source \
+  --include-subs \
+  --sitemap --robots \
+  -q --json</div>
+        </div>
+        <div>
+          <div class="snippet-label">stealth crawl</div>
+          <div class="codeblock"><span class="g">gospider</span> -s TARGET \
+  -d 2 -c 2 \
+  --delay 2000 \
+  --random-delay 1000 \
+  -u "Googlebot/2.1" \
+  -q</div>
+        </div>
+        <div>
+          <div class="snippet-label">authenticated app</div>
+          <div class="codeblock"><span class="g">gospider</span> -s TARGET \
+  -H "Cookie: sess=X" \
+  -d 3 -c 5 \
+  --no-redirect \
+  -K -q</div>
+        </div>
+        <div>
+          <div class="snippet-label">burp interception</div>
+          <div class="codeblock"><span class="g">gospider</span> -s TARGET \
+  --proxy http://127.0.0.1:8080 \
+  -K -d 2 -c 3 \
+  --delay 500 -q</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">legal reminder <span class="badge badge-red">important</span></div>
+      <div class="tip tip-danger"><i class="ti ti-alert-triangle" aria-hidden="true"></i><div class="tip-text">Only use GoSpider on systems you own or have explicit written permission to test. Unauthorized crawling may violate the CFAA, GDPR, and local laws.</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>

