@@ -5427,9 +5427,21 @@ function openToolDetail(idx) {
   csBox.style.display = 'none';
 
   let csFileUrl = t.csFile ? t.csFile.split(',')[0].trim() : '';
+  if (csFileUrl.startsWith('/api/files/')) {
+    const match = csFileUrl.match(/\/api\/files\/[a-f0-9]{32}_(.*_cs\.html)/);
+    if (match) {
+      csFileUrl = `/static/cheat_sheets/${match[1]}`;
+    }
+  }
   let isHtml = csFileUrl.toLowerCase().endsWith('.html') || csFileUrl.toLowerCase().endsWith('.htm');
 
   let htmlEmbed = t.cheatSheetHtml || '';
+  if (htmlEmbed && htmlEmbed.includes('/api/files/')) {
+    const match = htmlEmbed.match(/\/api\/files\/[a-f0-9]{32}_(.*_cs\.html)/);
+    if (match) {
+      htmlEmbed = htmlEmbed.replace(match[0], `/static/cheat_sheets/${match[1]}`);
+    }
+  }
   if (!htmlEmbed && isHtml) {
       htmlEmbed = `<iframe src="${esc(csFileUrl)}" onload="injectIframeTheme(this)" scrolling="no" style="width:100%; height:500px; border:none; background: transparent;"></iframe>`;
   }
