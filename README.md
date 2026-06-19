@@ -1,68 +1,130 @@
-# 0xHunter
+# 0xHunter 🎯
 
-Bug bounty and ethical hacking workspace: targets, findings, notes, methodology checklist, recon scratchpad, payloads, and report generation.
+0xHunter is an advanced, premium-designed collaborative workspace for bug bounty hunters and ethical hackers. It consolidates targets, vulnerability findings, note-taking, checklists, passive OSINT tools, and forensic metadata extractors into a single, beautiful web dashboard.
 
-## Requirements
+---
 
-- Python 3.10+
-- See [requirements.txt](requirements.txt)
+## 📸 Preview & Screenshots
 
-## Setup
+Add your application screenshots here to showcase the sleek UI! 
 
+> [!TIP]
+> Place your images in a new folder like `docs/images/` (e.g., `docs/images/dashboard.png`) and update the image sources below.
+
+<!-- Screenshot Carousel / Showcase -->
+<p align="center">
+  <img src="docs/images/dashboard.png" alt="0xHunter Dashboard Preview" width="85%" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); margin-bottom: 20px;" />
+</p>
+
+<p align="center">
+  <img src="docs/images/osint_hub.png" alt="OSINT passive scanner" width="45%" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);" />
+  &nbsp;&nbsp;
+  <img src="docs/images/exif_analyzer.png" alt="EXIF Forensic Suite" width="45%" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);" />
+</p>
+
+---
+
+## 🚀 Key Features
+
+* 💻 **Premium Dashboard**: Real-time overview of active targets, findings count, session tracking, and recent activity logs.
+* 🧬 **Passive OSINT Hub**: Passive DNS lookup (via Cloudflare DoH), WHOIS (via RDAP), quick port scanners, and username search proxies (checking 20+ social platforms).
+* 🖼️ **Forensic EXIF Extractor**: Dual JPEG and PNG metadata analyzer extracting camera tags, capture timestamps, software details, and embedding interactive dark-mode maps for GPS coordinates.
+* 📚 **Methodology Checklist**: A built-in tracking dashboard pre-loaded with 70+ methodology steps across 6 categories.
+* 📝 **Autosaving Notes**: Rich recon notepad with auto-save timers, filtering, search, and category tags.
+* 🛠️ **Hacking Kit & Helpers**: Subdomain generators, URL deduplicators, encoders/decoders, cookie parsers, security header checkers, and customized Google/Shodan dork queries.
+
+---
+
+## 🛠️ Installation & Setup
+
+Follow these steps to set up and run 0xHunter locally:
+
+### 1. Prerequisite
+Ensure you have **Python 3.10+** installed on your system.
+
+### 2. Clone the Repository
 ```bash
+git clone https://github.com/sanketjaybhaye/0xHunter.git
 cd 0xHunter
-python -m venv .venv
-.venv\Scripts\activate   # Windows
-pip install -r requirements.txt
-python init_db.py
-python scripts/create_admin.py admin your-secure-password
-
 ```
 
-## Run (development)
+### 3. Set Up Virtual Environment & Dependencies
+Choose the appropriate command for your operating system:
 
+#### For Windows:
+```powershell
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+#### For Linux / macOS:
 ```bash
-set SECRET_KEY=your-random-secret
-set FLASK_DEBUG=1
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 4. Initialize Database & Generate Admin User
+Initialize the SQLite tables and generate your secure administrator account:
+```bash
+python init_db.py
+python scripts/create_admin.py admin your-secure-password
+```
+
+---
+
+## 🏃 Running the Application
+
+### Development Server
+Start the Flask development server:
+
+#### Windows (PowerShell):
+```powershell
+$env:FLASK_DEBUG="1"
 python app.py
 ```
 
-Open http://127.0.0.1:5000 and sign in.
+#### Linux / macOS:
+```bash
+export FLASK_DEBUG=1
+python app.py
+```
 
-## Production
+Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser and sign in with the admin credentials you created.
+
+---
+
+## 🛡️ Production Deployment
+
+For production usage, run behind a reverse proxy (e.g., Nginx, Caddy) using an WSGI server like **gunicorn**:
 
 ```bash
-set SECRET_KEY=long-random-secret
-set FLASK_DEBUG=0
-set DATABASE_PATH=/path/to/database.sqlite
+export SECRET_KEY="generate-a-long-random-cryptographic-string-here"
+export FLASK_DEBUG=0
 gunicorn -w 2 -b 0.0.0.0:5000 app:app
 ```
 
-Use HTTPS behind a reverse proxy (nginx, Caddy). The v1 auth model is a **shared team workspace** (same data for all logged-in users), not per-user isolation.
+> [!IMPORTANT]
+> The database tracks the workspace collaboratively (all logged-in users share workspace state). Keep the `SECRET_KEY` environment variable secret in production.
 
-## Features
+---
 
-- **Targets** — programs, scope, platform filters, edit/delete
-- **Findings** — list + Kanban board, CSV export, severity filters, link to program
-- **Notes** — autosave, search, categories
-- **Checklist** — 70+ methodology items across 6 categories
-- **Recon** — per-target asset list with status
-- **Hunt Kit** — HTTP client + curl, security header analyzer, Google/Shodan dorks, open-redirect tester, cookie parser, URL deduper, subdomain generator, diff tool, CVE quick reference
-- **Bookmarks** — save program URLs and docs (included in export)
-- **Scope checker** — in/out of scope against active targets
-- **Report generator** — Markdown export
-- **Utilities** — encoders, JWT decode, hashes, regex, wordlists, payloads
-- **Global search** — top bar search across targets, findings, notes
+## 📂 Repository Structure
 
-## Backup
-
-Use **Export** in the sidebar for JSON backup. **Import** replaces all workspace data in the database.
-
-## Environment variables
-
-| Variable | Description |
-|----------|-------------|
-| `SECRET_KEY` | Flask session signing key (required in production) |
-| `FLASK_DEBUG` | `1` for debug mode, `0` for production |
-| `DATABASE_PATH` | SQLite file path (default: `database.sqlite`) |
-| `PORT` | HTTP port (default: `5000`) |
+```text
+0xHunter/
+├── data/                  # Ignored by git (stores local SQLite DBs & session keys)
+├── scripts/
+│   └── create_admin.py    # Admin account creation helper
+├── static/
+│   ├── css/               # Sleek CSS styling
+│   └── js/                # App controllers, OSINT tools, & EXIF scanner logic
+├── templates/
+│   ├── index.html         # Main dashboard layout
+│   └── login.html         # Authentication interface
+├── README.md
+├── app.py                 # Core Flask backend routes
+├── init_db.py             # Database structure definition
+└── requirements.txt       # Project python dependencies
+```
