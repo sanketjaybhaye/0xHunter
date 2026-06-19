@@ -6,6 +6,12 @@ database.sqlite
 venv/
 *.bak
 
+# OS system files
+desktop.ini
+Thumbs.db
+.DS_Store
+
+
 # Local certificates and binaries
 *.pem
 mkcert.exe
