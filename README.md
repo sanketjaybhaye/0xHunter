@@ -69,11 +69,15 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Initialize Database & Generate Admin User
-Initialize the SQLite tables and generate your secure administrator account:
+### 4. Database Setup & Login
+0xHunter features **automatic database and directory bootstrapping** on first launch, pre-configuring a default administrator account for instant plug-and-play access:
+
+* **Default Username**: `admin`
+* **Default Password**: `admin`
+
+If you want to customize the username or change the password, run:
 ```bash
-python init_db.py
-python scripts/create_admin.py admin your-secure-password
+python scripts/create_admin.py <your-username> <your-new-password>
 ```
 
 ---
