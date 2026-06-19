@@ -3473,7 +3473,7 @@ window.copyTextToClipboard = function(text) {
 
   return new Promise((resolve, reject) => {
     // 1. Try modern clipboard API first if available and secure
-    if (navigator.clipboard && navigator.clipboard.writeText) {
+    if (window.isSecureContext && navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(processedText)
         .then(resolve)
         .catch(err => {

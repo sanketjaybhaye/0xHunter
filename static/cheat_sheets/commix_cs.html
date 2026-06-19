@@ -349,7 +349,7 @@ function clipCopy(text, onSuccess) {
     catch(e) { console.warn('clipCopy fallback failed', e); }
     document.body.removeChild(ta);
   }
-  if (navigator.clipboard && navigator.clipboard.writeText) {
+  if (window.isSecureContext && navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).then(function() {
       if (onSuccess) onSuccess();
     }).catch(function() { doFallback(); });
