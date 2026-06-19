@@ -312,6 +312,17 @@ def init_all():
     c.execute('SELECT id FROM users WHERE api_key IS NULL')
     for r in c.fetchall():
         c.execute('UPDATE users SET api_key = ? WHERE id = ?', (_secrets.token_hex(16), r[0]))
+    
+    # Bootstrap default user if no users exist
+    c.execute("SELECT count(*) FROM users")
+    user_count = c.fetchone()[0]
+    if user_count == 0:
+        from werkzeug.security import generate_password_hash
+        ph = generate_password_hash('admin')
+        c.execute('INSERT INTO users (username, password_hash, api_key) VALUES (?, ?, ?)',
+                  ('admin', ph, _secrets.token_hex(16)))
+        print('Created default admin user (username: admin, password: admin)')
+        
     conn.commit()
 
     conn.close()

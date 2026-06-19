@@ -28,6 +28,14 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, 'data')
 SECRET_KEY_FILE = os.path.join(DATA_DIR, '.secret_key')
 
+# Ensure all essential directories exist immediately on startup/import
+os.makedirs(DATA_DIR, exist_ok=True)
+os.makedirs(os.path.join(DATA_DIR, 'images'), exist_ok=True)
+os.makedirs(os.path.join(DATA_DIR, 'files'), exist_ok=True)
+
+# Run full database initialization so workspaces are setup before handling requests
+init_all()
+
 def _load_or_generate_secret_key():
     """Load SECRET_KEY from env, .secret_key file, or generate a new one."""
     env_key = os.environ.get('SECRET_KEY')
