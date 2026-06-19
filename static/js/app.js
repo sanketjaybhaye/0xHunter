@@ -621,7 +621,7 @@ const pageActions = {
   notes: { btn: '+ New Note', action: () => openModal('modal-note') },
   recon: { btn: '+ Paste Assets', action: () => document.getElementById('recon-bulk')?.focus() },
   payloads: { btn: '+ Add Payload', action: () => openModal('modal-add-payload') },
-  tools: { btn: '+ Add Tool', action: () => openModal('modal-add-tool') },
+  tools: { btn: '+ Add Tool', action: () => openAddToolModal() },
   huntkit: { btn: null },
   bookmarks: { btn: '+ Add Link', action: () => openAddBookmarkModal() }
 };
@@ -5321,6 +5321,23 @@ function renderAttacks() {
 }
 
 window._renderedToolsList = [];
+
+function openAddToolModal() {
+  document.getElementById('modal-tool-form-title').textContent = '🔧 Add Custom Tool';
+  document.getElementById('tool-id').value = '';
+  document.getElementById('tool-is-override').value = 'false';
+  document.getElementById('tool-name').value = '';
+  document.getElementById('tool-author').value = '';
+  document.getElementById('tool-desc').value = '';
+  document.getElementById('tool-cover').value = '';
+  document.getElementById('tool-cmd').value = '';
+  document.getElementById('tool-tags').value = '';
+  document.getElementById('tool-cheatsheet').value = '';
+  document.getElementById('tool-cs-file').value = '';
+  document.getElementById('tool-books').value = '';
+  document.getElementById('tool-videos').value = '';
+  openModal('modal-add-tool');
+}
 
 function editTool(idx) {
   closeModal('modal-tool-detail');
