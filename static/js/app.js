@@ -457,7 +457,7 @@ function toggleApiKeyVisibility() {
 function copyApiKey() {
   const input = document.getElementById('settings-api-key');
   if (!input || !input.value) return;
-  navigator.clipboard.writeText(input.value).then(() => toast('API key copied!', 'success'));
+  window.copyTextToClipboard(input.value).then(() => toast('API key copied!', 'success'));
 }
 
 async function regenerateApiKey() {
@@ -2000,7 +2000,7 @@ function switchUtil(el, id) {
 function copyEl(id) {
   const el = document.getElementById(id);
   const text = el.tagName === 'TEXTAREA' || el.tagName === 'INPUT' ? el.value : el.textContent;
-  navigator.clipboard.writeText(text).then(() => toast('Copied!'));
+  window.copyTextToClipboard(text).then(() => toast('Copied!'));
 }
 
 function encodeURL() {
@@ -2457,7 +2457,7 @@ ${f.remediation ? '\n' + f.remediation : ''}
 
 function copyReport() {
   if (!currentReportMarkdown) return toast('Generate a report first', 'error');
-  navigator.clipboard.writeText(currentReportMarkdown).then(() => toast('Report copied!', 'success'));
+  window.copyTextToClipboard(currentReportMarkdown).then(() => toast('Report copied!', 'success'));
 }
 
 function downloadReport() {
@@ -2884,7 +2884,7 @@ function renderReconAssets() {
       </td>
       <td style="text-align:right;">
         <div style="display:flex;gap:6px;justify-content:flex-end;">
-          <button class="copy-btn btn-sm" onclick="navigator.clipboard.writeText('${esc(a.value).replace(/'/g, "\\'")}').then(()=>toast('Copied!'))" title="Copy to clipboard" style="padding:2px 6px;font-size:11px;margin-bottom:0;">📋 Copy</button>
+          <button class="copy-btn btn-sm" onclick="window.copyTextToClipboard('${esc(a.value).replace(/'/g, "\\'")}').then(()=>toast('Copied!'))" title="Copy to clipboard" style="padding:2px 6px;font-size:11px;margin-bottom:0;">📋 Copy</button>
           <button class="btn btn-sm btn-danger" onclick="removeAsset(${a.id})" style="padding:2px 6px;font-size:11px;margin-bottom:0;" title="Delete Asset">🗑️</button>
         </div>
       </td>
@@ -3454,9 +3454,77 @@ function loadGlobalVariables() {
   } catch(e) {}
 }
 
+// Robust Clipboard Copy function with variable resolution and fallback support
+window.copyTextToClipboard = function(text) {
+  let processedText = text;
+  const targetVal = document.getElementById('global-target')?.value.trim();
+  const paramVal = document.getElementById('global-param')?.value.trim();
+  
+  if (targetVal) {
+    processedText = processedText.replace(/\{target\}/gi, targetVal)
+                                 .replace(/\{\{target\}\}/gi, targetVal)
+                                 .replace(/\{domain\}/gi, targetVal)
+                                 .replace(/\{\{domain\}\}/gi, targetVal);
+  }
+  if (paramVal) {
+    processedText = processedText.replace(/\{param\}/gi, paramVal)
+                                 .replace(/\{\{param\}\}/gi, paramVal);
+  }
+
+  return new Promise((resolve, reject) => {
+    // 1. Try modern clipboard API first if available and secure
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(processedText)
+        .then(resolve)
+        .catch(err => {
+          if (fallbackCopy(processedText)) {
+            resolve();
+          } else {
+            reject(err);
+          }
+        });
+    } else {
+      // 2. Fall back to document.execCommand
+      if (fallbackCopy(processedText)) {
+        resolve();
+      } else {
+        reject(new Error('Clipboard copy failed'));
+      }
+    }
+  });
+
+  function fallbackCopy(str) {
+    const textArea = document.createElement("textarea");
+    textArea.value = str;
+    textArea.style.position = "fixed";
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.width = "2em";
+    textArea.style.height = "2em";
+    textArea.style.padding = "0";
+    textArea.style.border = "none";
+    textArea.style.outline = "none";
+    textArea.style.boxShadow = "none";
+    textArea.style.background = "transparent";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return successful;
+    } catch (err) {
+      console.error('Fallback copy failed:', err);
+      document.body.removeChild(textArea);
+      return false;
+    }
+  }
+};
+
 // Global Clipboard Overrider for variable mapping replacements
 (function() {
   if (!navigator.clipboard || !navigator.clipboard.writeText) return;
+
   const originalWriteText = navigator.clipboard.writeText;
   navigator.clipboard.writeText = function(text) {
     let processedText = text;
@@ -3557,7 +3625,7 @@ function generateWordlist() {
 function copyWordlist() {
   const txt = document.getElementById('wl-output').textContent;
   if(!txt || txt.includes('Click Generate')) return;
-  navigator.clipboard.writeText(txt).then(()=>toast('Wordlist copied!'));
+  window.copyTextToClipboard(txt).then(()=>toast('Wordlist copied!'));
 }
 
 function downloadWordlist() {
@@ -5082,7 +5150,7 @@ window.generateDynamicPayloads = function() {
     } else {
       finalStr = p;
     }
-    return `<div class="tool-cmd" style="margin-bottom:4px; font-size: 13px; padding: 8px 12px; cursor:pointer;" onclick="navigator.clipboard.writeText(this.innerText); toast('Copied Payload!')" title="Click to copy">${esc(finalStr)}</div>`;
+    return `<div class="tool-cmd" style="margin-bottom:4px; font-size: 13px; padding: 8px 12px; cursor:pointer;" onclick="window.copyTextToClipboard(this.innerText).then(()=>toast('Copied Payload!'))" title="Click to copy">${esc(finalStr)}</div>`;
   }).join('');
 };
 
@@ -5106,7 +5174,7 @@ function renderPayloads(catFilter = 'XSS') {
         '<div class="payload-block">' +
           '<div class="payload-block-head">' +
             '<div class="payload-block-title">' + p.name + '</div>' +
-            '<div>' + (p.isCustom ? '<button class="copy-btn" style="background:var(--red-dim);color:var(--red);border-color:var(--red);margin-right:8px;" onclick="deleteCustomPayload(' + p.id + ')">🗑 Delete</button>' : '') + '<button class="copy-btn" data-payload="' + esc(p.payload) + '" onclick="navigator.clipboard.writeText(this.getAttribute(\'data-payload\')).then(()=>toast(\'Payload copied!\'))">📋 Copy</button></div>' +
+            '<div>' + (p.isCustom ? '<button class="copy-btn" style="background:var(--red-dim);color:var(--red);border-color:var(--red);margin-right:8px;" onclick="deleteCustomPayload(' + p.id + ')">🗑 Delete</button>' : '') + '<button class="copy-btn" data-payload="' + esc(p.payload) + '" onclick="window.copyTextToClipboard(this.getAttribute(\'data-payload\')).then(()=>toast(\'Payload copied!\'))">📋 Copy</button></div>' +
           '</div>' +
           '<div style="padding:14px;">' +
             '<div class="payload-snippet">' + esc(p.payload) + '</div>' +
@@ -5356,6 +5424,40 @@ window.injectIframeTheme = function(iframe) {
             doc.documentElement.classList.add('theme-' + theme);
         }
 
+        const win = iframe.contentWindow;
+        const copyFn = (win && win.parent && typeof win.parent.copyTextToClipboard === 'function')
+            ? win.parent.copyTextToClipboard
+            : (typeof window.copyTextToClipboard === 'function' ? window.copyTextToClipboard : (text) => navigator.clipboard.writeText(text));
+
+        // Override copyCmd inside the iframe to route copying through parent's fallback copy system
+        if (win) {
+            win.copyCmd = function(el) {
+                const cmdLine = el.querySelector('.cmd-line');
+                if (!cmdLine) return;
+                const text = cmdLine.innerText.replace(/copy$/, '').trim();
+                copyFn(text).then(() => {
+                    const btn = el.querySelector('.copy-btn');
+                    if (btn) {
+                        const originalHTML = btn.innerHTML;
+                        btn.innerHTML = '<i class="ti ti-check"></i> copied';
+                        btn.classList.add('copied');
+                        setTimeout(() => {
+                            btn.innerHTML = originalHTML;
+                            btn.classList.remove('copied');
+                        }, 1500);
+                    }
+                    if (win.parent && typeof win.parent.toast === 'function') {
+                        win.parent.toast('Copied!');
+                    }
+                }).catch(err => {
+                    console.error('Copy failed:', err);
+                    if (win.parent && typeof win.parent.toast === 'function') {
+                        win.parent.toast('Copy failed', 'error');
+                    }
+                });
+            };
+        }
+
         // Add copy-on-click functionality to all command and code block elements
         const cmds = doc.querySelectorAll('.cmd, .cmd-code, .codeblock, .desc code, .tip-text code');
         cmds.forEach(el => {
@@ -5365,10 +5467,10 @@ window.injectIframeTheme = function(iframe) {
             el.addEventListener('click', function(e) {
                 e.stopPropagation(); // Prevent parent clicks
                 const text = this.innerText.replace('copy', '').trim();
-                navigator.clipboard.writeText(text).then(() => {
-                    // Try to use the parent's toast function
-                    if (typeof window.toast === 'function') {
-                        window.toast('Copied!');
+                copyFn(text).then(() => {
+                    const parentToast = (win && win.parent && typeof win.parent.toast === 'function') ? win.parent.toast : (typeof window.toast === 'function' ? window.toast : null);
+                    if (parentToast) {
+                        parentToast('Copied!');
                     }
                     // Flash effect to give immediate visual feedback
                     const oldBg = this.style.backgroundColor;
@@ -5378,6 +5480,8 @@ window.injectIframeTheme = function(iframe) {
                         this.style.backgroundColor = oldBg;
                         setTimeout(() => this.style.transition = '', 150); // Clean up
                     }, 150);
+                }).catch(err => {
+                    console.error('Copy failed:', err);
                 });
             });
         });
@@ -5471,7 +5575,11 @@ function openToolDetail(idx) {
   }
 
   if (htmlEmbed) {
-    if(htmlBox) {
+    if (htmlBox) {
+        // Automatically inject allow="clipboard-write" permission if missing
+        if (htmlEmbed.includes('<iframe') && !htmlEmbed.includes('allow=')) {
+            htmlEmbed = htmlEmbed.replace('<iframe', '<iframe allow="clipboard-write"');
+        }
         htmlBox.style.display = 'block';
         htmlBox.innerHTML = htmlEmbed;
     }
@@ -6653,7 +6761,7 @@ window.copyUsernameUrls = function() {
     return;
   }
   const urls = usernamePlatforms.map(p => p.url.replace(/\{\{username\}\}/g, username)).join('\n');
-  navigator.clipboard.writeText(urls).then(() => {
+  window.copyTextToClipboard(urls).then(() => {
     toast('Copied all profile URLs to clipboard!', 'success');
   });
 };
@@ -7464,7 +7572,7 @@ window.renderCliCommand = function() {
 window.copyCliCommand = function() {
   const code = document.getElementById('osint-cli-command-code');
   if (code) {
-    navigator.clipboard.writeText(code.textContent).then(() => {
+    window.copyTextToClipboard(code.textContent).then(() => {
       toast('Command copied to clipboard!', 'success');
     });
   }
