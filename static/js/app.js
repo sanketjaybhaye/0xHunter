@@ -5517,6 +5517,46 @@ window.injectIframeTheme = function(iframe) {
 `;
         doc.body.appendChild(clipScript);
 
+        // Strip any existing click listeners from .copy-btn elements by cloning them
+        // and binding our own robust copy handler that leverages window.clipCopy
+        const copyBtns = doc.querySelectorAll('.copy-btn');
+        copyBtns.forEach(btn => {
+            const clone = btn.cloneNode(true);
+            clone.removeAttribute('onclick');
+            btn.parentNode.replaceChild(clone, btn);
+            
+            clone.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                const container = this.closest('.code-block, .cmd-block, .cmd, .card, .example-block, .term-body, .pipe-item, .cmd-row');
+                if (!container) return;
+                
+                const codeEl = container.querySelector('pre, code, .cmd-text, .cmd-line, .cmd, .example-cmd, .pipe-code');
+                if (!codeEl) return;
+                
+                let text = codeEl.innerText || codeEl.textContent;
+                text = text.trim();
+                text = text.replace(/\\\\s*copy\\\\s*$/i, '');
+                if (text.startsWith('$ ')) {
+                    text = text.substring(2);
+                }
+                text = text.trim();
+                if (!text) return;
+                
+                if (win.clipCopy) {
+                    win.clipCopy(text, function() {
+                        const origHTML = clone.innerHTML;
+                        clone.innerHTML = '<i class="ti ti-check"></i> copied';
+                        clone.classList.add('copied');
+                        setTimeout(() => {
+                            clone.innerHTML = origHTML;
+                            clone.classList.remove('copied');
+                        }, 1400);
+                    });
+                }
+            });
+        });
+
         // Add copy-on-click functionality to command elements that have NO onclick
         const selectors = [
           '.cmd',
@@ -5544,6 +5584,9 @@ window.injectIframeTheme = function(iframe) {
                 parent = parent.parentElement;
             }
             if (parentHasOnclick) return;
+            
+            // Skip copy buttons
+            if (el.classList.contains('copy-btn') || el.closest('.copy-btn')) return;
 
             el.style.cursor = 'pointer';
             el.title = 'Click to copy';
