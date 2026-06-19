@@ -231,6 +231,12 @@ def logout():
     return redirect(url_for('login'))
 
 
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.svg', mimetype='image/svg+xml')
+
+
 @app.route('/')
 @login_required
 def index():
