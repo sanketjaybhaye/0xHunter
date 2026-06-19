@@ -5425,64 +5425,91 @@ window.injectIframeTheme = function(iframe) {
         }
 
         const win = iframe.contentWindow;
-        const copyFn = (win && win.parent && typeof win.parent.copyTextToClipboard === 'function')
-            ? win.parent.copyTextToClipboard
-            : (typeof window.copyTextToClipboard === 'function' ? window.copyTextToClipboard : (text) => navigator.clipboard.writeText(text));
 
-        // Override copyCmd inside the iframe to route copying through parent's fallback copy system
-        if (win) {
-            win.copyCmd = function(el) {
-                const cmdLine = el.querySelector('.cmd-line');
-                if (!cmdLine) return;
-                const text = cmdLine.innerText.replace(/copy$/, '').trim();
-                copyFn(text).then(() => {
-                    const btn = el.querySelector('.copy-btn');
-                    if (btn) {
-                        const originalHTML = btn.innerHTML;
-                        btn.innerHTML = '<i class="ti ti-check"></i> copied';
-                        btn.classList.add('copied');
-                        setTimeout(() => {
-                            btn.innerHTML = originalHTML;
-                            btn.classList.remove('copied');
-                        }, 1500);
-                    }
-                    if (win.parent && typeof win.parent.toast === 'function') {
-                        win.parent.toast('Copied!');
-                    }
-                }).catch(err => {
-                    console.error('Copy failed:', err);
-                    if (win.parent && typeof win.parent.toast === 'function') {
-                        win.parent.toast('Copy failed', 'error');
-                    }
-                });
-            };
-        }
+        // Inject clipCopy directly into the iframe's own document so that
+        // document.execCommand('copy') runs in the iframe's context with correct focus.
+        // This is the ONLY reliable approach on HTTP (non-secure) origins.
+        const clipScript = doc.createElement('script');
+        clipScript.textContent = `
+(function() {
+  function iframeClipCopy(text, onSuccess) {
+    function doFallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;top:0;left:0;width:2em;height:2em;padding:0;border:none;outline:none;box-shadow:none;background:transparent;opacity:0;';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try {
+        var ok = document.execCommand('copy');
+        if (ok && typeof onSuccess === 'function') onSuccess();
+      } catch(e) { console.warn('iframe copy fallback failed', e); }
+      document.body.removeChild(ta);
+    }
+    if (window.isSecureContext && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function() {
+        if (typeof onSuccess === 'function') onSuccess();
+      }).catch(doFallback);
+    } else {
+      doFallback();
+    }
+  }
+  // Override clipCopy (used by our injected clipCopy in each .html file)
+  window.clipCopy = iframeClipCopy;
+  // Also override copyCmd for sheets that call copyCmd(el) or copyCmd(i)
+  var _origCopyCmd = window.copyCmd;
+  window.copyCmd = function(elOrIdx) {
+    // Try to find the text — handle both element and index patterns
+    var text = '';
+    if (typeof elOrIdx === 'number') {
+      var cmdEl = document.getElementById('cmd-' + elOrIdx);
+      if (cmdEl) text = cmdEl.textContent.trim();
+    } else if (elOrIdx && typeof elOrIdx === 'object') {
+      var codeEl = elOrIdx.querySelector('.cmd-code, .cmd-line, .cmd-text, .example-cmd, code');
+      text = (codeEl || elOrIdx).innerText.replace(/\\s*copy\\s*$/, '').trim();
+    }
+    if (!text) { if (_origCopyCmd) _origCopyCmd(elOrIdx); return; }
+    iframeClipCopy(text, function() {
+      // Show toast
+      var toast = document.getElementById('toast');
+      if (toast) { toast.classList.add('show'); setTimeout(function(){ toast.classList.remove('show'); }, 1500); }
+      // Show copied state on button
+      var btn;
+      if (typeof elOrIdx === 'number') { btn = document.getElementById('copybtn-' + elOrIdx); }
+      else if (elOrIdx && elOrIdx.querySelector) { btn = elOrIdx.querySelector('.copy-btn'); }
+      if (btn) {
+        var orig = btn.innerHTML;
+        btn.innerHTML = '<i class="ti ti-check"></i> copied';
+        setTimeout(function(){ btn.innerHTML = orig; }, 1500);
+      }
+    });
+  };
+})();
+`;
+        doc.body.appendChild(clipScript);
 
-        // Add copy-on-click functionality to all command and code block elements
+        // Add copy-on-click functionality to command elements that have NO onclick
         const cmds = doc.querySelectorAll('.cmd, .cmd-code, .codeblock, .desc code, .tip-text code');
         cmds.forEach(el => {
-            if (el.hasAttribute('onclick')) return; // Skip if it already has onclick
+            if (el.hasAttribute('onclick')) return;
             el.style.cursor = 'pointer';
             el.title = 'Click to copy';
             el.addEventListener('click', function(e) {
-                e.stopPropagation(); // Prevent parent clicks
-                const text = this.innerText.replace('copy', '').trim();
-                copyFn(text).then(() => {
-                    const parentToast = (win && win.parent && typeof win.parent.toast === 'function') ? win.parent.toast : (typeof window.toast === 'function' ? window.toast : null);
-                    if (parentToast) {
-                        parentToast('Copied!');
-                    }
-                    // Flash effect to give immediate visual feedback
-                    const oldBg = this.style.backgroundColor;
-                    this.style.transition = 'background-color 0.1s ease';
-                    this.style.backgroundColor = 'var(--color-border-secondary, rgba(255,255,255,0.12))';
-                    setTimeout(() => {
-                        this.style.backgroundColor = oldBg;
-                        setTimeout(() => this.style.transition = '', 150); // Clean up
-                    }, 150);
-                }).catch(err => {
-                    console.error('Copy failed:', err);
-                });
+                e.stopPropagation();
+                const text = this.innerText.replace(/\s*copy\s*$/, '').trim();
+                if (!text) return;
+                // Use the iframe's own clipCopy which runs execCommand in iframe context
+                if (typeof win.clipCopy === 'function') {
+                    win.clipCopy(text, function() {
+                        const oldBg = el.style.backgroundColor;
+                        el.style.transition = 'background-color 0.1s ease';
+                        el.style.backgroundColor = 'var(--color-border-secondary, rgba(255,255,255,0.12))';
+                        setTimeout(() => {
+                            el.style.backgroundColor = oldBg;
+                            setTimeout(() => el.style.transition = '', 150);
+                        }, 150);
+                    });
+                }
             });
         });
 
