@@ -1231,10 +1231,13 @@ function exportFindingsCsv() {
     f.title, f.severity, f.type, f.host, f.status, f.bountyEarned || '', f.cvss || ''
   ]));
   const csv = rows.map(r => r.map(c => '"' + String(c || '').replace(/"/g, '""') + '"').join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.href = url;
   a.download = 'findings_' + new Date().toISOString().split('T')[0] + '.csv';
   a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
   toast('CSV exported', 'success');
 }
 
@@ -2337,9 +2340,16 @@ function decodeJWT() {
 
 async function computeHashes() {
   const text = document.getElementById('hash-input').value;
-  const enc = new TextEncoder().encode(text);
-  const buf = await crypto.subtle.digest('SHA-256', enc);
-  const hex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  let hex = '';
+  if (window.crypto && window.crypto.subtle) {
+    const enc = new TextEncoder().encode(text);
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    hex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  } else if (typeof CryptoJS !== 'undefined') {
+    hex = CryptoJS.SHA256(text).toString(CryptoJS.enc.Hex);
+  } else {
+    hex = 'Error: Crypto API unavailable';
+  }
   const hr = document.getElementById('hash-results');
   if (hr) hr.innerHTML = '<div style="font-family:var(--mono);font-size:12px;word-break:break-all"><strong>SHA-256:</strong><br>' + esc(hex) + '</div>';
 }
@@ -2497,8 +2507,19 @@ ${renderMarkdown(currentReportMarkdown)}
   toast('Report downloaded', 'success');
 }
 
-// ── AES-256 BACKUP ENCRYPTION ROUTINES (Web Crypto API) ───────
+// ── AES-256 BACKUP ENCRYPTION ROUTINES (Web Crypto API & CryptoJS fallback) ───────
 async function encryptDataAesGcm(text, password) {
+  if (!window.crypto || !window.crypto.subtle) {
+    if (typeof CryptoJS !== 'undefined') {
+      return {
+        encrypted: true,
+        cryptojs: true,
+        ciphertext: CryptoJS.AES.encrypt(text, password).toString()
+      };
+    } else {
+      throw new Error("Encryption requires a secure context (HTTPS) or CryptoJS.");
+    }
+  }
   const enc = new TextEncoder();
   const salt = window.crypto.getRandomValues(new Uint8Array(16));
   const iv = window.crypto.getRandomValues(new Uint8Array(12));
@@ -2552,6 +2573,17 @@ async function encryptDataAesGcm(text, password) {
 }
 
 async function decryptDataAesGcm(encryptedPayload, password) {
+  if (encryptedPayload.cryptojs) {
+    if (typeof CryptoJS !== 'undefined') {
+      const bytes = CryptoJS.AES.decrypt(encryptedPayload.ciphertext, password);
+      const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+      if (!decryptedData) throw new Error("Decryption failed (incorrect password)");
+      return decryptedData;
+    } else {
+      throw new Error("Decryption requires CryptoJS.");
+    }
+  }
+  
   const enc = new TextDecoder();
   const rawDec = new TextEncoder();
   
@@ -2631,10 +2663,13 @@ async function exportData() {
     fileContent = JSON.stringify(exportPayload);
   }
   
+  const blob = new Blob([fileContent], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(fileContent);
+  a.href = url;
   a.download = '0xHunter_Backup_' + new Date().toISOString().split('T')[0] + filenameSuffix + '.json';
   a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
   toast('Full workspace backup exported successfully', 'success');
 }
 

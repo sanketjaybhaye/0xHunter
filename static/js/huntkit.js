@@ -742,15 +742,23 @@ function decodeJwt() {
 async function generateHashes() {
   const input = document.getElementById('hash-in').value;
   if (!input) return;
-  const buffer = new TextEncoder().encode(input);
   try {
-    const sha1Buffer = await crypto.subtle.digest('SHA-1', buffer);
-    const sha256Buffer = await crypto.subtle.digest('SHA-256', buffer);
-    const sha512Buffer = await crypto.subtle.digest('SHA-512', buffer);
-    
-    document.getElementById('hash-sha1').value = Array.from(new Uint8Array(sha1Buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-    document.getElementById('hash-sha256').value = Array.from(new Uint8Array(sha256Buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-    document.getElementById('hash-sha512').value = Array.from(new Uint8Array(sha512Buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    if (window.crypto && window.crypto.subtle) {
+      const buffer = new TextEncoder().encode(input);
+      const sha1Buffer = await crypto.subtle.digest('SHA-1', buffer);
+      const sha256Buffer = await crypto.subtle.digest('SHA-256', buffer);
+      const sha512Buffer = await crypto.subtle.digest('SHA-512', buffer);
+      
+      document.getElementById('hash-sha1').value = Array.from(new Uint8Array(sha1Buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+      document.getElementById('hash-sha256').value = Array.from(new Uint8Array(sha256Buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+      document.getElementById('hash-sha512').value = Array.from(new Uint8Array(sha512Buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    } else if (typeof CryptoJS !== 'undefined') {
+      document.getElementById('hash-sha1').value = CryptoJS.SHA1(input).toString(CryptoJS.enc.Hex);
+      document.getElementById('hash-sha256').value = CryptoJS.SHA256(input).toString(CryptoJS.enc.Hex);
+      document.getElementById('hash-sha512').value = CryptoJS.SHA512(input).toString(CryptoJS.enc.Hex);
+    } else {
+      toast('Crypto API unavailable', 'error');
+    }
   } catch(e) {
     toast('Error generating hashes: ' + e.message, 'error');
   }
