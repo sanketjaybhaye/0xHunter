@@ -60,7 +60,10 @@ login_manager.login_view = 'login'
 def optimize_responses(response):
     # 1. Cache-Control optimization for static resources
     if request.path.startswith('/static/'):
-        response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+        if request.path.endswith('.html') or request.path.endswith('.js') or request.path.endswith('.css'):
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        else:
+            response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
     else:
         # Dynamically request new data for APIs and dynamic HTML pages
         response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'

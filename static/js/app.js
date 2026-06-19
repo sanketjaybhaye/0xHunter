@@ -5433,6 +5433,14 @@ window.injectIframeTheme = function(iframe) {
         clipScript.textContent = `
 (function() {
   function iframeClipCopy(text, onSuccess) {
+    function triggerSuccess() {
+      if (typeof onSuccess === 'function') onSuccess();
+      try {
+        if (window.parent && typeof window.parent.toast === 'function') {
+          window.parent.toast('Copied command to clipboard');
+        }
+      } catch(e) { console.warn('Failed to call parent toast', e); }
+    }
     function doFallback() {
       var ta = document.createElement('textarea');
       ta.value = text;
@@ -5442,45 +5450,66 @@ window.injectIframeTheme = function(iframe) {
       ta.select();
       try {
         var ok = document.execCommand('copy');
-        if (ok && typeof onSuccess === 'function') onSuccess();
+        if (ok) triggerSuccess();
       } catch(e) { console.warn('iframe copy fallback failed', e); }
       document.body.removeChild(ta);
     }
     if (window.isSecureContext && navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(function() {
-        if (typeof onSuccess === 'function') onSuccess();
-      }).catch(doFallback);
+      navigator.clipboard.writeText(text).then(triggerSuccess).catch(doFallback);
     } else {
       doFallback();
     }
   }
   // Override clipCopy (used by our injected clipCopy in each .html file)
   window.clipCopy = iframeClipCopy;
-  // Also override copyCmd for sheets that call copyCmd(el) or copyCmd(i)
+  
+  // Also override copyCmd for sheets that call copyCmd(el) or copyCmd(i) or copyCmd(el, cmd)
   var _origCopyCmd = window.copyCmd;
-  window.copyCmd = function(elOrIdx) {
-    // Try to find the text — handle both element and index patterns
+  window.copyCmd = function(elOrIdx, possibleCmd) {
     var text = '';
-    if (typeof elOrIdx === 'number') {
+    if (typeof possibleCmd === 'string' && possibleCmd.trim()) {
+      text = possibleCmd.trim();
+    } else if (typeof elOrIdx === 'number') {
       var cmdEl = document.getElementById('cmd-' + elOrIdx);
       if (cmdEl) text = cmdEl.textContent.trim();
     } else if (elOrIdx && typeof elOrIdx === 'object') {
       var codeEl = elOrIdx.querySelector('.cmd-code, .cmd-line, .cmd-text, .example-cmd, code');
-      text = (codeEl || elOrIdx).innerText.replace(/\\s*copy\\s*$/, '').trim();
+      text = (codeEl || elOrIdx).innerText.replace(/\\\\s*copy\\\\s*$/, '').trim();
     }
-    if (!text) { if (_origCopyCmd) _origCopyCmd(elOrIdx); return; }
+    if (!text) {
+      if (_origCopyCmd) _origCopyCmd.apply(this, arguments);
+      return;
+    }
     iframeClipCopy(text, function() {
-      // Show toast
+      // Show toast inside iframe if it exists
       var toast = document.getElementById('toast');
-      if (toast) { toast.classList.add('show'); setTimeout(function(){ toast.classList.remove('show'); }, 1500); }
+      if (toast) {
+        toast.classList.add('show');
+        toast.style.opacity = '1';
+        setTimeout(function(){
+          toast.classList.remove('show');
+          toast.style.opacity = '0';
+        }, 1500);
+      }
       // Show copied state on button
-      var btn;
-      if (typeof elOrIdx === 'number') { btn = document.getElementById('copybtn-' + elOrIdx); }
-      else if (elOrIdx && elOrIdx.querySelector) { btn = elOrIdx.querySelector('.copy-btn'); }
+      var btn = null;
+      if (typeof elOrIdx === 'number') {
+        btn = document.getElementById('copybtn-' + elOrIdx);
+      } else if (elOrIdx && typeof elOrIdx === 'object') {
+        if (elOrIdx.classList.contains('copy-btn')) {
+          btn = elOrIdx;
+        } else {
+          btn = elOrIdx.querySelector('.copy-btn');
+        }
+      }
       if (btn) {
         var orig = btn.innerHTML;
         btn.innerHTML = '<i class="ti ti-check"></i> copied';
-        setTimeout(function(){ btn.innerHTML = orig; }, 1500);
+        btn.classList.add('copied');
+        setTimeout(function(){
+          btn.innerHTML = orig;
+          btn.classList.remove('copied');
+        }, 1500);
       }
     });
   };
@@ -5489,17 +5518,47 @@ window.injectIframeTheme = function(iframe) {
         doc.body.appendChild(clipScript);
 
         // Add copy-on-click functionality to command elements that have NO onclick
-        const cmds = doc.querySelectorAll('.cmd, .cmd-code, .codeblock, .desc code, .tip-text code');
+        const selectors = [
+          '.cmd',
+          '.cmd-code',
+          '.codeblock',
+          '.desc code',
+          '.tip-text code',
+          '.cmd-text',
+          '.pipe-code',
+          '.cmd-item code',
+          '.cmd-full code'
+        ];
+        const cmds = doc.querySelectorAll(selectors.join(', '));
         cmds.forEach(el => {
             if (el.hasAttribute('onclick')) return;
+            
+            // Check if any parent has onclick to avoid overriding card-level onclicks
+            let parent = el.parentElement;
+            let parentHasOnclick = false;
+            while (parent && parent !== doc.body) {
+                if (parent.hasAttribute('onclick')) {
+                    parentHasOnclick = true;
+                    break;
+                }
+                parent = parent.parentElement;
+            }
+            if (parentHasOnclick) return;
+
             el.style.cursor = 'pointer';
             el.title = 'Click to copy';
             el.addEventListener('click', function(e) {
                 e.stopPropagation();
-                const text = this.innerText.replace(/\s*copy\s*$/, '').trim();
+                let text = this.innerText;
+                text = text.trim();
+                text = text.replace(/\\\\s*copy\\\\s*$/i, '');
+                if (text.startsWith('$ ')) {
+                    text = text.substring(2);
+                }
+                text = text.trim();
                 if (!text) return;
-                // Use the iframe's own clipCopy which runs execCommand in iframe context
-                if (typeof win.clipCopy === 'function') {
+                
+                if (win.clipCopy) {
                     win.clipCopy(text, function() {
                         const oldBg = el.style.backgroundColor;
                         el.style.transition = 'background-color 0.1s ease';
@@ -5602,6 +5661,12 @@ function openToolDetail(idx) {
   }
 
   if (htmlEmbed) {
+    // Cache-bust all local/custom iframe cheat sheets by appending unique timestamp
+    htmlEmbed = htmlEmbed.replace(/(<iframe[^>]*?src=")([^"]+)(")/gi, (match, p1, src, p3) => {
+      const separator = src.includes('?') ? '&' : '?';
+      const cleanSrc = src.split(/[&?]v=/)[0];
+      return `${p1}${cleanSrc}${separator}v=${Date.now()}${p3}`;
+    });
     if (htmlBox) {
         // Automatically inject allow="clipboard-write" permission if missing
         if (htmlEmbed.includes('<iframe') && !htmlEmbed.includes('allow=')) {
